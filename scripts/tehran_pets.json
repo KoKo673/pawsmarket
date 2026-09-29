@@ -1,0 +1,2915 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-09-29T16:39:54Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 3133138844,
+  "lat": 35.7014095,
+  "lon": 51.3830637,
+  "tags": {
+    "addr:street": "دکتر محمد قریب",
+    "amenity": "veterinary",
+    "name": "بیمارستان تخصصی دانشکده دامپزشکی دانشگاه تهران",
+    "name:en": "Faculty of Veterinary Medicine Small Animal Hospital"
+  }
+},
+{
+  "type": "node",
+  "id": 3218154033,
+  "lat": 35.6590794,
+  "lon": 51.0643308,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "داروخانه و دامپزشکی فارابی",
+    "name:en": "Fārābi",
+    "opening_hours": "8:00-18:00",
+    "phone": "+98 21 65224192"
+  }
+},
+{
+  "type": "node",
+  "id": 4174122592,
+  "lat": 35.7850388,
+  "lon": 51.3842785,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلنیک دامپزشکی پارسا",
+    "name:en": "Parsa Veterinary Doctor"
+  }
+},
+{
+  "type": "node",
+  "id": 4176985990,
+  "lat": 35.7351864,
+  "lon": 51.4978546,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "بیمارستان دامپزشکی دورین"
+  }
+},
+{
+  "type": "node",
+  "id": 4515726888,
+  "lat": 35.7646736,
+  "lon": 51.3523224,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "دامپزشکی پایتخت",
+    "name:en": "Paytakht Veterinary"
+  }
+},
+{
+  "type": "node",
+  "id": 4520423991,
+  "lat": 35.7171293,
+  "lon": 51.4403508,
+  "tags": {
+    "name:en": "petshop",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 4639307389,
+  "lat": 35.7938225,
+  "lon": 51.4601709,
+  "tags": {
+    "amenity": "veterinary",
+    "email": "pr@tehranpet.com",
+    "name": "بیمارستان دامپزشکی تهران(شعبه کامرانیه)",
+    "name:en": "Tehran Pet Hospital",
+    "phone": "+98 21 2151",
+    "website": "https://www.tehranpet.com/"
+  }
+},
+{
+  "type": "node",
+  "id": 4714048490,
+  "lat": 35.7647950,
+  "lon": 51.4706300,
+  "tags": {
+    "amenity": "veterinary"
+  }
+},
+{
+  "type": "node",
+  "id": 4745563621,
+  "lat": 35.7645291,
+  "lon": 51.2870287,
+  "tags": {
+    "name": "دکتر پروین",
+    "name:en": "Pet Med, Dr. Parvin",
+    "shop": "pet",
+    "website": "http://www.petiran.ir"
+  }
+},
+{
+  "type": "node",
+  "id": 4820092621,
+  "lat": 35.7051028,
+  "lon": 51.3805635,
+  "tags": {
+    "name": "دیجی پت",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 4865738021,
+  "lat": 35.8095230,
+  "lon": 51.3961693,
+  "tags": {
+    "addr:city": "Tehran",
+    "amenity": "veterinary",
+    "name": "دامپزشکی ولنجک",
+    "name:en": "Velenjak Veterinary Clinic"
+  }
+},
+{
+  "type": "node",
+  "id": 5142483921,
+  "lat": 35.7357023,
+  "lon": 51.3963111,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "دامپزشکی پرشین",
+    "name:en": "Persian Vet Clinic"
+  }
+},
+{
+  "type": "node",
+  "id": 5142484021,
+  "lat": 35.7404019,
+  "lon": 51.4016145,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "سپکا",
+    "name:en": "Sepca"
+  }
+},
+{
+  "type": "node",
+  "id": 5172414868,
+  "lat": 35.7988187,
+  "lon": 51.4732621,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "14",
+    "addr:street": "بلوار لواسانی",
+    "amenity": "veterinary",
+    "description": "ارایه کلیه خدمات حیوانات خانگی",
+    "email": "info@petclinic.ir",
+    "name": "کلینیک دامپزشکی فرمانیه",
+    "phone": "+982122288999",
+    "website": "https://www.petclinic.ir/"
+  }
+},
+{
+  "type": "node",
+  "id": 5199686021,
+  "lat": 35.5069353,
+  "lon": 51.2597499,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "صابری",
+    "name:en": "saberi (dairy farm)",
+    "source:name": "map.ir"
+  }
+},
+{
+  "type": "node",
+  "id": 5200077723,
+  "lat": 35.5075535,
+  "lon": 51.3117790,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "احسان صابری",
+    "name:en": "ehsan saberi (dairy farm)",
+    "source:name": "map.ir"
+  }
+},
+{
+  "type": "node",
+  "id": 5200151921,
+  "lat": 35.5081934,
+  "lon": 51.3060334,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "اشرفی",
+    "name:en": "ashrafi (dairy farm)",
+    "source:name": "map.ir"
+  }
+},
+{
+  "type": "node",
+  "id": 5200163422,
+  "lat": 35.5459206,
+  "lon": 51.1774074,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "پاژن",
+    "name:en": "pajan (dairy farm)",
+    "source:name": "map.ir"
+  }
+},
+{
+  "type": "node",
+  "id": 5202039923,
+  "lat": 35.6961605,
+  "lon": 51.1586713,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "دام اصیل",
+    "name:en": "damasil (dairy farm)",
+    "source:name": "map.ir"
+  }
+},
+{
+  "type": "node",
+  "id": 5202094921,
+  "lat": 35.6262652,
+  "lon": 51.2180940,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "حبیب الله",
+    "name:en": "habibolah (dairy farm)",
+    "source:name": "map.ir"
+  }
+},
+{
+  "type": "node",
+  "id": 5202151921,
+  "lat": 35.6059192,
+  "lon": 51.2415811,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "قدرتی",
+    "name:en": "ghodrati (dairy farm)",
+    "source:name": "map.ir"
+  }
+},
+{
+  "type": "node",
+  "id": 5213746651,
+  "lat": 35.6068212,
+  "lon": 51.2041703,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "خلج",
+    "name:en": "khalaj (dairy farm)",
+    "source:name": "map.ir"
+  }
+},
+{
+  "type": "node",
+  "id": 5224311421,
+  "lat": 35.6028641,
+  "lon": 51.2091869,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "رنجبران",
+    "name:en": "ranjbaran (dairy farm)",
+    "source:name": "map.ir"
+  }
+},
+{
+  "type": "node",
+  "id": 5304426422,
+  "lat": 35.5227279,
+  "lon": 51.2812705,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "بهروزی",
+    "name:en": "behrozi (dairy farm)",
+    "source:name": "map.ir"
+  }
+},
+{
+  "type": "node",
+  "id": 5403539695,
+  "lat": 35.7041654,
+  "lon": 51.3717525,
+  "tags": {
+    "addr:street": "پرچم",
+    "description:ru": "Зоомагазин",
+    "name": "دامپزشکی پاستور",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 5808463257,
+  "lat": 35.6113398,
+  "lon": 51.0978028,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "حضرتی",
+    "name:en": "hazrati (dairy farm)",
+    "source:name": "map.ir"
+  }
+},
+{
+  "type": "node",
+  "id": 6010981585,
+  "lat": 35.7429049,
+  "lon": 51.3030191,
+  "tags": {
+    "addr:street": "ایثارگران",
+    "name": "مجموعه خرگوش زیبا",
+    "name:en": "Majmooe khargoosh ziba",
+    "opening_hours": "24/7",
+    "phone": "+98 935 282 5272",
+    "shop": "pet",
+    "website": "https://t.me.beautifulrabbit"
+  }
+},
+{
+  "type": "node",
+  "id": 6023962487,
+  "lat": 35.7733707,
+  "lon": 51.4667008,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "بیمارستان دامپزشکی ایرانیان",
+    "name:en": "Iranian Pet Hospital",
+    "source:name": "map.ir"
+  }
+},
+{
+  "type": "node",
+  "id": 6232672408,
+  "lat": 35.7344768,
+  "lon": 51.5298417,
+  "tags": {
+    "addr:city": "tehran",
+    "addr:street": "(۱۲۱) رضایی",
+    "name": "صباپت",
+    "name:en": "sabapet",
+    "payment:cash": "yes",
+    "payment:credit_cards": "yes",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 6270144122,
+  "lat": 35.7768332,
+  "lon": 51.4867960,
+  "tags": {
+    "description": "مجموعه خدماتی حیوانات خانگی\nآرایشگاه-آموزشگاه-آتلیه عکاسی-پانسیون-پت شاپ-پت کافی",
+    "name": "پت استایلیست",
+    "name:en": "Pet Stylist",
+    "shop": "pet_grooming"
+  }
+},
+{
+  "type": "node",
+  "id": 6276483178,
+  "lat": 35.7221772,
+  "lon": 51.3718633,
+  "tags": {
+    "addr:city": "tehran",
+    "addr:street": "سی ام",
+    "name": "پت شاپ ژیکو",
+    "name:en": "پت شاپ ژیکو",
+    "name:fa": "پتشاپ ژیکو",
+    "name_1": "petshop zhiko",
+    "name_2": "پتشاپ ژیکو",
+    "opening_hours": "010:00-21:00",
+    "payment:cash": "yes",
+    "payment:credit_cards": "yes",
+    "phone": "+982188231732",
+    "shop": "pet",
+    "website": "https://www.instagram.com/zhiko.petshop"
+  }
+},
+{
+  "type": "node",
+  "id": 6342827558,
+  "lat": 35.7566860,
+  "lon": 51.3226216,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "دامپزشکی غرب",
+    "source": "map.ir"
+  }
+},
+{
+  "type": "node",
+  "id": 6443936488,
+  "lat": 35.7037163,
+  "lon": 51.3793597,
+  "tags": {
+    "addr:housenumber": "156",
+    "addr:street": "یدالله امیرلو",
+    "amenity": "veterinary",
+    "name": "بیمارستان دامپزشکی شبانه روزی خاورمیانه",
+    "name:en": "Middle East Vet Hospital",
+    "opening_hours": "24/7",
+    "phone": "+98 21 5418 5",
+    "website": "https://www.mevh.ir/"
+  }
+},
+{
+  "type": "node",
+  "id": 6631716188,
+  "lat": 35.8040409,
+  "lon": 51.4333401,
+  "tags": {
+    "name": "پرنده فروشی",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 6794876485,
+  "lat": 35.7901740,
+  "lon": 51.4177965,
+  "tags": {
+    "name": "بیمارستان دامپزشکی پیمان",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 7232824210,
+  "lat": 35.7244677,
+  "lon": 51.3832943,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "1",
+    "addr:street": "پروانه",
+    "amenity": "veterinary",
+    "description": "کلینیک تخصصی دامپزشکی کژال با کادری مجرب و فضای فوق العاده",
+    "ele": "10",
+    "email": "info@kajalpetclinic.com",
+    "name": "کلینیک دامپزشکی کژال",
+    "opening_hours": "Mo-Su 07:00-23:00",
+    "operator": "علی رضا سلیمانی سهی",
+    "phone": "+982188002028",
+    "website": "https://kajalpetclinic.com",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 7238312585,
+  "lat": 35.6543974,
+  "lon": 51.1131866,
+  "tags": {
+    "amenity": "veterinary",
+    "name:en": "Khansari (dairy farm)"
+  }
+},
+{
+  "type": "node",
+  "id": 7287603394,
+  "lat": 35.7686318,
+  "lon": 51.4739582,
+  "tags": {
+    "name": "پت شاپ فلامینگو",
+    "name:en": "Flamingo Pet Shop",
+    "phone": "+98 912 9595118",
+    "shop": "pet",
+    "website": "https://flamingopet.shop/"
+  }
+},
+{
+  "type": "node",
+  "id": 7589059586,
+  "lat": 35.8074218,
+  "lon": 51.3935866,
+  "tags": {
+    "addr:street": "گلستان دوم",
+    "name": "پت شاپ پرشیا",
+    "opening_hours": "10:30-22:00",
+    "phone": "02122426653",
+    "shop": "pet",
+    "veterinary": "persia"
+  }
+},
+{
+  "type": "node",
+  "id": 7687417706,
+  "lat": 35.8030838,
+  "lon": 51.4061191,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "13",
+    "addr:postcode": "1985843111",
+    "addr:street": "ساسان",
+    "amenity": "veterinary",
+    "contact:instagram": "iranpet_polyclinic",
+    "email": "iranpet2013@gmail.com",
+    "name": "کلینیک دامپزشکی ایران پت",
+    "opening_hours": "Sa-Th 10:00-00:00; Fr 11:00-20:00",
+    "operator": "Dr. Shadi Mousavi",
+    "phone": "+982126206842;+982126206834;+989120193619;+989120193606",
+    "website": "http://www.iranpethospital.com"
+  }
+},
+{
+  "type": "node",
+  "id": 7806343486,
+  "lat": 35.5937117,
+  "lon": 51.2987167,
+  "tags": {
+    "amenity": "veterinary",
+    "name:en": "Haj mohamad ali (dairy farm)"
+  }
+},
+{
+  "type": "node",
+  "id": 7806344485,
+  "lat": 35.5936954,
+  "lon": 51.2987312,
+  "tags": {
+    "amenity": "veterinary",
+    "name:en": "Haj mohamad ali"
+  }
+},
+{
+  "type": "node",
+  "id": 7826687248,
+  "lat": 35.8116973,
+  "lon": 51.4632179,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "بیمارستان حیوانات خانگی نیکان",
+    "name:en": "Nikan Pet Hospital",
+    "opening_hours": "24/7",
+    "phone": "+98 21 22293899",
+    "website": "http://nikanpethospital.com/"
+  }
+},
+{
+  "type": "node",
+  "id": 7886231785,
+  "lat": 35.6396683,
+  "lon": 51.1008046,
+  "tags": {
+    "amenity": "veterinary",
+    "name:en": "Telise nemone (dairy farm)"
+  }
+},
+{
+  "type": "node",
+  "id": 8021625485,
+  "lat": 35.5294445,
+  "lon": 51.2029450,
+  "tags": {
+    "amenity": "veterinary",
+    "name:en": "Ehsan nia (dairy farm)"
+  }
+},
+{
+  "type": "node",
+  "id": 8318487353,
+  "lat": 35.7358163,
+  "lon": 51.4369097,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "51",
+    "addr:street": "خرمشهر",
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی ژو",
+    "opening_hours": "10:00-22:00"
+  }
+},
+{
+  "type": "node",
+  "id": 8432990555,
+  "lat": 35.7205066,
+  "lon": 51.3569821,
+  "tags": {
+    "amenity": "veterinary",
+    "image": "https://gandopetclinic.com/",
+    "name": "کلینیک دامپزشکی گاندو"
+  }
+},
+{
+  "type": "node",
+  "id": 8838644742,
+  "lat": 35.7506552,
+  "lon": 51.4658426,
+  "tags": {
+    "addr:city": "Tehran",
+    "addr:housenumber": "202",
+    "addr:street": "بنی هاشم",
+    "brand": "Petabad",
+    "description": "دفتر مرکزی پت شاپ آنلاین پت آباد",
+    "name": "Petabad",
+    "old_name": "پت شاپ آنلاین پت آباد",
+    "opening_hours": "Sa-Th 09:00-18:00",
+    "opening_hours:covid19": "restricted",
+    "operator": "Petabad.com",
+    "payment:cash": "yes",
+    "payment:debit_cards": "yes",
+    "phone": "+982178761000",
+    "shop": "pet",
+    "website": "https://petabad.com"
+  }
+},
+{
+  "type": "node",
+  "id": 8847848576,
+  "lat": 35.7702953,
+  "lon": 51.3606850,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "بلوار دریا غربی",
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی پناه",
+    "public": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 8939726892,
+  "lat": 35.7306103,
+  "lon": 51.3404474,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی دکتر کریمی"
+  }
+},
+{
+  "type": "node",
+  "id": 9139586317,
+  "lat": 35.7725920,
+  "lon": 51.3606153,
+  "tags": {
+    "name": "پت شاپ پاز",
+    "name:en": "Pet shop puse",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 9164261917,
+  "lat": 35.7540075,
+  "lon": 51.2782416,
+  "tags": {
+    "name": "پانسیون لاله",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 9207025405,
+  "lat": 35.6785938,
+  "lon": 51.3318432,
+  "tags": {
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 9272494517,
+  "lat": 35.7168018,
+  "lon": 51.4402920,
+  "tags": {
+    "name": "پت شاپ محسن",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 9287769343,
+  "lat": 35.5406997,
+  "lon": 51.5847834,
+  "tags": {
+    "addr:housenumber": "2",
+    "addr:street": "جاده عباس آباد",
+    "amenity": "veterinary",
+    "name": "دامپزشکی دکتر توسلی",
+    "operator": "دکتر توسلی"
+  }
+},
+{
+  "type": "node",
+  "id": 9346160217,
+  "lat": 35.7286753,
+  "lon": 51.5263813,
+  "tags": {
+    "name": "بلو پت",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 9458967517,
+  "lat": 35.7388921,
+  "lon": 51.5236885,
+  "tags": {
+    "name": "بیمارستان دامپزشکی هونام",
+    "opening_hours": "24/7",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 9562798249,
+  "lat": 35.8068954,
+  "lon": 51.4069715,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:postcode": "1985973613",
+    "addr:street": "مهران بهزادی",
+    "amenity": "veterinary",
+    "email": "dr.taghizadeh.pc@gmail.com",
+    "level": "1",
+    "name": "دامپزشکی دکتر تقی زاده جاهد",
+    "name:en": "Dr Masoud Taghizadeh Jahed Pet Clinic",
+    "name:fa": "دامپزشکی دکتر مسعود تقی زاده جاهد",
+    "opening_hours": "Mo-Su 10:00-22:00",
+    "operator": "دکتر مسعود تقی زاده جاهد",
+    "phone": "+98 21 26353921",
+    "phone:UA": "09201187279",
+    "website": "https://www.drtaghizadehpetclinic.com/"
+  }
+},
+{
+  "type": "node",
+  "id": 9653975917,
+  "lat": 35.7456424,
+  "lon": 51.5357585,
+  "tags": {
+    "name": "همراه پت",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 9678112917,
+  "lat": 35.7212478,
+  "lon": 51.3493129,
+  "tags": {
+    "addr:city": "تهران",
+    "name": "فندوق پت شاپ",
+    "name:en": "fandogh petshop",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 9702697609,
+  "lat": 35.7999942,
+  "lon": 51.4104215,
+  "tags": {
+    "alt_name": "کلینیک تخصصی حیوانات خانگی ریور ساید",
+    "amenity": "veterinary",
+    "name": "ریور ساید",
+    "name:en": "River Side Veterinary Clinic",
+    "phone": "+982122402440"
+  }
+},
+{
+  "type": "node",
+  "id": 9708719017,
+  "lat": 35.6872998,
+  "lon": 51.4470467,
+  "tags": {
+    "name": "پرنده سرای سیلور",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 9743530919,
+  "lat": 35.7869175,
+  "lon": 51.4393261,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی پانیا"
+  }
+},
+{
+  "type": "node",
+  "id": 9743969717,
+  "lat": 35.7806947,
+  "lon": 51.4632266,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "95",
+    "addr:street": "شهید یوسف کلاهدوز",
+    "branch": "پت خرید",
+    "brand": "پت خرید",
+    "name": "پت خرید",
+    "opening_hours": "Mo-Fr 10:00-22:00",
+    "operator": "حمیدرضا خاکشور",
+    "payment:cash": "yes",
+    "payment:debit_cards": "yes",
+    "phone": "+982122552359",
+    "shop": "pet",
+    "website": "https://petkharid.com"
+  }
+},
+{
+  "type": "node",
+  "id": 9905918017,
+  "lat": 35.7926935,
+  "lon": 51.4526760,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک حیوانات خانگی قیطریه"
+  }
+},
+{
+  "type": "node",
+  "id": 9926246715,
+  "lat": 35.7393517,
+  "lon": 51.4360250,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی سهروردی"
+  }
+},
+{
+  "type": "node",
+  "id": 9944909871,
+  "lat": 35.7687480,
+  "lon": 51.3639506,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "بیمارستان دامپزشکی فوق تخصص اطلس"
+  }
+},
+{
+  "type": "node",
+  "id": 9950086302,
+  "lat": 35.7025348,
+  "lon": 51.3800362,
+  "tags": {
+    "name": "پت شاپ پریسا",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 9950124243,
+  "lat": 35.7021568,
+  "lon": 51.3804790,
+  "tags": {
+    "name": "bon Petshop",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 9956242270,
+  "lat": 35.7662234,
+  "lon": 51.3951482,
+  "tags": {
+    "name": "پت شاپ زی پت لند",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 9961539217,
+  "lat": 35.7691369,
+  "lon": 51.4665200,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی لوتوس"
+  }
+},
+{
+  "type": "node",
+  "id": 9980285700,
+  "lat": 35.7923538,
+  "lon": 51.4233543,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "شبدیز",
+    "amenity": "veterinary",
+    "amenity_1": "veterinary_clinic",
+    "name": "کلینیک دامپزشکی دکتر رزم آرا",
+    "opening_hours": "Mo-Su 11:00-20:00"
+  }
+},
+{
+  "type": "node",
+  "id": 10009080117,
+  "lat": 35.7967320,
+  "lon": 51.4459558,
+  "tags": {
+    "name": "آس پت",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 10018249018,
+  "lat": 35.7863749,
+  "lon": 51.4607455,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک تخصصی حیوانات خانگی ارغوان"
+  }
+},
+{
+  "type": "node",
+  "id": 10018249117,
+  "lat": 35.7884157,
+  "lon": 51.4663158,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی اورانوس"
+  }
+},
+{
+  "type": "node",
+  "id": 10028980517,
+  "lat": 35.7971846,
+  "lon": 51.4471307,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "بیمارستان دامپزشکی ترنج",
+    "opening_hours": "24/7"
+  }
+},
+{
+  "type": "node",
+  "id": 10052199922,
+  "lat": 35.7890910,
+  "lon": 51.4611483,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی پگاه"
+  }
+},
+{
+  "type": "node",
+  "id": 10075112017,
+  "lat": 35.7429875,
+  "lon": 51.4436533,
+  "tags": {
+    "addr:housenumber": "24",
+    "addr:street": "ستاری",
+    "amenity": "veterinary",
+    "name": "بیمارستان دامپزشکی اکسیژن",
+    "opening_hours": "24/7",
+    "phone": "+98 21 2285 1700"
+  }
+},
+{
+  "type": "node",
+  "id": 10167649272,
+  "lat": 35.7855420,
+  "lon": 51.4328124,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "بیمارستان حیوانات خانگی حمیدرضا فتاحیان",
+    "phone": "+98 21 2261 5969",
+    "website": "http://drfattahian.ir/"
+  }
+},
+{
+  "type": "node",
+  "id": 10177791771,
+  "lat": 35.7669851,
+  "lon": 51.3030744,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "معینی (هفتم)",
+    "name": "مرکز خرید و فروش انواع گربه نژاد دار اسکاتیش بریتیش رادپت",
+    "opening_hours": "24/7",
+    "operator": "زاهدی راد",
+    "phone": "+98 912 344 1239",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 10180158231,
+  "lat": 35.7354603,
+  "lon": 51.5215742,
+  "tags": {
+    "name": "پت شاپ آژین",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 10685185950,
+  "lat": 35.8020715,
+  "lon": 51.4735007,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "دامپزشکی تیکا"
+  }
+},
+{
+  "type": "node",
+  "id": 10718910705,
+  "lat": 35.7674822,
+  "lon": 51.4722946,
+  "tags": {
+    "name": "ژیوان",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 10723070805,
+  "lat": 35.5492002,
+  "lon": 51.2492977,
+  "tags": {
+    "name": "کلینیک دامپزشکی",
+    "operator": "دکتر سنایی راد",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 10732419480,
+  "lat": 35.6998901,
+  "lon": 51.3558431,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی راد"
+  }
+},
+{
+  "type": "node",
+  "id": 10815639371,
+  "lat": 35.7698757,
+  "lon": 51.4717895,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی هروی"
+  }
+},
+{
+  "type": "node",
+  "id": 10823604189,
+  "lat": 35.7272726,
+  "lon": 51.3096226,
+  "tags": {
+    "addr:housenumber": "2",
+    "addr:street": "هشتم شرقی",
+    "amenity": "veterinary",
+    "emergency": "yes",
+    "healthcare": "hospital",
+    "name": "بيمارستان دامپزشکی تخصصی پرندگان سانا",
+    "phone": "02144121314",
+    "website": "https://www.aviansana.com"
+  }
+},
+{
+  "type": "node",
+  "id": 10830352258,
+  "lat": 35.6556730,
+  "lon": 51.0634682,
+  "tags": {
+    "name": "شهر پرنده لوتینو",
+    "payment:cash": "yes",
+    "phone": "09128726323",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 10831287985,
+  "lat": 35.7274059,
+  "lon": 51.3095121,
+  "tags": {
+    "addr:housenumber": "3",
+    "addr:street": "هشتم شرقی",
+    "name": "داروخانه و پت شاپ سانا",
+    "phone": "02144141184",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 10897681498,
+  "lat": 35.6872140,
+  "lon": 51.3787829,
+  "tags": {
+    "addr:city": "شهر تهران",
+    "addr:housenumber": "G8",
+    "addr:street": "گلکار",
+    "contact:instagram": "mingopet.ir",
+    "name": "مینگو پت شاپ",
+    "name:en": "Mingo Pet",
+    "opening_hours": "Mo-Sa 09:00-17:00",
+    "operator": "AmirGh",
+    "payment:cash": "yes",
+    "payment:credit_cards": "yes",
+    "phone": "+989123036576",
+    "shop": "pet",
+    "website": "https://mingo.pet/"
+  }
+},
+{
+  "type": "node",
+  "id": 11007983408,
+  "lat": 35.7994324,
+  "lon": 51.4530972,
+  "tags": {
+    "name": "پلی کلینیک دامپزشکی کاوه",
+    "public": "yes",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11019722905,
+  "lat": 35.8000133,
+  "lon": 51.4811292,
+  "tags": {
+    "name": "کلینیک دامپزشکی کلبه حیوانات",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11051496698,
+  "lat": 35.7264085,
+  "lon": 51.4619054,
+  "tags": {
+    "name": "کلینیک دامپزشکی و پت شاپ سبلان",
+    "public": "yes",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11051521416,
+  "lat": 35.7710889,
+  "lon": 51.3804653,
+  "tags": {
+    "name": "آرایشگاه حیوانات خانگی سمیرا",
+    "public": "yes",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11061508156,
+  "lat": 35.7682118,
+  "lon": 51.3585634,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "25",
+    "addr:street": "شهرک غرب، خیابان سپهر",
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی رایا",
+    "opening_hours": "Sa-Fr 12:00-20:00",
+    "operator": "یاشار سمسار",
+    "phone": "09120708209"
+  }
+},
+{
+  "type": "node",
+  "id": 11145816327,
+  "lat": 35.7999248,
+  "lon": 51.4363994,
+  "tags": {
+    "name": "کلینیک دامپزشکی آوین (دکتر برهانی کیا)",
+    "public": "yes",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11147934102,
+  "lat": 35.6873009,
+  "lon": 51.3754279,
+  "tags": {
+    "name": "پرنده فروشی پارادایس",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11152429245,
+  "lat": 35.8125520,
+  "lon": 51.4335443,
+  "tags": {
+    "name": "دامپزشکی سانی مایا",
+    "public": "yes",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11155981954,
+  "lat": 35.7116411,
+  "lon": 51.1154471,
+  "tags": {
+    "name": "کلینیک دامپزشکی و پت شاپ حامی",
+    "phone": "۰۹۰۱۳۶۰۳۱۳۸",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11158591490,
+  "lat": 35.8094235,
+  "lon": 51.4848159,
+  "tags": {
+    "name": "کلینیک دامپزشکی و پت شاپ ریواس",
+    "public": "yes",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11187700404,
+  "lat": 35.6556612,
+  "lon": 51.3392622,
+  "tags": {
+    "description": "ملزومات حیوانات خانگی سگ، گربه، پرنده‌های زینتی، جوندگان",
+    "name": "پت شاپ دلسا",
+    "shop": "pet_grooming",
+    "source": "Note 3822524"
+  }
+},
+{
+  "type": "node",
+  "id": 11207819856,
+  "lat": 35.7351294,
+  "lon": 51.4980561,
+  "tags": {
+    "name": "پت شاپ درین",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11210109156,
+  "lat": 35.8050641,
+  "lon": 51.4672696,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک چشم حیوانات نگاه",
+    "phone": "+98 21 26455371"
+  }
+},
+{
+  "type": "node",
+  "id": 11268852943,
+  "lat": 35.7379991,
+  "lon": 51.3328467,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی وت ایران"
+  }
+},
+{
+  "type": "node",
+  "id": 11270915111,
+  "lat": 35.7658096,
+  "lon": 51.3946624,
+  "tags": {
+    "addr:city": "tehran",
+    "addr:street": "شیخ بهایی",
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی تریتا",
+    "opening_hours": "10:00-22:00",
+    "operator": "سارا محمدرضایی"
+  }
+},
+{
+  "type": "node",
+  "id": 11313073988,
+  "lat": 35.6681350,
+  "lon": 51.1891801,
+  "tags": {
+    "name": "پت شاپ آکوا",
+    "opening_hours": "08:00-20:00",
+    "operator": "حمید زندی",
+    "phone": "09122143647",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11329885258,
+  "lat": 35.7965026,
+  "lon": 51.4354117,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "21",
+    "addr:street": "سلمان",
+    "air_conditioning": "yes",
+    "name": "ساران پت",
+    "opening_hours": "Sa-Fr 09:00-23:00",
+    "operator": "خانم لطفی",
+    "payment:cash": "yes",
+    "payment:coins": "yes",
+    "payment:credit_cards": "yes",
+    "payment:visa": "yes",
+    "phone": "+989121820090",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11359069498,
+  "lat": 35.7828524,
+  "lon": 51.3556779,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "111",
+    "addr:street": "توحید ۱",
+    "brand": "Golba",
+    "name": "Pet Shop Golba",
+    "opening_hours": "24/7",
+    "operator": "Arash Babapour",
+    "phone": "+98 9120153037",
+    "shop": "pet",
+    "website": "https://golba.group"
+  }
+},
+{
+  "type": "node",
+  "id": 11366002269,
+  "lat": 35.7809687,
+  "lon": 51.4535913,
+  "tags": {
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11375201516,
+  "lat": 35.7799149,
+  "lon": 51.4169780,
+  "tags": {
+    "name": "پت شاپ آوینا",
+    "public": "yes",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11395414151,
+  "lat": 35.7579335,
+  "lon": 51.5281636,
+  "tags": {
+    "addr:street": "بیست متری مسجد",
+    "name": "پت شاپ، ملزومات حیوانات خانگی",
+    "opening_hours": "10:00-21:30",
+    "operator": "سعید مهرابی",
+    "phone": "09123444729",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11408163388,
+  "lat": 35.6533393,
+  "lon": 51.3381703,
+  "tags": {
+    "name": "کلارا پروت",
+    "phone": "09906060443",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11478353950,
+  "lat": 35.8048514,
+  "lon": 51.4768757,
+  "tags": {
+    "name": "پت شاپ و کلینیک آواپت",
+    "name:en": "AVA PET | Pet shop and clinic",
+    "opening_hours": "10:00-22:00",
+    "phone": "+982126470612",
+    "shop": "pet",
+    "website": "https://avaplatt.com/service/%d8%a2%d9%88%d8%a7-%d9%be%d8%aa/"
+  }
+},
+{
+  "type": "node",
+  "id": 11499692675,
+  "lat": 35.7594392,
+  "lon": 51.3085766,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "266",
+    "addr:street": "بلوار شهید غلامرضا مخبری",
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی لبخند حیوانات",
+    "opening_hours": "10:00-22:00",
+    "website": "https://labkhandheyvanat.ir/"
+  }
+},
+{
+  "type": "node",
+  "id": 11499710286,
+  "lat": 35.7594326,
+  "lon": 51.3086115,
+  "tags": {
+    "addr:city": "Tehran",
+    "addr:housenumber": "266",
+    "addr:street": "بلوار شهید غلامرضا مخبری",
+    "name": "پت شاپ سایمون",
+    "opening_hours": "10:00-22:00",
+    "payment:cards": "yes",
+    "payment:cash": "yes",
+    "phone": "02144444039",
+    "shop": "pet",
+    "website": "https://simoncat.ir/"
+  }
+},
+{
+  "type": "node",
+  "id": 11506952969,
+  "lat": 35.7672934,
+  "lon": 51.4575704,
+  "tags": {
+    "name": "کلبه حیوانات",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11522373404,
+  "lat": 35.7492959,
+  "lon": 51.4498695,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "پت کلینیک (دکتر نادر آزادی)"
+  }
+},
+{
+  "type": "node",
+  "id": 11536324204,
+  "lat": 35.7351265,
+  "lon": 51.4982440,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک پرندگان و حیوانات خانگی درین"
+  }
+},
+{
+  "type": "node",
+  "id": 11564686342,
+  "lat": 35.7571171,
+  "lon": 51.4556876,
+  "tags": {
+    "name": "پت شاپ دارما",
+    "opening_hours": "Mo-Su 09:00-21:00",
+    "phone": "021۲۲۸۵۰۴۹۰",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11583807892,
+  "lat": 35.7350651,
+  "lon": 51.4981593,
+  "tags": {
+    "name": "سالن اصلاح شستشوگرومینگ حیوانات درین",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11602500023,
+  "lat": 35.5892663,
+  "lon": 51.0930839,
+  "tags": {
+    "addr:city": "صباشهر",
+    "addr:street": "شهریار-ادران",
+    "name": "دامداری نمونه کبیری",
+    "phone": "09126404763",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11640563038,
+  "lat": 35.5938874,
+  "lon": 51.4495125,
+  "tags": {
+    "name": "پتشاپ دایان",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11707863761,
+  "lat": 35.6938921,
+  "lon": 51.3780345,
+  "tags": {
+    "name": "پیکوپت",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11730418969,
+  "lat": 35.7828849,
+  "lon": 51.3556680,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "توحید ۱",
+    "name": "پت شاپ فرشته",
+    "opening_hours": "Mo-Su 12:00-21:00",
+    "operator": "آرش باباپور",
+    "phone": "+98 912 598 1745",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11760049664,
+  "lat": 35.7695700,
+  "lon": 51.4484163,
+  "tags": {
+    "addr:city": "Tehran",
+    "addr:housenumber": "17",
+    "addr:street": "سوم شرقی",
+    "amenity": "veterinary",
+    "mobile": "09121203901",
+    "name": "كلينيك دامپزشكى ريكو",
+    "opening_hours": "Sat-fri 11am-9pm",
+    "phone": "02122579129",
+    "website": "http://rikovetclinic.com/"
+  }
+},
+{
+  "type": "node",
+  "id": 11773030469,
+  "lat": 35.7258853,
+  "lon": 51.5245852,
+  "tags": {
+    "name": "پت شاپ پرنس",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11816093110,
+  "lat": 35.7540435,
+  "lon": 51.2344500,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "سروستان هشتم",
+    "name": "پت شاپ تیوان",
+    "phone": "09004100826",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11821482969,
+  "lat": 35.8027185,
+  "lon": 51.4398753,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی پارسیان"
+  }
+},
+{
+  "type": "node",
+  "id": 11888323214,
+  "lat": 35.7092879,
+  "lon": 51.3739215,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "ستارخان",
+    "amenity": "veterinary",
+    "name": "آزمایشگاه دامپزشکی وت",
+    "phone": "۰۲۱۶۶۴۳۲۴۴۴"
+  }
+},
+{
+  "type": "node",
+  "id": 11891078832,
+  "lat": 35.8103696,
+  "lon": 51.4452021,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "دکتر باهنر",
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی نیک پنجه",
+    "phone": "09122438712"
+  }
+},
+{
+  "type": "node",
+  "id": 11902438865,
+  "lat": 35.7452693,
+  "lon": 51.5493433,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "313",
+    "addr:street": "ارفاقی",
+    "name": "پرنده سرای نگاه",
+    "opening_hours": "24/7",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11959793712,
+  "lat": 35.5448403,
+  "lon": 51.5658899,
+  "tags": {
+    "addr:city": "خاورشهر",
+    "addr:street": "جاده محمود آباد",
+    "name": "تولیدی ملزومات حیوانات خانگی زاریکس",
+    "phone": "02191090084",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11975058297,
+  "lat": 35.7307748,
+  "lon": 51.4917842,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "37",
+    "addr:postcode": "1648736641",
+    "addr:street": "بلواز جانبازان غربی",
+    "branch": "شعبه نارمک",
+    "brand": "پت خرید",
+    "name": "پت خرید",
+    "opening_hours": "Mo-Fr 10:00-22:00",
+    "payment:cash": "yes",
+    "payment:debit_cards": "yes",
+    "phone": "+982177212253",
+    "shop": "pet",
+    "website": "https://petkharid.com/"
+  }
+},
+{
+  "type": "node",
+  "id": 11982841029,
+  "lat": 35.7938974,
+  "lon": 51.4654854,
+  "tags": {
+    "addr:city": "شهر تهران",
+    "addr:street": "نوریان",
+    "amenity": "veterinary",
+    "name": "پت شاپ و دامپزشکی کلبه حیوانات",
+    "operator": "سیدی"
+  }
+},
+{
+  "type": "node",
+  "id": 11985156497,
+  "lat": 35.7700991,
+  "lon": 51.3611712,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "262",
+    "addr:street": "بلوار دریا ، شهرک غرب",
+    "name": "پت خرید",
+    "opening_hours": "Mo-Fr 09:00-22:00",
+    "payment:account_cards": "yes",
+    "payment:debit_cards": "yes",
+    "phone": "+982188561392",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 11990262869,
+  "lat": 35.7261085,
+  "lon": 51.5254971,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "دامپزشکی تهران کلینیک"
+  }
+},
+{
+  "type": "node",
+  "id": 12001382560,
+  "lat": 35.6563438,
+  "lon": 51.0534339,
+  "tags": {
+    "name": "کلبه قناری شهربار شعبه ۲",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 12026606150,
+  "lat": 35.7598633,
+  "lon": 51.4135790,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "نگار",
+    "name": "پت شاپ جردن",
+    "operator": "علیرضا ساعی",
+    "phone": "02188782850",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 12041988059,
+  "lat": 35.7558326,
+  "lon": 51.3386443,
+  "tags": {
+    "addr:city": "شهر تهران",
+    "addr:street": "پارک",
+    "name": "آرایشگاه حیوانات خانگی شادی گرومینگ",
+    "phone": "09208000592",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 12093171943,
+  "lat": 35.7622345,
+  "lon": 51.3248271,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:postcode": "1443863258",
+    "addr:street": "شهرآرا، نیایش، جنب ملکوتی",
+    "amenity": "veterinary",
+    "contact:instagram": "redcarpet.clinic",
+    "email": "reccarpet.vetclinic@gmail.com",
+    "name": "کلینیک دامپزشکی رد کارپت",
+    "opening_hours": "sa-th 12:00-22:00",
+    "operator": "دکتر کاسب",
+    "phone": "02166553851"
+  }
+},
+{
+  "type": "node",
+  "id": 12094786519,
+  "lat": 35.6648049,
+  "lon": 51.2445993,
+  "tags": {
+    "name": "دان قفس لوازم پرندگان سام",
+    "opening_hours": "08:00-20:00",
+    "phone": "۰۹۱۲۴۳۰۸۰۰۲",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 12106020933,
+  "lat": 35.6984939,
+  "lon": 51.4908943,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "سی متری نیروی هوایی",
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی دکتر پیمان فرهی"
+  }
+},
+{
+  "type": "node",
+  "id": 12109631772,
+  "lat": 35.7693723,
+  "lon": 51.4461364,
+  "tags": {
+    "name": "کلبه حیوانات دروس",
+    "opening_hours": "10:00-21:30",
+    "phone": "02122608260",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 12121901704,
+  "lat": 35.7680781,
+  "lon": 51.3946874,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی تریتا",
+    "opening_hours": "09:00-21:00",
+    "phone": "02188621360"
+  }
+},
+{
+  "type": "node",
+  "id": 12142218987,
+  "lat": 35.7679737,
+  "lon": 51.3945557,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "ده ونک",
+    "name": "پت شاپ ای پت",
+    "operator": "امیرحسین فلاح",
+    "phone": "09115747420",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 12148393856,
+  "lat": 35.7019912,
+  "lon": 51.3804925,
+  "tags": {
+    "addr:housenumber": "51",
+    "name": "پت شاپ مانیا",
+    "phone": "09363680193",
+    "shop": "pet",
+    "website": "https://maniapetshop98.com/"
+  }
+},
+{
+  "type": "node",
+  "id": 12161641624,
+  "lat": 35.6660024,
+  "lon": 51.3028602,
+  "tags": {
+    "name": "پت شاد",
+    "opening_hours": "10:00-22:00",
+    "phone": "0۹۳۶۸۵۵۰۲۰۳",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 12208441958,
+  "lat": 35.7401682,
+  "lon": 51.4693850,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "دامپزشکی هاچیکو"
+  }
+},
+{
+  "type": "node",
+  "id": 12232138297,
+  "lat": 35.7607154,
+  "lon": 51.3065162,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "13",
+    "addr:postcode": "۱۴۷۵۷۵۵۶۸۹",
+    "addr:street": "کمیجانی",
+    "name": "پت شاپ پازل",
+    "opening_hours": "Mo-Su 11:00-22:30",
+    "operator": "petshop",
+    "phone": "+989124403658",
+    "shop": "pet",
+    "short_name": "PetShop Pazel"
+  }
+},
+{
+  "type": "node",
+  "id": 12234221571,
+  "lat": 35.6953468,
+  "lon": 51.4475144,
+  "tags": {
+    "name": "پت شاپ پوپیا",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 12276920398,
+  "lat": 35.7101329,
+  "lon": 51.4156769,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "پلاک 58",
+    "addr:postcode": "1598954414",
+    "addr:street": "خیابان شاداب",
+    "amenity": "veterinary",
+    "email": "laravetclinic@gmail.com",
+    "mobile": "09102624369",
+    "name": "کلینیک دامپزشکی لارا",
+    "opening_hours": "Mo-Su 10:00-20:00",
+    "operator": "دکتر ظاهری",
+    "phone": "02188923263"
+  }
+},
+{
+  "type": "node",
+  "id": 12393307746,
+  "lat": 35.7224823,
+  "lon": 51.1088680,
+  "tags": {
+    "name": "پرنده فروشی موسوی",
+    "phone": "۰۹۱۲۶۷۰۸۲۲۵",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 12404283735,
+  "lat": 35.7594462,
+  "lon": 51.4508860,
+  "tags": {
+    "addr:city": "شهر تهران",
+    "addr:housenumber": "30",
+    "addr:street": "ناطق نوری",
+    "amenity": "veterinary",
+    "building": "yes",
+    "name": "دامپزشکی تهران پلاس",
+    "phone": "+9822056624"
+  }
+},
+{
+  "type": "node",
+  "id": 12430591956,
+  "lat": 35.6931291,
+  "lon": 51.3792615,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "507",
+    "addr:street": "خیابان نواب جنوب به شمال، نرسیده به آذربایجان",
+    "description": "فروش تخصصی قناری و پرندگان زینتی",
+    "name": "نمایشگاه قناری آراز",
+    "phone": "+982166386445",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 12443405450,
+  "lat": 35.7559181,
+  "lon": 51.3386151,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی مسیحا"
+  }
+},
+{
+  "type": "node",
+  "id": 12446916724,
+  "lat": 35.7194175,
+  "lon": 51.3491938,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "4/301",
+    "addr:street": "تهران ، ستارخان ، بازار سنتی ، فاز 4 ، طبقه اول",
+    "name": "پت شاپ فندق",
+    "phone": "+982176297418",
+    "shop": "pet",
+    "website": "https://asnafyab.ir/09196553055"
+  }
+},
+{
+  "type": "node",
+  "id": 12467149866,
+  "lat": 35.7184313,
+  "lon": 51.4417349,
+  "tags": {
+    "addr:street": "کلینیک دامپزشکی یونیک پت",
+    "amenity": "veterinary",
+    "mobile": "09102325660",
+    "name": "کلینیک دامپزشکی یونیک پت"
+  }
+},
+{
+  "type": "node",
+  "id": 12548726773,
+  "lat": 35.7727433,
+  "lon": 51.3041798,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی دکتر هلشی",
+    "opening_hours": "24/7",
+    "phone": "09210797107"
+  }
+},
+{
+  "type": "node",
+  "id": 12620913346,
+  "lat": 35.7537723,
+  "lon": 51.3340592,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "32",
+    "addr:postcode": "1469613681",
+    "addr:street": "سعید اسلامیان",
+    "alt_name": "بهترین کلینیک دامپزشکی در تهران",
+    "amenity": "veterinary",
+    "description": "Nilpet veterinary clinic is an veterinary clinic and an animal hospital in punak and in west of tehran. it's one of the most exprienced veteranian in the tehran. they check up on pets such as cats and dogs.",
+    "email": "clinicnilpet@gmail.com",
+    "image": "https://lh3.googleusercontent.com/p/AF1QipOog1EJ8pGZFpKPSknloItDYFsJlLfCL5GHGN84=s680-w680-h510",
+    "level": "0",
+    "mobile": "09129729350",
+    "name": "کلینیک دامپزشکی نیل پت",
+    "name:ar": "العيادة البيطرية نيل بت",
+    "name:en": "Nilpet veterinary clinic",
+    "name:tr": "Nil Pet Baytarlıq KlinikasI",
+    "official_name": "کلینیک دامپزشکی نیل پت",
+    "opening_hours": "Mo-Fr 11:00-21:00",
+    "operator": "دکتر فرناز رزاقی",
+    "payment:cards": "yes",
+    "payment:cash": "yes",
+    "payment:credit_cards": "yes",
+    "payment:cryptocurrencies": "yes",
+    "payment:debit_cards": "yes",
+    "payment:onchain": "yes",
+    "payment:paypal": "yes",
+    "phone": "+982144455413",
+    "website": "https://www.instagram.com/nilpet_clinic/profilecard/?igsh=MXNpNHVobTI2YnZwNA==",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 12633139147,
+  "lat": 35.7052138,
+  "lon": 51.3807170,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "احمد اسکندری شمالی",
+    "alt_name": "بهترین پت شاپ تهران",
+    "description": "lovina petshop or پت شاپ لاوینا is an animal feed store that sells a vast variety of products for pets.",
+    "image": "https://lh3.googleusercontent.com/p/AF1QipMmFeKFDVgPIQ-V4xdK8fs1tccbd07NtKy18FKM=s680-w680-h510",
+    "name": "Loivna petshop",
+    "name:fa": "پت شاپ لاوینا",
+    "opening_hours": "10:00-23:00",
+    "operator": "doctor ehsan razzaghi",
+    "payment:app": "yes",
+    "payment:cards": "yes",
+    "payment:cash": "yes",
+    "payment:credit_cards": "yes",
+    "payment:cryptocurrencies": "yes",
+    "payment:debit_cards": "yes",
+    "payment:google_pay": "yes",
+    "phone": "+989185059686",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 12633139148,
+  "lat": 35.7055618,
+  "lon": 51.3845638,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "نصرت",
+    "alt_name": "بهترین کلینیک دامپزشکی شرق تهران",
+    "amenity": "veterinary",
+    "level": "1",
+    "name": "shahoo veterinary clinic",
+    "name:fa": "کلینیک دامپزشکی شاهو",
+    "name:fr": "Clinique vétérinaire de Shahoo",
+    "opening_hours": "09:00-20:00",
+    "phone": "+982166942687",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 12725261263,
+  "lat": 35.7215389,
+  "lon": 51.3709239,
+  "tags": {
+    "name": "اسفند پت (پت شاپ)",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 12740922588,
+  "lat": 35.7504282,
+  "lon": 51.3144763,
+  "tags": {
+    "amenity": "veterinary",
+    "email": "info@tehranpet.com",
+    "mobile": "+989012151100",
+    "name": "Tehran Pet Hospital West",
+    "name:fa": "بیمارستان دامپزشکی تهران غرب",
+    "opening_hours": "24/7",
+    "phone": "+982148015000",
+    "website": "https://www.tehranpet.com/"
+  }
+},
+{
+  "type": "node",
+  "id": 12750798732,
+  "lat": 35.7351697,
+  "lon": 51.4981169,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی شبانه روزی درین",
+    "opening_hours": "24/7",
+    "phone": "02177093792"
+  }
+},
+{
+  "type": "node",
+  "id": 12770533831,
+  "lat": 35.7353353,
+  "lon": 51.4309611,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشک خوب"
+  }
+},
+{
+  "type": "node",
+  "id": 12823620660,
+  "lat": 35.6814261,
+  "lon": 51.4645341,
+  "tags": {
+    "name": "لوازم پرندگان زینتی سام برد 2",
+    "phone": "09190148147",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 12850530103,
+  "lat": 35.7591234,
+  "lon": 51.3126570,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "بلوار شهید غلامرضا مخبری",
+    "name": "پاپت شاپ",
+    "opening_hours": "Mo-Su 10:00-21:00",
+    "operator": "مینا سادات موسوی",
+    "phone": "02144604281",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 12873088074,
+  "lat": 35.6613600,
+  "lon": 51.2531537,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "دامداری اسدنژاد"
+  }
+},
+{
+  "type": "node",
+  "id": 12896385386,
+  "lat": 35.7547003,
+  "lon": 51.3307961,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "درمانگاه دامپزشکی کارو غرب",
+    "opening_hours": "10:00-22:00",
+    "phone": "02146046751"
+  }
+},
+{
+  "type": "node",
+  "id": 12901980173,
+  "lat": 35.7351902,
+  "lon": 51.4982235,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک جراحی حیوانات خانگی درین",
+    "opening_hours": "Mo-Su 09:00-21:00",
+    "operator": "دکتر حسین ایرانی نژاد",
+    "phone": "+982177093781"
+  }
+},
+{
+  "type": "node",
+  "id": 12911324404,
+  "lat": 35.7439400,
+  "lon": 51.3083413,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی تارا"
+  }
+},
+{
+  "type": "node",
+  "id": 13009026050,
+  "lat": 35.8090363,
+  "lon": 51.4107025,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "39",
+    "addr:street": "مهران بهزادی",
+    "amenity": "veterinary",
+    "level": "1",
+    "mobile": "+989120494959",
+    "name": "پلی کلینیک دامپزشکی پتمسفر",
+    "name:en": "Petmospher",
+    "opening_hours": "24/7"
+  }
+},
+{
+  "type": "node",
+  "id": 13015593149,
+  "lat": 35.7389808,
+  "lon": 51.1343218,
+  "tags": {
+    "addr:city": "tehran",
+    "addr:street": "کمانی",
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی فلی وت",
+    "operator": "فرشته علیپور"
+  }
+},
+{
+  "type": "node",
+  "id": 13096203386,
+  "lat": 35.7060192,
+  "lon": 51.3181617,
+  "tags": {
+    "addr:housenumber": "17",
+    "addr:street": "عظیمی",
+    "contact:instagram": "https://www.instagram.com/tomjerrypetshopekbatan/",
+    "name": "پت‌شاپ تام و جری اکباتان",
+    "phone": "+982144675109",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 13124704543,
+  "lat": 35.7529336,
+  "lon": 51.2510385,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:postcode": "پلاک ۱",
+    "addr:street": "یاسر",
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی مدیک"
+  }
+},
+{
+  "type": "node",
+  "id": 13131327469,
+  "lat": 35.7128849,
+  "lon": 51.3046994,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "شهرک اکباتان- فاز۲- بلوک ۶-زیرشاخه۴",
+    "amenity": "veterinary",
+    "mobile": "00989356258158",
+    "name": "کلینیک دامپزشکی اولکا",
+    "opening_hours": "sa-wed 10:00-21:00; th 10:00-20:00",
+    "phone": "00982144695794",
+    "website": "https://www.instagram.com/olkapetclinic"
+  }
+},
+{
+  "type": "node",
+  "id": 13136381304,
+  "lat": 35.7151691,
+  "lon": 51.3676106,
+  "tags": {
+    "name": "پت شاپ ایران پرنده",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 13159558260,
+  "lat": 35.7686815,
+  "lon": 51.3386135,
+  "tags": {
+    "addr:city": "Tehran",
+    "addr:housenumber": "15",
+    "addr:street": "بلوار پونک",
+    "amenity": "veterinary",
+    "contact:instagram": "@picha_pet_clinic",
+    "mobile": "09124124379",
+    "name": "کلینیک دامپزشکی و پت‌شاپ پیچا",
+    "opening_hours": "10:00-22:00"
+  }
+},
+{
+  "type": "node",
+  "id": 13195633488,
+  "lat": 35.7299338,
+  "lon": 51.4435358,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "درمانگاه دامپزشکی پت لایف",
+    "opening_hours": "09:00-22:00",
+    "phone": "09008312948"
+  }
+},
+{
+  "type": "node",
+  "id": 13201290914,
+  "lat": 35.7767877,
+  "lon": 51.3924400,
+  "tags": {
+    "name": "پانسیون خانگی سگ و گربه لیموپت",
+    "opening_hours": "24/7",
+    "phone": "09197304248",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 13257252253,
+  "lat": 35.7033837,
+  "lon": 51.3780012,
+  "tags": {
+    "name": "پت‌شاپ رخ",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 13298967355,
+  "lat": 35.7814368,
+  "lon": 51.3562045,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "نبش آسمان هشتم شرقی(قره چلویی),پلاک ۲۸",
+    "amenity": "veterinary",
+    "mobile": "09123960280",
+    "name": "پلی کلینیک دامپزشکی آمیگو",
+    "opening_hours": "Mo-Su 10:00-20:00",
+    "operator": "مژگان جهانگیری"
+  }
+},
+{
+  "type": "node",
+  "id": 13330324029,
+  "lat": 35.7276144,
+  "lon": 51.4072270,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی رنیسا"
+  }
+},
+{
+  "type": "node",
+  "id": 13362524409,
+  "lat": 35.7525651,
+  "lon": 51.4117428,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی آراز",
+    "phone": "09126405042"
+  }
+},
+{
+  "type": "node",
+  "id": 13385857400,
+  "lat": 35.7182404,
+  "lon": 51.3545491,
+  "tags": {
+    "name": "پت شاپ همدم",
+    "opening_hours": "10:00-20:00",
+    "phone": "09121133189",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 13392522278,
+  "lat": 35.7168028,
+  "lon": 51.4404763,
+  "tags": {
+    "opening_hours": "10:00-23:00",
+    "phone": "09120894377",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 13424422401,
+  "lat": 35.7557036,
+  "lon": 51.5390512,
+  "tags": {
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 13426341479,
+  "lat": 35.6375409,
+  "lon": 51.3987774,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "احمد بابایی",
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی مهر",
+    "opening_hours": "Mo-Su 09:00-21:00",
+    "operator": "دامپزشکی",
+    "phone": "+98 21 5530 9445"
+  }
+},
+{
+  "type": "node",
+  "id": 13533890115,
+  "lat": 35.7700665,
+  "lon": 51.3591773,
+  "tags": {
+    "addr:city": "Tehran",
+    "addr:housenumber": "7",
+    "addr:street": "nourani street",
+    "amenity": "veterinary",
+    "name": "zee pet hospital",
+    "opening_hours": "mo-sa 9:00-21:00"
+  }
+},
+{
+  "type": "node",
+  "id": 13598280606,
+  "lat": 35.7382531,
+  "lon": 51.4881247,
+  "tags": {
+    "name": "گندم پت",
+    "phone": "00982177497289",
+    "shop": "pet_shop"
+  }
+},
+{
+  "type": "node",
+  "id": 13891401622,
+  "lat": 35.7581677,
+  "lon": 51.5517242,
+  "tags": {
+    "addr:street": "صفایی فراهانی",
+    "amenity": "veterinary",
+    "name": "کلینیک تخصصی دامپزشکی حیوانات خانگی دکتر بهزاد شفیعی",
+    "opening_hours": "Mo-Su 09:00-21:00",
+    "operator": "کلینیک تخصصی دامپزشکی حیوانات خانگی دکتر بهزاد شفیعی",
+    "phone": "+989122308515"
+  }
+},
+{
+  "type": "node",
+  "id": 13928863327,
+  "lat": 35.8058447,
+  "lon": 51.4725786,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "پارک اول",
+    "amenity": "veterinary",
+    "name": "کلینیک دامپزشکی درین اوا پلاس",
+    "opening_hours": "Mo-Su 09:00-21:00",
+    "operator": "کلینیک دامپزشکی درین اوا پلاس",
+    "phone": "+982126470612"
+  }
+},
+{
+  "type": "node",
+  "id": 13928950106,
+  "lat": 35.7352116,
+  "lon": 51.4981585,
+  "tags": {
+    "addr:city": "tehran",
+    "addr:street": "بزرگراه شهید سلیمانی",
+    "amenity": "veterinary",
+    "name": "بیمارستان دامپزشکی شبانه روزی درین",
+    "opening_hours": "Mo-Su 09:00-21:00",
+    "operator": "بیمارستان دامپزشکی شبانه روزی درین"
+  }
+},
+{
+  "type": "node",
+  "id": 13935207498,
+  "lat": 35.7200838,
+  "lon": 51.4425394,
+  "tags": {
+    "name": "پت شاپ پلنگ صورتی",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 13937918742,
+  "lat": 35.7352171,
+  "lon": 51.4979855,
+  "tags": {
+    "addr:city": "tehran",
+    "addr:street": "بزرگراه شهید سلیمانی",
+    "name": "پت شاپ لوازم حیوانات خانگی درین",
+    "opening_hours": "24/7",
+    "operator": "پت شاپ لوازم حیوانات خانگی درین",
+    "phone": "+982177130539",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 13954315089,
+  "lat": 35.7569991,
+  "lon": 51.3169843,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "116",
+    "addr:street": "اتوبان ستاری جنوب، بعد از چهارراه مخبری، ساختمان صدرا، پلاک 116، طبقه اول، واحد 6",
+    "amenity": "veterinary",
+    "email": "tabeshvet@gmail.com",
+    "mobile": "09046169917",
+    "name": "مرکز تصویربرداری دامپزشکی تابش",
+    "opening_hours": "Mo-Fr 13:00-21:00",
+    "phone": "02144469967"
+  }
+},
+{
+  "type": "node",
+  "id": 14028751763,
+  "lat": 35.7610405,
+  "lon": 51.3040439,
+  "tags": {
+    "addr:full": "جنت آباد مرکزی بین نسترن و آهو پلاک 250 طبقه دوم واحد 5",
+    "contact:phone": "09006404140",
+    "name": "پت شاپ اشی مشی",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 14055600462,
+  "lat": 35.7754249,
+  "lon": 51.4159331,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "مهرشاد",
+    "amenity": "veterinary",
+    "name": "پلی كلينيك دامپزشكی سفيد",
+    "opening_hours": "Mo-Su 09:00-21:00",
+    "operator": "پلی كلينيك دامپزشكی سفيد"
+  }
+},
+{
+  "type": "node",
+  "id": 14056288839,
+  "lat": 35.7651068,
+  "lon": 51.3577363,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "60",
+    "addr:postcode": "1647764173",
+    "addr:street": "شهرک غرب . بلوار دادمان .تقاطع شجریان شمالی",
+    "amenity": "veterinary",
+    "description": "خدمات درمانی دامپزشکی",
+    "mobile": "+989121028205",
+    "name": "پلی کلینیک دامپزشکی ما",
+    "opening_hours": "09:00-24:00",
+    "operator": "مهیار سلجوقیان",
+    "phone": "+982188689646",
+    "website": "https://mavetpolyclinic.com/"
+  }
+},
+{
+  "type": "node",
+  "id": 14067928963,
+  "lat": 35.7208624,
+  "lon": 51.4834617,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "516",
+    "addr:place": "نارمک",
+    "name": "پت شاپ منوپتم",
+    "opening_hours": "Mo-Su 10:00-22:00",
+    "payment:app": "yes",
+    "payment:cards": "yes",
+    "payment:cash": "yes",
+    "payment:debit_cards": "yes",
+    "phone": "+989051654343",
+    "shop": "pet",
+    "website": "https://manopetam.com"
+  }
+},
+{
+  "type": "node",
+  "id": 14074370842,
+  "lat": 35.6963742,
+  "lon": 51.4309322,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "منوچهری",
+    "name": "SeePet Plus",
+    "opening_hours": "Sat-Tue 9:00 AM to 06:00 PM",
+    "phone": "02177614827",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 14107204109,
+  "lat": 35.7388773,
+  "lon": 51.4776943,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "12",
+    "addr:postcode": "1675619376",
+    "addr:street": "رسالت - طبقه اول - واحد 12",
+    "name": "پت شاپ انیمال کالا",
+    "opening_hours": "10:00-22:00",
+    "operator": "animalkala",
+    "payment:account_cards": "yes",
+    "payment:app": "yes",
+    "payment:cards": "yes",
+    "payment:cheque": "yes",
+    "phone": "09181101600",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 14107204110,
+  "lat": 35.7389173,
+  "lon": 51.4776944,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "12",
+    "addr:postcode": "1675619376",
+    "addr:street": "بزرگراه شهید سلیمانی",
+    "name": "پت شاپ انیمال کالا",
+    "opening_hours": "10:00-22:00",
+    "operator": "animalkala",
+    "payment:app": "yes",
+    "payment:cards": "yes",
+    "payment:cash": "yes",
+    "payment:cheque": "yes",
+    "phone": "09181101600",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 14169471710,
+  "lat": 35.8009526,
+  "lon": 51.4817943,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "37/1",
+    "addr:postcode": "1957834653",
+    "addr:street": "موحد دانش",
+    "amenity": "veterinary",
+    "email": "ehsanvetmed@gmail.com",
+    "name": "ehsanvet کلینیک دامپزشکی احسان",
+    "opening_hours": "10:00 to 22:00",
+    "operator": "ehsan"
+  }
+},
+{
+  "type": "node",
+  "id": 14169541842,
+  "lat": 35.7122369,
+  "lon": 51.3840373,
+  "tags": {
+    "amenity": "veterinary",
+    "name": "بستری و پانسیون حیوانات وت نست"
+  }
+},
+{
+  "type": "node",
+  "id": 14179978969,
+  "lat": 35.6914766,
+  "lon": 51.4584242,
+  "tags": {
+    "addr:city": "شهر تهران",
+    "addr:street": "کلینی",
+    "name": "پت شاپ رویال پت",
+    "operator": "پت شاپ رویال پت",
+    "phone": "+989191056135",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 14196408268,
+  "lat": 35.7580926,
+  "lon": 51.4144232,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "35",
+    "addr:postcode": "1518835514",
+    "addr:street": "بلوار نلسون ماندلا",
+    "amenity": "veterinary",
+    "contact:instagram": "https://www.instagram.com/zarrin.petclinic",
+    "name": "کلینیک دامپزشکی زرین",
+    "opening_hours": "sat-fri:11:00 - 9:30 pm"
+  }
+},
+{
+  "type": "node",
+  "id": 14197617673,
+  "lat": 35.6639408,
+  "lon": 51.2445904,
+  "tags": {
+    "addr:city": "شهر تهران",
+    "addr:street": "کنارگذر آزادگان",
+    "name": "پت شاپ دانشکده طوطی",
+    "opening_hours": "غیر از شنبه ها همه روزه از ۱۱ الی ۷",
+    "operator": "محسن یوسف پور",
+    "shop": "pet",
+    "website": "https://amozeshtoti.ir"
+  }
+},
+{
+  "type": "node",
+  "id": 14197666355,
+  "lat": 35.7614682,
+  "lon": 51.2321994,
+  "tags": {
+    "addr:city": "تهران، استان تهران",
+    "addr:postcode": "1477767876",
+    "name": "انبار تحویل پت شاپ دانشکده طوطی‌",
+    "shop": "pet"
+  }
+},
+{
+  "type": "node",
+  "id": 14203773778,
+  "lat": 35.7085968,
+  "lon": 51.3720972,
+  "tags": {
+    "addr:city": "تهران، ستارخان",
+    "addr:housenumber": "کوچه باگهر",
+    "addr:street": "کوثر سوم",
+    "amenity": "veterinary",
+    "contact:instagram": "https://www.instagram.com/panah_animalrescue?stkn=eWxlZnRjMzFmaDZn",
+    "mobile": "+989114286616",
+    "name": "پانسیون دامپزشکی پناه",
+    "opening_hours": "Sa-Su 09:00-00:00"
+  }
+},
+{
+  "type": "way",
+  "id": 339551407,
+  "center": {
+    "lat": 35.7417196,
+    "lon": 51.1680635
+  },
+  "tags": {
+    "addr:street": "بلوار پژوهش",
+    "amenity": "veterinary",
+    "landuse": "commercial",
+    "name": "اداره کل دامپزشکی استان تهران",
+    "name:en": "Veterinary Directorate General of Tehran Province",
+    "phone": "+9821 4478 7542"
+  }
+},
+{
+  "type": "way",
+  "id": 445988585,
+  "center": {
+    "lat": 35.7474796,
+    "lon": 51.3813723
+  },
+  "tags": {
+    "amenity": "veterinary",
+    "building": "yes",
+    "name": "مرکز نگهداری از حیوانات آزمایشگاهی",
+    "name:en": "Animal House"
+  }
+},
+{
+  "type": "way",
+  "id": 556254967,
+  "center": {
+    "lat": 35.6638687,
+    "lon": 51.2446226
+  },
+  "tags": {
+    "alt_name": "بازار پرندگان تهران",
+    "building": "yes",
+    "building:levels": "2",
+    "height": "6 m",
+    "name": "بازار پرندگان زینتی خلیج فارس",
+    "name:en": "Persian Gulf Bird Bazaar",
+    "shop": "pet"
+  }
+},
+{
+  "type": "way",
+  "id": 567571458,
+  "center": {
+    "lat": 35.6556306,
+    "lon": 51.1635926
+  },
+  "tags": {
+    "amenity": "veterinary",
+    "industrial": "agriculture",
+    "landuse": "farmyard",
+    "name:en": "sepahpor (dairy farm)"
+  }
+},
+{
+  "type": "way",
+  "id": 1019577088,
+  "center": {
+    "lat": 35.7014297,
+    "lon": 51.3830352
+  },
+  "tags": {
+    "amenity": "veterinary",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1148309530,
+  "center": {
+    "lat": 35.7339295,
+    "lon": 51.4408898
+  },
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "47",
+    "addr:street": "هویزه",
+    "building": "yes",
+    "name": "مستر پت شاپ",
+    "opening_hours": "10:00-22:00",
+    "operator": "حسین و سعید حدادی",
+    "phone": "+982188762928",
+    "shop": "pet"
+  }
+},
+{
+  "type": "way",
+  "id": 1193946589,
+  "center": {
+    "lat": 35.8170060,
+    "lon": 51.4510748
+  },
+  "tags": {
+    "amenity": "veterinary",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1193957705,
+  "center": {
+    "lat": 35.8041098,
+    "lon": 51.4725739
+  },
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "762",
+    "addr:street": "پاسداران",
+    "amenity": "veterinary",
+    "building": "yes",
+    "name": "کلینیک دامپزشکی همراز"
+  }
+},
+{
+  "type": "way",
+  "id": 1195604228,
+  "center": {
+    "lat": 35.7664039,
+    "lon": 51.3047569
+  },
+  "tags": {
+    "amenity": "veterinary",
+    "building": "yes",
+    "email": "Anahitapetclinic2@gmail.com",
+    "mobile": "09214460424",
+    "name": "كلينيك دامپزشكی آناهيتا",
+    "opening_hours": "Sa-Th 08:00-13:30,16:00-20:00+",
+    "operator": "دکتر آناهیتا پیرتاج",
+    "phone": "02144878364"
+  }
+},
+{
+  "type": "way",
+  "id": 1557826177,
+  "center": {
+    "lat": 35.8010124,
+    "lon": 51.4818536
+  },
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "37",
+    "addr:postcode": "1957834653",
+    "addr:street": "موحد دانش",
+    "amenity": "veterinary",
+    "building": "yes",
+    "email": "ehsanvetmed@gmail.com",
+    "mobile": "09105200870",
+    "name": "ehsanvet کلینیک دامپزشکی احسان",
+    "opening_hours": "10:00 to 22:00",
+    "operator": "ehsan"
+  }
+},
+{
+  "type": "relation",
+  "id": 9900135,
+  "center": {
+    "lat": 35.7389643,
+    "lon": 51.4776998
+  },
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "12",
+    "addr:postcode": "1675619466",
+    "addr:street": "رسالت",
+    "building": "yes",
+    "instagram": "https://instagram.com/dnmall.center",
+    "name": "انیمال کالا",
+    "opening_hours": "10:00-22:00",
+    "operator": "animalkala",
+    "payment:app": "yes",
+    "payment:cash": "yes",
+    "payment:credit_cards": "yes",
+    "phone": "09181101600",
+    "shop": "pet",
+    "type": "multipolygon",
+    "website": "https://animalkala.com"
+  }
+}
+
+  ]
+}

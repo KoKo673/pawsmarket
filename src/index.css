@@ -1,0 +1,225 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ════════════════════════════════════════════════════════════════
+   PawsMarket design tokens
+   ────────────────────────
+   Every color/shape/shadow the UI uses is declared here as an
+   HSL-triplet CSS variable. Tailwind maps them in tailwind.config.ts,
+   so `bg-card`, `text-muted-foreground`, `shadow-soft` etc. all
+   re-theme automatically when the `.dark` class lands on <html>.
+   ════════════════════════════════════════════════════════════════ */
+
+@layer base {
+  :root {
+    /* Surfaces — warm paper, not clinical white */
+    --background: 40 24% 98%;
+    --foreground: 20 24% 12%;
+    --card: 40 30% 100%;
+    --card-foreground: 20 24% 12%;
+    --popover: 40 30% 100%;
+    --popover-foreground: 20 24% 12%;
+
+    /* Brand — Paw-Orange carries every primary action */
+    --primary: 20 96% 50%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 172 70% 42%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Supporting neutrals */
+    --secondary: 40 20% 94%;
+    --secondary-foreground: 20 24% 16%;
+    --muted: 40 20% 94%;
+    --muted-foreground: 20 8% 46%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 40 16% 90%;
+    --input: 40 16% 88%;
+    --ring: 20 96% 50%;
+
+    /* Glassmorphism layers (used by .glass utility) */
+    --glass: 0 0% 100% / 0.72;
+    --glass-border: 0 0% 100% / 0.65;
+
+    /* Soft neumorphic elevation */
+    --shadow-soft: 0 1px 2px hsl(20 25% 30% / 0.06), 0 10px 30px -12px hsl(20 25% 30% / 0.18);
+    --shadow-lifted: 0 2px 4px hsl(20 25% 30% / 0.05), 0 28px 60px -20px hsl(20 25% 30% / 0.28);
+    --shadow-glow: 0 10px 30px -8px hsl(var(--primary) / 0.45);
+    --shadow-glass: inset 0 1px 0 hsl(0 0% 100% / 0.6), 0 8px 30px -10px hsl(20 25% 30% / 0.15);
+
+    color-scheme: light;
+  }
+
+  .dark {
+    /* Dark mode leans warm charcoal (not blue-black) to stay cozy */
+    --background: 20 14% 9%;
+    --foreground: 40 24% 94%;
+    --card: 20 12% 12%;
+    --card-foreground: 40 24% 94%;
+    --popover: 20 12% 12%;
+    --popover-foreground: 40 24% 94%;
+
+    /* Orange lifts slightly so it doesn't muddy against dark surfaces */
+    --primary: 20 96% 58%;
+    --primary-foreground: 20 30% 10%;
+    --accent: 172 66% 48%;
+    --accent-foreground: 20 30% 10%;
+
+    --secondary: 20 10% 18%;
+    --secondary-foreground: 40 20% 88%;
+    --muted: 20 10% 17%;
+    --muted-foreground: 40 8% 62%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 20 10% 21%;
+    --input: 20 10% 24%;
+    --ring: 20 96% 58%;
+
+    --glass: 20 14% 12% / 0.66;
+    --glass-border: 40 20% 100% / 0.08;
+
+    --shadow-soft: 0 1px 2px hsl(0 0% 0% / 0.4), 0 10px 30px -12px hsl(0 0% 0% / 0.55);
+    --shadow-lifted: 0 2px 4px hsl(0 0% 0% / 0.35), 0 28px 60px -20px hsl(0 0% 0% / 0.7);
+    --shadow-glow: 0 10px 30px -8px hsl(var(--primary) / 0.35);
+    --shadow-glass: inset 0 1px 0 hsl(0 0% 100% / 0.06), 0 8px 30px -10px hsl(0 0% 0% / 0.5);
+
+    color-scheme: dark;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Native-app feel: kill the grey tap flash on mobile */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    text-rendering: optimizeLegibility;
+    font-family: 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+    /* Prevent rubber-band pulling the whole page on iOS */
+    overscroll-behavior-y: none;
+  }
+
+  /* Persian text reads tighter than Latin — nudge the default rhythm */
+  html {
+    letter-spacing: 0;
+  }
+
+  ::selection {
+    background-color: hsl(var(--primary) / 0.25);
+  }
+
+  /* Coordinates must never bidi-scramble inside RTL paragraphs */
+  .ltr-inline {
+    direction: ltr;
+    unicode-bidi: isolate;
+    display: inline-block;
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Slim, always-visible-on-hover scrollbars (list panes get heavy use) */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.35) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    background-clip: content-box;
+    border: 2px solid transparent;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+    background-clip: content-box;
+  }
+}
+
+/* ══════════════════ Reusable component classes ══════════════════ */
+
+@layer components {
+  /**
+   * Frosted-glass surface — the signature of the navbar, filter panel
+   * and floating toolbars. Relies on backdrop-filter support; browsers
+   * without it simply see the semi-opaque background (graceful).
+   */
+  .glass {
+    background: hsl(var(--glass));
+    -webkit-backdrop-filter: blur(18px) saturate(1.6);
+    backdrop-filter: blur(18px) saturate(1.6);
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow: var(--shadow-glass);
+  }
+
+  /** Elevated card base — components layer layout utilities on top. */
+  .surface-card {
+    @apply rounded-2xl bg-card shadow-soft;
+  }
+
+  /** Pill-shaped quick filter / category chip. */
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-all duration-200;
+  }
+}
+
+/* ══════════════════ Utility helpers ══════════════════ */
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Horizontal scrollers (quick-filter pills on mobile) stay clean */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* iOS home-indicator safe area for the mobile bottom CTA */
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+  }
+
+  /* Map containers isolate their z-index so Leaflet's 400-700 panes
+     can never paint over our z-nav navbar */
+  .isolate-map {
+    isolation: isolate;
+  }
+
+  /**
+   * Dark basemap without an API key: invert OSM's light tiles and tune
+   * hue/brightness so roads read as cool grey-on-charcoal. Only the tile
+   * layer is filtered — markers live in a sibling pane and keep brand colors.
+   */
+  .dark-tiles .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.65);
+  }
+}
+
+/* ══════════════════ Motion accessibility ══════════════════ */
+/* Users who opt out of OS animation get a calm, static UI. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
