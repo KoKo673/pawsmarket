@@ -3,6 +3,7 @@ import { MapPin, PawPrint, ShieldCheck, Sparkles } from 'lucide-react'
 
 import { QuickFilters } from '@/components/home/QuickFilters'
 import { SearchBar } from '@/components/home/SearchBar'
+import { asset } from '@/lib/utils'
 
 const container = {
   hidden: {},
@@ -108,21 +109,21 @@ export function Hero() {
           className="relative mx-auto hidden aspect-[4/4.4] w-full max-w-md lg:block"
         >
           <motion.img
-            src="/images/listings/dog-golden.jpg"
+            src={asset('images/listings/dog-golden.jpg')}
             alt="توله‌ی گلدن رتریور"
             className="absolute inset-x-6 top-0 aspect-[4/5] w-[85%] rounded-[2.5rem] object-cover shadow-lifted"
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
           />
           <motion.img
-            src="/images/listings/cat-orange.jpg"
+            src={asset('images/listings/cat-orange.jpg')}
             alt="گربه‌ی نارنجی"
             className="absolute bottom-14 right-0 aspect-square w-[52%] rounded-[2rem] border-4 border-card object-cover shadow-lifted"
             animate={{ y: [0, 12, 0] }}
             transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
           />
           <motion.img
-            src="/images/listings/store2.jpg"
+            src={asset('images/listings/store2.jpg')}
             alt="سگ روی تشک راحتی"
             className="absolute bottom-0 left-0 aspect-[4/3] w-[55%] rounded-3xl border-4 border-card object-cover shadow-lifted"
             animate={{ y: [0, -8, 0] }}

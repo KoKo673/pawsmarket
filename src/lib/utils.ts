@@ -9,3 +9,12 @@ import { twMerge } from 'tailwind-merge'
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs))
 }
+
+/**
+ * Base-aware asset URL.
+ * Production (GitHub Pages) serves under `/pawsmarket/`, so root-absolute
+ * `/images/...` paths would 404. BASE_URL is "/" in dev and
+ * "/pawsmarket/" in the published build — always join through this.
+ */
+export const asset = (path: string): string =>
+  `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`

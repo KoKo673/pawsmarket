@@ -1,5 +1,6 @@
 import { SHOP_ENRICHMENT } from '@/data/shops'
 import { applyFilters } from '@/lib/search'
+import { asset } from '@/lib/utils'
 import type {
   Filters,
   GeoPoint,
@@ -108,29 +109,29 @@ const KNOWN_MEDICAL: MedicalFlag[] = ['vaccinated', 'sterilized', 'microchipped'
 
 /** Bundled fallback imagery — always present in /public/images/listings. */
 const PET_IMAGE: Record<Species, string> = {
-  dog: '/images/listings/dog-golden.jpg',
-  cat: '/images/listings/cat-orange.jpg',
-  rabbit: '/images/listings/rabbit2.jpg',
-  bird: '/images/listings/parrot.jpg',
-  fish: '/images/listings/fish.jpg',
-  small: '/images/listings/guinea.jpg',
-  other: '/images/listings/dog-pug.jpg',
+  dog: asset('images/listings/dog-golden.jpg'),
+  cat: asset('images/listings/cat-orange.jpg'),
+  rabbit: asset('images/listings/rabbit2.jpg'),
+  bird: asset('images/listings/parrot.jpg'),
+  fish: asset('images/listings/fish.jpg'),
+  small: asset('images/listings/guinea.jpg'),
+  other: asset('images/listings/dog-pug.jpg'),
 }
 
 const PRODUCT_IMAGE: Record<ProductCategory, string> = {
-  food: '/images/listings/food.jpg',
-  toy: '/images/listings/supplies.jpg',
-  health: '/images/listings/fish.jpg',
-  accessories: '/images/listings/store2.jpg',
-  grooming: '/images/listings/grooming.jpg',
+  food: asset('images/listings/food.jpg'),
+  toy: asset('images/listings/supplies.jpg'),
+  health: asset('images/listings/fish.jpg'),
+  accessories: asset('images/listings/store2.jpg'),
+  grooming: asset('images/listings/grooming.jpg'),
 }
 
 const STORE_IMAGE: Record<StoreCategory, string> = {
-  shop: '/images/listings/toys.jpg',
-  vet: '/images/listings/vet.jpg',
-  groomer: '/images/listings/petstore.jpg',
-  shelter: '/images/listings/dog-corgi.jpg',
-  cafe: '/images/listings/grooming.jpg',
+  shop: asset('images/listings/toys.jpg'),
+  vet: asset('images/listings/vet.jpg'),
+  groomer: asset('images/listings/petstore.jpg'),
+  shelter: asset('images/listings/dog-corgi.jpg'),
+  cafe: asset('images/listings/grooming.jpg'),
 }
 
 /** Infer display category from free-text name (backend doesn't store it yet). */

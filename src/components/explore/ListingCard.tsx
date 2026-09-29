@@ -68,11 +68,13 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
           loading="lazy"
           className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
           onError={(e) => {
-            // تخفیف بصری: اگر تصویری پیدا نشد، پلاکلد برند جایگزین می‌شود
+            // Graceful degradation: branded placeholder if an asset 404s.
+            // NOTE: pass a RAW '#' — encodeURIComponent encodes it once;
+            // a pre-encoded %23 would double-encode to %2523 (black fill).
             e.currentTarget.src =
               'data:image/svg+xml;utf8,' +
               encodeURIComponent(
-                `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="%23f5e9df"/><text x="200" y="155" font-size="48" text-anchor="middle">🐾</text></svg>`,
+                `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="#f5e9df"/><text x="200" y="165" font-size="72" text-anchor="middle">🐾</text></svg>`,
               )
           }}
         />

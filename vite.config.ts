@@ -13,7 +13,10 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     // Base path for the deployment target (e.g. "/pawsmarket/" on
     // GitHub Pages project sites). Defaults to "/" for local dev.
-    base: process.env.VITE_BASE || '/',
+    // Read from loadEnv too — Git Bash mangles inline `VITE_BASE=/…`
+    // env assignments for native Windows processes (MSYS path conversion),
+    // so the value lives in .env.production instead.
+    base: process.env.VITE_BASE || env.VITE_BASE || '/',
     resolve: {
       alias: {
         // Allows absolute imports: `import { Button } from '@/components/ui/button'`
