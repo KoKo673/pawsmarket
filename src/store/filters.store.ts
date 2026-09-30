@@ -3,22 +3,26 @@ import { create } from 'zustand'
 import type { Filters, ListingKind, ProductCategory, SortOption, Species, StoreCategory } from '@/types'
 
 /** Wide defaults — the radius/price sliders narrow from here (Toman).
- *  Price window matches the real catalog (≈285k–2.15M Toman) with a
- *  50k step so dragging never jumps over actual product prices. */
-const DEFAULT_PRICE: [number, number] = [0, 3_000_000]
+ *  Price window matches the real 2026 market (≈280k–7.8M Toman, per
+ *  mingo.pet / petkharid.com observations) with a 250k step so dragging
+ *  never jumps over actual product prices. */
+const DEFAULT_PRICE: [number, number] = [0, 8_000_000]
 
 interface FilterState extends Filters {
+  /** فقط آگهی‌های ذخیره‌شده‌ی کاربر (قلب نوار ناوبری) */
+  favoritesOnly: boolean
   /** Reset every control to its default (bound to the sidebar's "Clear"). */
   resetFilters: () => void
   setQuery: (query: string) => void
   setRadiusKm: (radiusKm: number) => void
   setPriceRange: (range: [number, number]) => void
   setSort: (sort: SortOption) => void
+  setFavoritesOnly: (on: boolean) => void
   /** Add/remove a listing kind; toggling all off reverts to "show everything". */
   toggleKind: (kind: ListingKind) => void
   toggleSpecies: (species: Species) => void
   toggleCategory: (category: ProductCategory | StoreCategory) => void
-  /** Apply a whole preset at once (quick-filter pills on the hero). */
+  /** Apply a whole preset at once (quick-filter pills / ?preset= links). */
   applyPreset: (preset: Partial<Filters>) => void
 }
 
@@ -32,6 +36,8 @@ const initial: Filters = {
   sort: 'distance',
 }
 
+const initialUI = { favoritesOnly: false }
+
 /**
  * Global filter state for the Explore view.
  * Lives in Zustand (not React Query) because it drives *both* the query key
@@ -39,12 +45,14 @@ const initial: Filters = {
  */
 export const useFiltersStore = create<FilterState>((set) => ({
   ...initial,
+  ...initialUI,
 
-  resetFilters: () => set(initial),
+  resetFilters: () => set({ ...initial, ...initialUI }),
   setQuery: (query) => set({ query }),
   setRadiusKm: (radiusKm) => set({ radiusKm }),
   setPriceRange: (priceRange) => set({ priceRange }),
   setSort: (sort) => set({ sort }),
+  setFavoritesOnly: (favoritesOnly) => set({ favoritesOnly }),
 
   toggleKind: (kind) =>
     set((state) => {
@@ -69,5 +77,5 @@ export const useFiltersStore = create<FilterState>((set) => ({
     })),
 
   /** Quick pills set a coherent slice (kinds+species+categories+query). */
-  applyPreset: (preset) => set({ ...initial, radiusKm: 10, ...preset }),
+  applyPreset: (preset) => set({ ...initial, ...initialUI, ...preset }),
 }))

@@ -1,4 +1,6 @@
-import { List, Loader2, Map as MapIcon, PawPrint, ServerCrash, SlidersHorizontal, WifiOff } from 'lucide-react'
+import { Heart, List, Loader2, Map as MapIcon, PawPrint, ServerCrash, SlidersHorizontal, WifiOff } from 'lucide-react'
+import { useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { FilterSheet, FilterSidebar } from '@/components/explore/FilterSidebar'
 import { ListingCard } from '@/components/explore/ListingCard'
@@ -9,9 +11,21 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useNearbyListings } from '@/hooks/use-listings'
 import { faDigits } from '@/lib/fa'
 import { cn } from '@/lib/utils'
+import { useFavoritesStore } from '@/store/favorites.store'
 import { useFiltersStore } from '@/store/filters.store'
 import { useGeoStore } from '@/store/geo.store'
 import { useUiStore } from '@/store/ui.store'
+import type { Filters } from '@/types'
+
+/** لینک‌های عمیق فوتر/بروشور: /explore?preset=shelters و غیره */
+const URL_PRESETS: Record<string, Partial<Filters>> = {
+  dogs: { kinds: ['pet'], species: ['dog'] },
+  cats: { kinds: ['pet'], species: ['cat'] },
+  food: { kinds: ['product'], categories: ['food'] },
+  vets: { kinds: ['store'], categories: ['vet'] },
+  groomers: { kinds: ['store'], categories: ['groomer'] },
+  shelters: { kinds: ['store'], categories: ['shelter'] },
+}
 
 /**
  * قلب اپ — نمای تقسیم‌شده‌ی جغرافیایی.
@@ -25,9 +39,24 @@ import { useUiStore } from '@/store/ui.store'
  */
 export function ExplorePage() {
   const { data, isLoading, isError, error, refetch, isFetching } = useNearbyListings()
-  const listings = data ?? []
   const origin = useGeoStore((s) => s.origin)
   const radiusKm = useFiltersStore((s) => s.radiusKm)
+  const favoritesOnly = useFiltersStore((s) => s.favoritesOnly)
+  const setFavoritesOnly = useFiltersStore((s) => s.setFavoritesOnly)
+  const applyPreset = useFiltersStore((s) => s.applyPreset)
+  const favorites = useFavoritesStore((s) => s.ids)
+  const [searchParams] = useSearchParams()
+
+  // لینک‌های عمیق (?preset=vets&favorites=1) فقط یک‌بار هنگام ورود اعمال می‌شوند
+  useEffect(() => {
+    const preset = searchParams.get('preset')
+    if (preset && URL_PRESETS[preset]) applyPreset(URL_PRESETS[preset])
+    if (searchParams.get('favorites') === '1') setFavoritesOnly(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // مشتق‌سازی: حالت «فقط ذخیره‌شده‌ها» روی نتایج زنده اعمال می‌شود
+  const listings = favoritesOnly ? (data ?? []).filter((l) => favorites.includes(l.id)) : (data ?? [])
 
   const mobileView = useUiStore((s) => s.mobileView)
   const setMobileView = useUiStore((s) => s.setMobileView)
@@ -63,10 +92,16 @@ export function ExplorePage() {
                       ? 'در حال جستجو…'
                       : isError
                         ? 'سرور پاسخی نداد'
-                        : `${faDigits(listings.length)} نتیجه`}
+                        : favoritesOnly
+                          ? `${faDigits(listings.length)} مورد ذخیره‌شده`
+                          : `${faDigits(listings.length)} نتیجه`}
                   </span>
-                  <span aria-hidden>·</span>
-                  <span>در شعاع {faDigits(radiusKm)} کیلومتری</span>
+                  {!favoritesOnly && (
+                    <>
+                      <span aria-hidden>·</span>
+                      <span>در شعاع {faDigits(radiusKm)} کیلومتری</span>
+                    </>
+                  )}
                 </p>
               </div>
 
@@ -123,21 +158,39 @@ export function ExplorePage() {
               /* حالت خالی */
               <div className="flex h-full min-h-72 flex-col items-center justify-center px-6 text-center">
                 <span className="grid size-20 place-items-center rounded-full bg-muted">
-                  <PawPrint className="size-9 text-muted-foreground/60" />
+                  {favoritesOnly ? (
+                    <Heart className="size-9 text-muted-foreground/60" />
+                  ) : (
+                    <PawPrint className="size-9 text-muted-foreground/60" />
+                  )}
                 </span>
-                <h2 className="mt-5 text-lg font-extrabold">
-                  در شعاع {faDigits(radiusKm)} کیلومتری چیزی پیدا نشد
-                </h2>
-                <p className="mt-1.5 max-w-xs text-sm text-muted-foreground">
-                  شعاع را بزرگ‌تر کنید یا یک فیلتر را بردارید — حتماً حیواناتی همین اطراف هستند.
-                </p>
-                <Button className="mt-5" onClick={() => setFilterDrawerOpen(true)}>
-                  <SlidersHorizontal className="size-4" />
-                  تغییر فیلترها
-                </Button>
+                {favoritesOnly ? (
+                  <>
+                    <h2 className="mt-5 text-lg font-extrabold">هنوز آگهی ذخیره نکرده‌اید</h2>
+                    <p className="mt-1.5 max-w-xs text-sm text-muted-foreground">
+                      روی قلب هر کارت بزنید تا اینجا جمع شود — لیست روی دستگاه شما می‌ماند.
+                    </p>
+                    <Button className="mt-5" onClick={() => setFavoritesOnly(false)}>
+                      مشاهده‌ی همه‌ی آگهی‌ها
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="mt-5 text-lg font-extrabold">
+                      در شعاع {faDigits(radiusKm)} کیلومتری چیزی پیدا نشد
+                    </h2>
+                    <p className="mt-1.5 max-w-xs text-sm text-muted-foreground">
+                      شعاع را بزرگ‌تر کنید یا یک فیلتر را بردارید — حتماً حیواناتی همین اطراف هستند.
+                    </p>
+                    <Button className="mt-5" onClick={() => setFilterDrawerOpen(true)}>
+                      <SlidersHorizontal className="size-4" />
+                      تغییر فیلترها
+                    </Button>
+                  </>
+                )}
               </div>
             ) : (
-              <div className="grid gap-5 min-[1700px]:grid-cols-2">
+              <div data-motion-section="group" className="grid gap-5 min-[1700px]:grid-cols-2">
                 {listings.map((item, i) => (
                   <ListingCard key={item.id} item={item} index={i} />
                 ))}

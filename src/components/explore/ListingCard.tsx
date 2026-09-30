@@ -1,12 +1,11 @@
-import { motion } from 'framer-motion'
 import { Bone, Heart, MapPin, PawPrint, Star, Store, Tag } from 'lucide-react'
-import { useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { faDecimal, faDigits, faPriceShort } from '@/lib/fa'
 import { formatAge, formatDistance } from '@/lib/geo'
 import { cn } from '@/lib/utils'
 import type { ListingWithDistance } from '@/types'
+import { useFavoritesStore } from '@/store/favorites.store'
 import { useUiStore } from '@/store/ui.store'
 
 const KIND_META = {
@@ -21,7 +20,9 @@ const KIND_META = {
  */
 export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; index?: number }) {
   const openDetail = useUiStore((s) => s.openDetail)
-  const [liked, setLiked] = useState(false)
+  // علاقه‌مندی واقعی: در localStorage ذخیره می‌شود و به نشان قلب نوار ناوبری وصل است
+  const liked = useFavoritesStore((s) => s.ids.includes(item.id))
+  const toggleFavorite = useFavoritesStore((s) => s.toggle)
 
   const meta = KIND_META[item.kind]
   const Icon = meta.icon
@@ -44,10 +45,10 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
     item.kind === 'store' ? null : item.price === 0 ? 'رایگان' : `${faPriceShort(item.price)} تومان`
 
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.35), ease: [0.22, 1, 0.36, 1] }}
+    <article
+      /* ورود پله‌ای از سیستم مشترک motion (fail-open: بدون JS هم نمایان) */
+      data-motion-item
+      style={{ '--motion-delay': `${Math.min(index, 12) * 33}ms` } as React.CSSProperties}
       className="group relative cursor-pointer overflow-hidden rounded-2xl bg-card shadow-soft ring-1 ring-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-lifted"
       onClick={() => openDetail(item.id)}
       role="button"
@@ -91,7 +92,7 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
           aria-label={liked ? 'حذف از ذخیره‌شده‌ها' : 'ذخیره‌ی آگهی'}
           onClick={(e) => {
             e.stopPropagation()
-            setLiked((v) => !v)
+            toggleFavorite(item.id)
           }}
           className={cn(
             'absolute left-3 top-3 grid size-8 place-items-center rounded-full backdrop-blur transition-all active:scale-90',
@@ -141,6 +142,6 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
           )}
         </div>
       </div>
-    </motion.article>
+    </article>
   )
 }

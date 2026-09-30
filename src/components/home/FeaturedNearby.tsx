@@ -16,8 +16,8 @@ export function FeaturedNearby() {
   const listings = data?.slice(0, 6) ?? []
 
   return (
-    <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <section data-motion-section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
+      <div data-motion-item className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1 text-xs font-bold text-accent">
             <Radar className="size-3.5" />
@@ -60,6 +60,8 @@ export function FeaturedNearby() {
         ) : (
           listings.map((item, i) => <ListingCard key={item.id} item={item} index={i} />)
         )}
+        {/* کارت‌ها خودشان data-motion-item دارند (ListingCard) — بخش اینجا فقط
+            به‌عنوان مرز راه‌انداز عمل می‌کند و استگر را DOM order می‌دهد */}
       </div>
     </section>
   )

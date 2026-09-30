@@ -23,22 +23,22 @@ const STEPS = [
 function validateStep(step: number, draft: Draft): string[] {
   const errors: string[] = []
   if (step === 0) {
-    if (!draft.name.trim()) errors.push('به آگهی‌ات یک نام بده.')
-    if (draft.kind === 'pet' && !draft.breed.trim()) errors.push('نژاد برای حیوان خانگی الزامی است.')
+    if (!draft.name.trim()) errors.push('برای آگهی یک نام وارد کنید.')
+    if (draft.kind === 'pet' && !draft.breed.trim()) errors.push('وارد کردن نژاد برای حیوان خانگی الزامی است.')
   }
   if (step === 1) {
-    if (draft.description.trim().length < 15) errors.push('توضیحات باید حداقل ۱۵ حرف باشد.')
-    if (draft.images.length === 0) errors.push('حداقل یک عکس اضافه کن.')
+    if (draft.description.trim().length < 15) errors.push('توضیحات باید حداقل ۱۵ نویسه باشد.')
+    if (draft.images.length === 0) errors.push('حداقل یک عکس اضافه کنید.')
     if (draft.price === '' || Number.isNaN(Number(draft.price)) || Number(draft.price) < 0) {
-      errors.push('قیمت معتبر وارد کن (صفر برای سرپرستی رایگان).')
+      errors.push('یک قیمت معتبر وارد کنید (صفر = سرپرستی رایگان).')
     }
     if (draft.kind === 'pet' && (draft.ageMonths === '' || Number(draft.ageMonths) < 0)) {
-      errors.push('سن به ماه الزامی است.')
+      errors.push('سن (به ماه) الزامی است.')
     }
   }
   if (step === 2) {
-    if (!draft.address.trim()) errors.push('آدرس خیابان الزامی است.')
-    if (!draft.location) errors.push('روی نقشه یک نقطه بگذار.')
+    if (!draft.address.trim()) errors.push('وارد کردن آدرس الزامی است.')
+    if (!draft.location) errors.push('روی نقشه یک نقطه انتخاب کنید.')
   }
   return errors
 }
@@ -123,7 +123,7 @@ export function AddListingWizard() {
       setSuccess(true)
     } catch (err) {
       setErrors([
-        'خطایی در انتشار پیش آمد — بک‌اند پاسخ نداد.',
+        'انتشار انجام نشد؛ بک‌اند پاسخ نداد.',
         err instanceof Error ? err.message : '',
       ].filter(Boolean))
     } finally {

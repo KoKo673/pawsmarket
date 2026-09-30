@@ -1,4 +1,4 @@
-import { Bird, Bone, Cat, Dog, Fish, Home, PawPrint, Rabbit, Scissors, ShoppingBasket, SlidersHorizontal, Stethoscope, X } from 'lucide-react'
+import { Bird, Bone, Cat, Dog, Fish, Heart, Home, PawPrint, Rabbit, Scissors, ShoppingBasket, SlidersHorizontal, Stethoscope, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { faDigits, faPriceShort } from '@/lib/fa'
 import { cn } from '@/lib/utils'
+import { useFavoritesStore } from '@/store/favorites.store'
 import { useFiltersStore } from '@/store/filters.store'
 import { useUiStore } from '@/store/ui.store'
 import type { ListingKind, ProductCategory, Species, StoreCategory } from '@/types'
@@ -39,7 +40,7 @@ const CATEGORY_CHIPS: Array<{ id: ProductCategory | StoreCategory; label: string
 
 /** برچسب مقادیر قیمت (تومان) با خلاصه‌سازی میلیونی */
 const priceLabel = (v: number, isMax: boolean) =>
-  isMax && v >= 3_000_000 ? `${faPriceShort(v)}+` : faPriceShort(v)
+  isMax && v >= 8_000_000 ? `${faPriceShort(v)}+` : faPriceShort(v)
 
 /* ── دکمه‌ی چیپ ───────────────────────────────────────────────── */
 
@@ -82,16 +83,20 @@ function FilterPanel() {
     species,
     categories,
     sort,
+    favoritesOnly,
     setRadiusKm,
     setPriceRange,
     setSort,
+    setFavoritesOnly,
     toggleKind,
     toggleSpecies,
     toggleCategory,
     resetFilters,
   } = useFiltersStore()
+  const favCount = useFavoritesStore((s) => s.ids.length)
 
-  const activeCount = kinds.length + species.length + categories.length + (radiusKm !== 10 ? 1 : 0)
+  const activeCount =
+    kinds.length + species.length + categories.length + (radiusKm !== 10 ? 1 : 0) + (favoritesOnly ? 1 : 0)
 
   return (
     <div className="space-y-7 p-5">
@@ -111,6 +116,27 @@ function FilterPanel() {
           پاک کردن
         </Button>
       </div>
+
+      {/* فقط ذخیره‌شده‌ها */}
+      <button
+        type="button"
+        onClick={() => setFavoritesOnly(!favoritesOnly)}
+        aria-pressed={favoritesOnly}
+        className={cn(
+          'flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-bold transition-all active:scale-[0.98]',
+          favoritesOnly
+            ? 'border-primary bg-primary/10 text-primary shadow-glow'
+            : 'border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground',
+        )}
+      >
+        <span className="inline-flex items-center gap-2">
+          <Heart className={cn('size-4', favoritesOnly && 'fill-current')} />
+          فقط ذخیره‌شده‌ها
+        </span>
+        <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+          {faDigits(favCount)}
+        </span>
+      </button>
 
       {/* نوع آگهی */}
       <section>
@@ -209,13 +235,13 @@ function FilterPanel() {
           value={priceRange}
           onValueChange={([min, max]) => setPriceRange([min, max])}
           min={0}
-          max={3_000_000}
-          step={50_000}
+          max={8_000_000}
+          step={250_000}
           aria-label="محدوده‌ی قیمت به تومان"
         />
         <div className="mt-1 flex justify-between text-[10px] font-medium text-muted-foreground">
           <span>{faDigits(0)} تومان</span>
-          <span>{faDigits(3)} میلیون+</span>
+          <span>{faDigits(8)} میلیون+</span>
         </div>
       </section>
 

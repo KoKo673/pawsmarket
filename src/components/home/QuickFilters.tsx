@@ -1,4 +1,5 @@
 import { Cat, Dog, Home, Scissors, ShoppingBasket, Stethoscope } from 'lucide-react'
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { cn } from '@/lib/utils'
@@ -19,13 +20,33 @@ const PILLS: Array<{
   { label: 'پناهگاه‌ها', icon: Home, preset: { kinds: ['store'], categories: ['shelter'] } },
 ]
 
-/** ردیف فیلترهای سریع زیر نوار جستجو (اسکن افقی در موبایل). */
+/** ردیف فیلترهای سریع زیر نوار جستجو (اسکن افقی در موبایل).
+ *  reveal با رویداد `motion:reveal` بخش میزبان هم‌گام است (نه اسکن دوره‌ای). */
 export function QuickFilters() {
   const navigate = useNavigate()
   const applyPreset = useFiltersStore((s) => s.applyPreset)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const host = el.closest<HTMLElement>('[data-motion-section]')
+    const off = () => {
+      el.dataset.motionRevealed = '1'
+      el.dataset.motionState = 'in'
+    }
+    // اگر بخش میزبان قبلاً reveal شده (mount بعد از ورود)، همین حالا
+    if (host && host.dataset.motionRevealed === '1') off()
+    host?.addEventListener('motion:reveal', off)
+    return () => host?.removeEventListener('motion:reveal', off)
+  }, [])
 
   return (
-    <div className="no-scrollbar -mx-4 flex w-full gap-2.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:justify-center sm:px-0">
+    <div
+      ref={ref}
+      data-motion-item
+      className="no-scrollbar -mx-4 flex w-full min-w-0 gap-2.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:justify-center sm:px-0"
+    >
       {PILLS.map(({ label, icon: Icon, preset }) => (
         <button
           key={label}

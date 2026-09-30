@@ -1,39 +1,38 @@
-import { AtSign, Globe, MessageCircle, PawPrint } from 'lucide-react'
+import { PawPrint } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
+/**
+ * فوتر با فقط لینک‌های واقعی — هیچ مقصد ساختگی یا href="#" نیست.
+ * لینک‌های دسته‌بندی از کوئری‌ست ring (?preset=…) استفاده می‌کنند تا
+ * مستقیماً وارد نتایج فیلترشده شوید.
+ */
 const FOOTER_LINKS = [
   {
     title: 'بازار',
     links: [
       { label: 'کاوش روی نقشه', to: '/explore' },
-      { label: 'ثبت آگهی', to: '/add' },
-      { label: 'مراکز سرپرستی', to: '/explore' },
+      { label: 'ثبت آگهی رایگان', to: '/add' },
+      { label: 'مراکز سرپرستی', to: '/explore?preset=shelters' },
+      { label: 'دامپزشکان نزدیک', to: '/explore?preset=vets' },
     ],
   },
   {
-    title: 'درباره ما',
+    title: 'دسترسی سریع',
     links: [
-      { label: 'معرفی پازمارکت', to: '/' },
-      { label: 'فرصت‌های شغلی', to: '/' },
-      { label: 'کیت مطبوعاتی', to: '/' },
-    ],
-  },
-  {
-    title: 'پشتیبانی',
-    links: [
-      { label: 'راهنما', to: '/' },
-      { label: 'نکات ایمنی', to: '/' },
-      { label: 'تماس با ما', to: '/' },
+      { label: 'سگ‌های نزدیک', to: '/explore?preset=dogs' },
+      { label: 'گربه‌ها', to: '/explore?preset=cats' },
+      { label: 'غذای حیوان', to: '/explore?preset=food' },
+      { label: 'آگهی‌های ذخیره‌شده', to: '/explore?favorites=1' },
     ],
   },
 ]
 
 export function Footer() {
   return (
-    <footer className="mt-auto border-t border-border bg-card/50">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+    <footer data-motion-section className="mt-auto border-t border-border bg-card/50">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_repeat(2,1fr)]">
         {/* Brand column */}
-        <div className="max-w-xs">
+        <div data-motion-item className="max-w-xs">
           <Link to="/" className="flex items-center gap-2.5">
             <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
               <PawPrint className="size-5" />
@@ -45,18 +44,6 @@ export function Footer() {
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
             بازار مکان‌محور حیوانات خانگی — حیوانات، لوازم و فروشگاه‌ها را در همان حوالی خانه‌تان پیدا کنید.
           </p>
-          <div className="mt-5 flex gap-2">
-            {[Globe, MessageCircle, AtSign].map((Icon, i) => (
-              <a
-                key={i}
-                href="#"
-                aria-label="شبکه‌های اجتماعی"
-                className="grid size-9 place-items-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
-              >
-                <Icon className="size-4" />
-              </a>
-            ))}
-          </div>
         </div>
 
         {FOOTER_LINKS.map((col) => (

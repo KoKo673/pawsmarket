@@ -7,6 +7,7 @@ import { StatsGrid } from '@/components/detail/StatsGrid'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { SHOP_ENRICHMENT } from '@/data/shops'
 import { faDecimal, faPrice } from '@/lib/fa'
 import { formatDistance } from '@/lib/geo'
 import { useNearbyListings } from '@/hooks/use-listings'
@@ -26,6 +27,7 @@ const KIND_BADGE = {
 export function DetailModal() {
   const selectedId = useUiStore((s) => s.selectedId)
   const closeDetail = useUiStore((s) => s.closeDetail)
+  const openDetail = useUiStore((s) => s.openDetail)
   const { data } = useNearbyListings()
   const { pathname } = useLocation()
 
@@ -149,14 +151,58 @@ export function DetailModal() {
                   )}
                 </>
               ) : item.kind === 'product' ? (
-                <Button size="lg" disabled={!item.inStock} className="min-w-40">
-                  {item.inStock ? 'خرید' : 'ناموجود'}
-                </Button>
+                <>
+                  {/* رفتن به صفحه‌ی فروشگاه عرضه‌کننده (لینک واقعی) */}
+                  {item.storeId && (
+                    <Button variant="outline" className="gap-1.5" onClick={() => openDetail(item.storeId!)}>
+                      <Store className="size-4" />
+                      فروشگاه
+                    </Button>
+                  )}
+                  {item.storeName && SHOP_ENRICHMENT[item.storeName]?.phone ? (
+                    <Button asChild size="lg" className="min-w-44 gap-1.5">
+                      <a
+                        href={`tel:${SHOP_ENRICHMENT[item.storeName].phone!.replace(/[^+\d]/g, '')}`}
+                        title={`تماس با ${item.storeName} برای خرید`}
+                      >
+                        <Phone className="size-4" />
+                        {item.inStock ? 'تماس برای خرید' : 'استعلام قیمت'}
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button
+                      size="lg"
+                      disabled
+                      className="min-w-44"
+                      title="شماره‌ی تماس این فروشگاه هنوز ثبت نشده است"
+                    >
+                      {item.inStock ? 'خرید' : 'ناموجود'}
+                    </Button>
+                  )}
+                </>
               ) : (
-                <Button size="lg" className="min-w-44 gap-1.5">
-                  <Phone className="size-4" />
-                  {item.adoptable ? 'تماس با پناهگاه' : 'تماس با مالک'}
-                </Button>
+                (() => {
+                  // شماره‌ی مالک/پناهگاه در صورت وجود در داده‌ی واقعی فروشگاه‌ها
+                  const ownerPhone =
+                    item.kind === 'pet' ? (SHOP_ENRICHMENT[item.ownerName]?.phone ?? '') : ''
+                  const label = item.adoptable ? 'تماس با پناهگاه' : 'تماس با مالک'
+                  if (ownerPhone) {
+                    return (
+                      <Button asChild size="lg" className="min-w-44 gap-1.5">
+                        <a href={`tel:${ownerPhone.replace(/[^+\d]/g, '')}`}>
+                          <Phone className="size-4" />
+                          {label}
+                        </a>
+                      </Button>
+                    )
+                  }
+                  return (
+                    <Button size="lg" disabled className="min-w-44 gap-1.5" title="شماره‌ی تماس ثبت نشده است">
+                      <Phone className="size-4" />
+                      {label}
+                    </Button>
+                  )
+                })()
               )}
             </div>
           </div>

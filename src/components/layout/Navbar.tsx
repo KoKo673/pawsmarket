@@ -1,11 +1,14 @@
 import { motion } from 'framer-motion'
 import { Heart, MapPin, Menu, PawPrint, Plus, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { Button } from '@/components/ui/button'
+import { faDigits } from '@/lib/fa'
 import { cn } from '@/lib/utils'
+import { useFavoritesStore } from '@/store/favorites.store'
+import { useFiltersStore } from '@/store/filters.store'
 import { useUiStore } from '@/store/ui.store'
 
 const NAV_LINKS = [
@@ -22,7 +25,16 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const pathname = useLocation()
+  const navigate = useNavigate()
   const filterDrawerOpen = useUiStore((s) => s.filterDrawerOpen)
+  const favCount = useFavoritesStore((s) => s.ids.length)
+  const setFavoritesOnly = useFiltersStore((s) => s.setFavoritesOnly)
+
+  /** قلب نوار ناوبری: رفتن به کاوش با فیلتر «فقط ذخیره‌شده‌ها» */
+  const openFavorites = () => {
+    setFavoritesOnly(true)
+    navigate('/explore')
+  }
 
   // Close the mobile sheet on navigation
   useEffect(() => {
@@ -75,8 +87,19 @@ export function Navbar() {
 
         {/* Actions */}
         <div className="flex items-center gap-1.5">
-          <Button variant="ghost" size="icon" className="hidden md:inline-flex" aria-label="آگهی‌های ذخیره‌شده">
-            <Heart className="size-4" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative hidden md:inline-flex"
+            aria-label={`آگهی‌های ذخیره‌شده${favCount > 0 ? ` (${faDigits(favCount)} مورد)` : ''}`}
+            onClick={openFavorites}
+          >
+            <Heart className={cn('size-4', favCount > 0 && 'fill-current text-primary')} />
+            {favCount > 0 && (
+              <span className="absolute -left-0.5 -top-0.5 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[9px] font-extrabold leading-4 text-primary-foreground shadow-glow">
+                {favCount > 9 ? '۹+' : faDigits(favCount)}
+              </span>
+            )}
           </Button>
           <ThemeToggle />
           <Button asChild size="sm" className="hidden md:inline-flex gap-1.5">
@@ -130,6 +153,22 @@ export function Navbar() {
               <Plus className="size-4 text-primary" />
               ثبت آگهی
             </Link>
+            <button
+              type="button"
+              onClick={() => {
+                setMobileOpen(false)
+                openFavorites()
+              }}
+              className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-left text-sm font-semibold text-foreground transition-colors hover:bg-muted/60"
+            >
+              <Heart className={cn('size-4 text-primary', favCount > 0 && 'fill-current')} />
+              آگهی‌های ذخیره‌شده
+              {favCount > 0 && (
+                <span className="ms-auto rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
+                  {faDigits(favCount)}
+                </span>
+              )}
+            </button>
             <Link
               to="/explore"
               className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/60"

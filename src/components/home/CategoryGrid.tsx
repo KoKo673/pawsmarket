@@ -69,7 +69,7 @@ export function CategoryGrid() {
   const listings = data ?? []
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+    <section data-motion-section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
       <div className="mb-8 flex items-end justify-between gap-4">
         <div>
           <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">دسته‌بندی‌ها</h2>
@@ -89,7 +89,8 @@ export function CategoryGrid() {
                 navigate('/explore')
               }}
               style={{ animationDelay: `${i * 60}ms` }}
-              className="group animate-fade-up rounded-2xl border border-border/60 bg-card p-5 text-center shadow-soft transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lifted active:scale-95"
+              data-motion-item
+              className="group rounded-2xl border border-border/60 bg-card p-5 text-center shadow-soft transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lifted active:scale-95"
             >
               <span
                 className={cn(

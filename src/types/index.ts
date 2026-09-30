@@ -58,6 +58,8 @@ export interface ProductListing extends BaseListing {
   inStock: boolean
   /** Store the product is sold at (display name only — join done server-side). */
   storeName: string
+  /** شناسه‌ی namespaced فروشگاه (store:3) برای پیمایش به جزئیات فروشگاه */
+  storeId?: string
 }
 
 export interface StoreListing extends BaseListing {

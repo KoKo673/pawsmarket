@@ -218,6 +218,7 @@ function toProductListing(raw: RawRow, storeNames: Map<string, string>): Product
     brand: str(raw.brand, 'بدون برند'),
     inStock: bool(raw.inStock, true),
     storeName,
+    storeId: raw.store_id != null ? wireId('store', { id: raw.store_id }) : undefined,
   }
 }
 

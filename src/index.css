@@ -201,6 +201,39 @@
     isolation: isolate;
   }
 
+  /* ════════ سیستم واحد انیمیشن ورود (src/lib/motion.ts) ════════
+     گیت JS: حالات اولیه فقط وقتی اعمال می‌شوند که ریشه
+     data-motion="ready" داشته باشد — بدون JS هیچ‌چیز پنهان نمی‌ماند.
+     فقط opacity/transform (بدون layout shift). */
+  [data-motion='ready'] [data-motion-item] {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  [data-motion='ready'] [data-motion-item][data-motion-state='in'] {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition:
+      opacity 100ms cubic-bezier(0.16, 1, 0.3, 1) var(--motion-delay, 0ms),
+      transform 100ms cubic-bezier(0.16, 1, 0.3, 1) var(--motion-delay, 0ms);
+  }
+  /* بسته‌شدن سطح‌های گذرا: سریع‌تر و فشرده‌تر (۶۶ms) */
+  [data-motion='ready'] [data-motion-surface][data-state='closed'] {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+    transition:
+      opacity 66ms cubic-bezier(0.4, 0, 1, 1),
+      transform 66ms cubic-bezier(0.4, 0, 1, 1);
+  }
+  /* احترام به کاهش حرکت: هرگز پنهان نکن، هرگز جابه‌جا نکن */
+  @media (prefers-reduced-motion: reduce) {
+    [data-motion='ready'] [data-motion-item],
+    [data-motion='ready'] [data-motion-surface] {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: opacity 80ms linear !important;
+    }
+  }
+
   /**
    * Dark basemap without an API key: invert OSM's light tiles and tune
    * hue/brightness so roads read as cool grey-on-charcoal. Only the tile
