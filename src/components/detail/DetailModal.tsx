@@ -113,8 +113,11 @@ export function DetailModal() {
             </div>
           </div>
 
-          {/* ── CTA شناور پایین ── */}
-          <div className="sticky -bottom-6 -mx-6 -mb-6 flex items-center justify-between gap-4 border-t border-border bg-card/95 px-6 py-4 backdrop-blur pb-safe">
+          {/* ── CTA شناور پایین ──
+              موبایل: ستونی (قیمت بالا، دکمه‌ی تمام‌عرض پایین) تا با
+              فونت بزرگ‌شده‌ی اندروید یا متن بلند هرگز سرریز/له‌شده نشود.
+              دسکتاپ (sm+): همان ردیف قیمت + دکمه‌ها. */}
+          <div className="sticky -bottom-6 -mx-6 -mb-6 flex flex-col gap-3 border-t border-border bg-card/95 px-6 py-4 backdrop-blur pb-safe sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div>
               {item.kind !== 'store' && (
                 <p className="text-xl font-extrabold text-primary">
@@ -124,12 +127,12 @@ export function DetailModal() {
               <p className="text-xs font-medium text-muted-foreground">{formatDistance(item.distanceKm)} با شما</p>
             </div>
 
-            <div className="flex shrink-0 gap-2">
+            <div className="flex w-full min-w-0 gap-2 sm:w-auto sm:shrink-0">
               {item.kind === 'store' ? (
                 <>
                   <Button
                     variant="outline"
-                    className="gap-1.5"
+                    className="flex-1 gap-1.5 sm:flex-none"
                     onClick={() =>
                       window.open(
                         `https://www.google.com/maps/search/?api=1&query=${item.location.lat},${item.location.lng}`,
@@ -142,7 +145,7 @@ export function DetailModal() {
                     مسیریابی
                   </Button>
                   {item.phone && (
-                    <Button asChild className="gap-1.5">
+                    <Button asChild className="flex-1 gap-1.5 sm:flex-none">
                       <a href={`tel:${item.phone.replace(/[^+\d]/g, '')}`}>
                         <Phone className="size-4" />
                         تماس
@@ -154,13 +157,13 @@ export function DetailModal() {
                 <>
                   {/* رفتن به صفحه‌ی فروشگاه عرضه‌کننده (لینک واقعی) */}
                   {item.storeId && (
-                    <Button variant="outline" className="gap-1.5" onClick={() => openDetail(item.storeId!)}>
+                    <Button variant="outline" className="flex-1 gap-1.5 sm:flex-none" onClick={() => openDetail(item.storeId!)}>
                       <Store className="size-4" />
                       فروشگاه
                     </Button>
                   )}
                   {item.storeName && SHOP_ENRICHMENT[item.storeName]?.phone ? (
-                    <Button asChild size="lg" className="min-w-44 gap-1.5">
+                    <Button asChild size="lg" className="min-w-0 flex-1 gap-1.5 sm:min-w-44 sm:flex-none">
                       <a
                         href={`tel:${SHOP_ENRICHMENT[item.storeName].phone!.replace(/[^+\d]/g, '')}`}
                         title={`تماس با ${item.storeName} برای خرید`}
@@ -173,7 +176,7 @@ export function DetailModal() {
                     <Button
                       size="lg"
                       disabled
-                      className="min-w-44"
+                      className="min-w-0 flex-1 sm:min-w-44 sm:flex-none"
                       title="شماره‌ی تماس این فروشگاه هنوز ثبت نشده است"
                     >
                       {item.inStock ? 'خرید' : 'ناموجود'}
@@ -188,7 +191,7 @@ export function DetailModal() {
                   const label = item.adoptable ? 'تماس با پناهگاه' : 'تماس با مالک'
                   if (ownerPhone) {
                     return (
-                      <Button asChild size="lg" className="min-w-44 gap-1.5">
+                      <Button asChild size="lg" className="min-w-0 flex-1 gap-1.5 sm:min-w-44 sm:flex-none">
                         <a href={`tel:${ownerPhone.replace(/[^+\d]/g, '')}`}>
                           <Phone className="size-4" />
                           {label}
@@ -197,7 +200,7 @@ export function DetailModal() {
                     )
                   }
                   return (
-                    <Button size="lg" disabled className="min-w-44 gap-1.5" title="شماره‌ی تماس ثبت نشده است">
+                    <Button size="lg" disabled className="min-w-0 flex-1 gap-1.5 sm:min-w-44 sm:flex-none" title="شماره‌ی تماس ثبت نشده است">
                       <Phone className="size-4" />
                       {label}
                     </Button>

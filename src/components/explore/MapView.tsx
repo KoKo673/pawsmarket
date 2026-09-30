@@ -1,4 +1,4 @@
-import { Crosshair, Loader2 } from 'lucide-react'
+import { Crosshair, Loader2, ShieldAlert } from 'lucide-react'
 import L from 'leaflet'
 import { useEffect, useMemo, useRef } from 'react'
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
@@ -146,11 +146,12 @@ const originIcon = L.divIcon({
 })
 
 const STATUS_HINT: Record<GeoStatus, string> = {
-  default: 'برای پیدا کردن مکان واقعی‌ات اجازه دسترسی بده',
+  default: 'برای پیدا کردن مکان واقعی‌تان اجازه‌ی دسترسی بدهید',
   locating: 'در حال دریافت مکان…',
-  active: 'نقشه روی مکان واقعی شما است — برای بازگشت کلیک کن',
+  active: 'نقشه روی مکان واقعی شماست — برای بازگشت دوباره بزنید',
   denied: 'دسترسی به مکان رد شد — نقشه روی تهران می‌ماند',
-  unsupported: 'مرورگرتان از مکان‌یابی پشتیبانی نمی‌کند',
+  unsupported: 'مرورگر شما از مکان‌یابی پشتیبانی نمی‌کند',
+  insecure: 'مکان‌یابی فقط روی HTTPS کار می‌کند — با آدرس https باز کنید (راهنمای dev.cmd)',
 }
 
 /**
@@ -177,10 +178,12 @@ function MyLocationButton() {
     >
       {locating ? (
         <Loader2 className="size-4 animate-spin text-primary" />
+      ) : status === 'insecure' ? (
+        <ShieldAlert className="size-4 text-destructive" />
       ) : (
         <Crosshair className={cn('size-4', status === 'active' ? 'text-primary' : 'text-muted-foreground')} />
       )}
-      {locating ? 'در حال مکان‌یابی…' : 'مکان من'}
+      {locating ? 'در حال مکان‌یابی…' : status === 'insecure' ? 'نیازمند HTTPS' : 'مکان من'}
     </button>
   )
 }

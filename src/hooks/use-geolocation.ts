@@ -39,6 +39,15 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       setStatus('unsupported')
       return
     }
+    // مرورگرها مکان‌یابی را فقط در «context امن» می‌دهند؛ روی http://<LAN-IP>
+    // (تست با گوشی) بی‌سروصدا بلاک می‌شود — وضعیت را شفاف اعلام کن.
+    if (typeof window !== 'undefined' && !window.isSecureContext) {
+      setStatus('insecure')
+      console.info(
+        '[PawsMarket] Geolocation needs a secure context — open the site via https:// (HTTPS_DEV=1) or localhost.',
+      )
+      return
+    }
     setStatus('locating')
     navigator.geolocation.getCurrentPosition(
       (position) => {

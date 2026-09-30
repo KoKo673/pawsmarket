@@ -24,13 +24,15 @@ import type { ListingWithDistance, MedicalFlag } from '@/types'
 /* ── کاشی آمار کوچک ──────────────────────────────────────────── */
 
 function Stat({ icon, label, value }: { icon: ReactNode; label: string; value: ReactNode }) {
+  // min-w-0 روی هر دو سطح: ستون‌های grid هرگز نباید با min-content
+  // (متن بلند/بی‌فاصله) پهن‌تر از کادر خودشان شوند — همان overflow موبایل
   return (
-    <div className="rounded-2xl border border-border/70 bg-muted/40 p-3.5">
+    <div className="min-w-0 overflow-hidden rounded-2xl border border-border/70 bg-muted/40 p-3.5">
       <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
         {icon}
         {label}
       </div>
-      <p className="mt-1.5 truncate text-sm font-extrabold">{value}</p>
+      <p className="mt-1.5 min-w-0 truncate text-sm font-extrabold">{value}</p>
     </div>
   )
 }
@@ -52,7 +54,7 @@ const MEDICAL_META: Record<MedicalFlag, { label: string; className: string }> = 
 export function StatsGrid({ item }: { item: ListingWithDistance }) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 [&>*]:min-w-0 sm:grid-cols-3">
         {item.kind === 'pet' && (
           <>
             <Stat icon={<Baby className="size-3.5 text-primary" />} label="سن" value={formatAge(item.ageMonths)} />

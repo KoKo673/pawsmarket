@@ -93,6 +93,12 @@
     scroll-behavior: smooth;
     /* Native-app feel: kill the grey tap flash on mobile */
     -webkit-tap-highlight-color: transparent;
+    /* Kill Android Chrome Text Autosizing (font boosting): it inflates
+       fonts when it thinks the layout is wide, overflowing fixed-width
+       cards/dialog tiles on real phones — exactly the mobile screenshot
+       bug where text spilled past the dialog edges. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   body {

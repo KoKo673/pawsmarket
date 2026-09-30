@@ -1,3 +1,4 @@
+import basicSsl from '@vitejs/plugin-basic-ssl'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
@@ -6,11 +7,16 @@ import { defineConfig, loadEnv } from 'vite'
 export default defineConfig(({ mode }) => {
   // Read .env / .env.local so the proxy target is configurable without
   // rebuilding. VITE_API_BASE_URL is the Flask + PostGIS backend.
+  // loadEnv(mode, root, '') — prefix صریح «» لازم است تا متغیرهای
+  // بدون پیشوندِ VITE_ (مثل HTTPS_DEV) هم از .env / .env.local خوانده شوند.
   const env = loadEnv(mode, process.cwd(), '')
   const apiTarget = env.VITE_API_BASE_URL || 'http://localhost:9232'
+  // HTTPS_DEV=1 → serve over HTTPS so geolocation works from a phone on
+  // the LAN (browsers require a secure context for navigator.geolocation).
+  const httpsDev = env.HTTPS_DEV === '1' || env.HTTPS_DEV === 'true'
 
   return {
-    plugins: [react()],
+    plugins: [react(), ...(httpsDev ? [basicSsl()] : [])],
     // Base path for the deployment target (e.g. "/pawsmarket/" on
     // GitHub Pages project sites). Defaults to "/" for local dev.
     // Read from loadEnv too — Git Bash mangles inline `VITE_BASE=/…`

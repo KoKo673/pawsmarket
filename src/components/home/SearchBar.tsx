@@ -16,7 +16,9 @@ function locationPlaceholder(status: GeoStatus): string {
     case 'locating':
       return 'در حال پیدا کردن شما…'
     case 'denied':
-      return 'دسترسی مسدود — نام محله را بنویس'
+      return 'دسترسی مسدود — نام محله را بنویسید'
+    case 'insecure':
+      return 'برای مکان‌یابی سایت را با https باز کنید'
     default:
       return 'تهران'
   }

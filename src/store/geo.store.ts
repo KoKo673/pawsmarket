@@ -3,7 +3,7 @@ import { create } from 'zustand'
 import { DEFAULT_ORIGIN } from '@/lib/geo'
 import type { GeoPoint } from '@/types'
 
-export type GeoStatus = 'default' | 'locating' | 'active' | 'denied' | 'unsupported'
+export type GeoStatus = 'default' | 'locating' | 'active' | 'denied' | 'unsupported' | 'insecure'
 
 interface GeoState {
   /** Center of every nearby query + map flyTo. Starts at Tehran. */
