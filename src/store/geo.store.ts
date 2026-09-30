@@ -3,7 +3,15 @@ import { create } from 'zustand'
 import { DEFAULT_ORIGIN } from '@/lib/geo'
 import type { GeoPoint } from '@/types'
 
-export type GeoStatus = 'default' | 'locating' | 'active' | 'denied' | 'unsupported' | 'insecure'
+export type GeoStatus =
+  | 'default'
+  | 'locating'
+  | 'active'
+  | 'denied'
+  | 'unsupported'
+  | 'insecure'
+  /** موقعیت برگشتی خارج از ایران است (تقریباً همیشه: VPN روشن) */
+  | 'out-of-region'
 
 interface GeoState {
   /** Center of every nearby query + map flyTo. Starts at Tehran. */

@@ -18,7 +18,7 @@ export type Species = 'dog' | 'cat' | 'rabbit' | 'bird' | 'fish' | 'small' | 'ot
 
 export type ProductCategory = 'food' | 'toy' | 'health' | 'accessories' | 'grooming'
 
-export type StoreCategory = 'shop' | 'vet' | 'groomer' | 'shelter' | 'cafe'
+export type StoreCategory = 'shop' | 'vet' | 'groomer' | 'shelter' | 'cafe' | 'boarding'
 
 /** Categorical medical flags shown on pet detail cards. */
 export type MedicalFlag = 'vaccinated' | 'sterilized' | 'microchipped' | 'needs-care' | 'checkup-due'

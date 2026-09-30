@@ -1,4 +1,4 @@
-import { Crosshair, Loader2, MapPin, Search } from 'lucide-react'
+import { Crosshair, Loader2, MapPin, Search, ShieldAlert } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -19,6 +19,8 @@ function locationPlaceholder(status: GeoStatus): string {
       return 'دسترسی مسدود — نام محله را بنویسید'
     case 'insecure':
       return 'برای مکان‌یابی سایت را با https باز کنید'
+    case 'out-of-region':
+      return 'VPN روشن است — موقعیت واقعی پیدا نشد'
     default:
       return 'تهران'
   }
@@ -77,6 +79,8 @@ export function SearchBar() {
         >
           {status === 'locating' ? (
             <Loader2 className="size-4 animate-spin" />
+          ) : status === 'out-of-region' || status === 'insecure' ? (
+            <ShieldAlert className="size-4 text-destructive" />
           ) : (
             <Crosshair className="size-4" />
           )}

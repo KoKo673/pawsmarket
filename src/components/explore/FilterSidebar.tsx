@@ -36,6 +36,7 @@ const CATEGORY_CHIPS: Array<{ id: ProductCategory | StoreCategory; label: string
   { id: 'groomer', label: 'آرایشگاه', icon: Scissors },
   { id: 'vet', label: 'دامپزشک', icon: Stethoscope },
   { id: 'shelter', label: 'پناهگاه', icon: PawPrint },
+  { id: 'boarding', label: 'پانسیون', icon: Home },
 ]
 
 /** برچسب مقادیر قیمت (تومان) با خلاصه‌سازی میلیونی */

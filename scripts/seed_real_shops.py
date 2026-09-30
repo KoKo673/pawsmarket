@@ -94,10 +94,15 @@ def parse_hours(oh):
         return (m.group(1).zfill(5), m.group(2).zfill(5))
     return ("", "")
 
-def infer_category(name, kind):
+def infer_category(name, kind, osm_tags=None):
+    tags = osm_tags or {}
+    if tags.get("amenity") == "animal_shelter":
+        return "shelter"
+    if tags.get("amenity") == "animal_boarding" or re.search(r"پانسیون|هتل.*کانیس|hotel", name, re.I):
+        return "boarding"
     if kind == "vet":
         return "vet"
-    if re.search(r"آرایش|گرومینگ|groom", name, re.I):
+    if tags.get("shop") == "pet_grooming" or re.search(r"آرایش|گرومینگ|groom|استایلیست", name, re.I):
         return "groomer"
     return "shop"
 
@@ -157,37 +162,56 @@ PRODUCT_TEMPLATES = {
     ],
 }
 
+# مواردی که باید حتماً در کاتالوگ باشند (پناهگاه/پانسیون/آرایشگاه‌های واقعی
+# تهران که در فوتر و فیلترها لینک شده‌اند)
+FORCE_INCLUDE_NAMES = {
+    "پناهگاه حیوانات سوهانک",
+    "دهکده مهربانی حیوانات چیتگر",
+    "آرایشگاه حیوانات خانگی ویدپت",
+    "پت شاپ دلسا",
+    "پت استایلیست",
+    "پانسیون گربه",
+    "هتل کانیس",
+}
+
+
 def main():
-    d = json.load(open(OVERPASS_DUMP, encoding="utf-8"))
+    dumps = [OVERPASS_DUMP]
+    extra = os.path.join(HERE, "shelters_grooming.json")
+    if os.path.exists(extra):
+        dumps.append(extra)
     shops, vets = [], []
     seen = set()
-    for e in d["elements"]:
-        t = e.get("tags", {})
-        lat = e.get("lat") or (e.get("center") or {}).get("lat")
-        lng = e.get("lon") or (e.get("center") or {}).get("lon")
-        if not lat or not lng:
-            continue
-        name = t.get("name") or t.get("name:fa") or ""
-        if not name:
-            continue
-        kind = "vet" if t.get("amenity") == "veterinary" else "shop"
-        key = (name, round(lat, 4))
-        if key in seen:
-            continue
-        seen.add(key)
-        row = dict(
-            name=name,
-            kind=kind,
-            lat=round(lat, 6),
-            lng=round(lng, 6),
-            address=build_address(t.get("addr:street") or "", t.get("addr:housenumber") or "", t.get("addr:suburb") or ""),
-            phone_raw=t.get("phone") or t.get("contact:phone") or t.get("contact:mobile") or "",
-            website=t.get("website") or "",
-            hours=parse_hours(t.get("opening_hours") or ""),
-            category=infer_category(name, kind),
-            dist=round(hav(CENTER, (lat, lng)), 2),
-        )
-        (vets if kind == "vet" else shops).append(row)
+    for path in dumps:
+        d = json.load(open(path, encoding="utf-8"))
+        for e in d["elements"]:
+            t = e.get("tags", {})
+            lat = e.get("lat") or (e.get("center") or {}).get("lat")
+            lng = e.get("lon") or (e.get("center") or {}).get("lon")
+            if not lat or not lng:
+                continue
+            name = t.get("name") or t.get("name:fa") or ""
+            name = name.split("|")[0].strip()  # «هتل کانیس | hotelcanis» → «هتل کانیس»
+            if not name or name == "?":
+                continue
+            kind = "vet" if t.get("amenity") == "veterinary" else "shop"
+            key = (name, round(lat, 4))
+            if key in seen:
+                continue
+            seen.add(key)
+            row = dict(
+                name=name,
+                kind=kind,
+                lat=round(lat, 6),
+                lng=round(lng, 6),
+                address=build_address(t.get("addr:street") or "", t.get("addr:housenumber") or "", t.get("addr:suburb") or ""),
+                phone_raw=t.get("phone") or t.get("contact:phone") or t.get("contact:mobile") or "",
+                website=t.get("website") or "",
+                hours=parse_hours(t.get("opening_hours") or ""),
+                category=infer_category(name, kind, osm_tags=t),
+                dist=round(hav(CENTER, (lat, lng)), 2),
+            )
+            (vets if kind == "vet" else shops).append(row)
 
     def rank(r):
         s = 0
@@ -203,14 +227,22 @@ def main():
             s += 2
         return -s
 
-    shops = sorted([r for r in shops if r["dist"] <= 11], key=rank)[:13]
-    vets = sorted([r for r in vets if r["dist"] <= 12], key=rank)[:5]
-    selected = shops + vets
+    # ۱۳ فروشگاه نزدیک + ۵ دامپزشکی برتر (بدون اعمال فیلتر فاصله روی موارد اجباری)
+    ranked_shops = sorted(shops, key=rank)
+    ranked_vets = sorted(vets, key=rank)
+    top_shops = [r for r in ranked_shops if r["dist"] <= 11][:13]
+    top_vets = [r for r in ranked_vets if r["dist"] <= 12][:5]
+    selected = top_shops + top_vets
+    # … به‌علاوه‌ی پناهگاه/پانسیون/آرایشگاه‌های واقعی (اجباری، با هر فاصله‌ای)
+    chosen = {r["name"] for r in selected}
+    forced = [r for r in ranked_shops + ranked_vets if r["name"] in FORCE_INCLUDE_NAMES and r["name"] not in chosen]
+    selected = selected + forced
 
     def enrich(r):
         k = SITE_KNOWLEDGE.get(r["name"], {})
         phone = k.get("phone") or norm_phone(r["phone_raw"])
         cats = k.get("categories")
+        desc = k.get("description")
         if not cats:
             n = r["name"]
             if re.search(r"قناری|پرنده|لوتینو", n):
@@ -222,20 +254,33 @@ def main():
             elif r["category"] == "vet":
                 cats = ["معاینه و درمان", "واکسیناسیون", "غذای درمانی", "مکمل و دارو"]
             elif r["category"] == "groomer":
-                cats = ["حمام و آرایش", "کوتاه‌کردن ناخن", "بهداشتی"]
+                cats = ["حمام و آرایش", "کوتاه‌کردن ناخن", "استایل مو"]
+            elif r["category"] == "shelter":
+                cats = ["سرپرستی حیوانات", "نگهداری بی‌سرپرست‌ها", "واکسیناسیون"]
+            elif r["category"] == "boarding":
+                cats = ["پانسیون سگ", "پانسیون گربه", "نگهداری کوتاه‌مدت"]
             else:
                 cats = GENERIC_CATS
+        if not desc:
+            where = f"در {r['address']}" if r["address"] else "در تهران"
+            if r["category"] == "shelter":
+                desc = f"«{r['name']}» — پناهگاه حیوانات {where}؛ پذیرش و نگهداری سگ‌ها و گربه‌های بی‌سرپرست و معرفی برای سرپرستی."
+            elif r["category"] == "boarding":
+                desc = f"«{r['name']}» — پانسیون و نگهداری حیوانات {where}؛ نگهداری کوتاه‌مدت سگ و گربه در محیطی امن."
+            elif r["category"] == "groomer":
+                desc = f"«{r['name']}» — آرایشگاه و استایل حیوانات خانگی {where}؛ حمام، اصلاح مو و کوتاه‌کردن ناخن."
+            else:
+                desc = f"«{r['name']}» — عرضه‌ی {'، '.join(cats[:4])} {where}."
         opens = k.get("opensAt") or r["hours"][0] or ""
         closes = k.get("closesAt") or r["hours"][1] or ""
         meta = {
             "phone": phone,
             "category": r["category"],
-            "opensAt": opens or "09:00",
-            "closesAt": closes or "21:00",
+            "opensAt": opens or ("08:00" if r["category"] == "vet" else "09:00"),
+            "closesAt": closes or ("20:00" if r["category"] in ("vet", "shelter") else "21:00"),
             "website": k.get("website") or r["website"],
             "categories": cats,
-            "description": k.get("description")
-            or f"«{r['name']}» — عرضه‌ی {'، '.join(cats[:4])} در {r['address']}.",
+            "description": desc,
         }
         return {kk: vv for kk, vv in meta.items() if vv}
 
@@ -260,6 +305,8 @@ def main():
         )
 
     for i, r in enumerate(selected, start=1):
+        if r["category"] in ("shelter", "boarding"):
+            continue  # پناهگاه/پانسیون کالا نمی‌فروشند — محصول جعلی نسازیم
         if r["category"] == "vet":
             tpl = PRODUCT_TEMPLATES["vet"]
         elif r["category"] == "groomer":
@@ -294,7 +341,7 @@ def main():
         " */",
         "export interface ShopMeta {",
         "  phone?: string",
-        "  category?: 'shop' | 'vet' | 'groomer' | 'shelter' | 'cafe'",
+        "  category?: 'shop' | 'vet' | 'groomer' | 'shelter' | 'cafe' | 'boarding'",
         "  opensAt?: string",
         "  closesAt?: string",
         "  website?: string",

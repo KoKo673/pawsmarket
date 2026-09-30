@@ -1,0 +1,154 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-09-30T14:26:48Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 6270144122,
+  "lat": 35.7768332,
+  "lon": 51.4867960,
+  "tags": {
+    "description": "مجموعه خدماتی حیوانات خانگی\nآرایشگاه-آموزشگاه-آتلیه عکاسی-پانسیون-پت شاپ-پت کافی",
+    "name": "پت استایلیست",
+    "name:en": "Pet Stylist",
+    "shop": "pet_grooming"
+  }
+},
+{
+  "type": "node",
+  "id": 9814518173,
+  "lat": 35.7381405,
+  "lon": 51.2139417,
+  "tags": {
+    "amenity": "animal_shelter",
+    "name": "دهکده مهربانی حیوانات چیتگر"
+  }
+},
+{
+  "type": "node",
+  "id": 11077743880,
+  "lat": 35.7448812,
+  "lon": 51.4589507,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:housenumber": "6",
+    "addr:street": "ایوان مدائن",
+    "amenity": "animal_boarding",
+    "animal_boarding": "cat",
+    "name": "پانسیون گربه",
+    "opening_hours": "24/7",
+    "operator": "yashar"
+  }
+},
+{
+  "type": "node",
+  "id": 11187700404,
+  "lat": 35.6556612,
+  "lon": 51.3392622,
+  "tags": {
+    "description": "ملزومات حیوانات خانگی سگ، گربه، پرنده‌های زینتی، جوندگان",
+    "name": "پت شاپ دلسا",
+    "shop": "pet_grooming",
+    "source": "Note 3822524"
+  }
+},
+{
+  "type": "node",
+  "id": 12888287104,
+  "lat": 35.7425886,
+  "lon": 51.3098015,
+  "tags": {
+    "addr:city": "تهران",
+    "addr:street": "نادری",
+    "amenity": "animal_boarding",
+    "animal_boarding": "dog;cat",
+    "name": "آرایشگاه حیوانات خانگی ویدپت"
+  }
+},
+{
+  "type": "node",
+  "id": 13963200809,
+  "lat": 35.6698070,
+  "lon": 51.1184587,
+  "tags": {
+    "addr:city": "باغستان",
+    "addr:housenumber": "کوچه یاس پلاک ۱۵",
+    "addr:street": "تقی کریمی",
+    "amenity": "animal_boarding",
+    "animal_boarding": "dog;cat",
+    "contact:instagram": "https://www.instagram.com/canis_hotel/",
+    "description": "پانسیون سک، پانسیون گربه، گرومینگ، آموزش سگ، هتل پانسیون سگ و گربه",
+    "email": "hotelcanis.co@gmail.com",
+    "name": "هتل کانیس | hotelcanis",
+    "opening_hours": "24/7",
+    "website": "https://hotelcanis.ir/"
+  }
+},
+{
+  "type": "way",
+  "id": 483115660,
+  "center": {
+    "lat": 35.9062434,
+    "lon": 50.9019302
+  },
+  "tags": {
+    "amenity": "animal_boarding",
+    "animal_boarding": "horse",
+    "name": "پرورش اسب بهپروران آتیه"
+  }
+},
+{
+  "type": "way",
+  "id": 733561530,
+  "center": {
+    "lat": 35.6515806,
+    "lon": 50.9278508
+  },
+  "tags": {
+    "amenity": "animal_boarding",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 839818224,
+  "center": {
+    "lat": 35.6068311,
+    "lon": 51.0969077
+  },
+  "tags": {
+    "amenity": "animal_shelter"
+  }
+},
+{
+  "type": "way",
+  "id": 839818225,
+  "center": {
+    "lat": 35.6106962,
+    "lon": 51.0954006
+  },
+  "tags": {
+    "amenity": "animal_shelter"
+  }
+},
+{
+  "type": "way",
+  "id": 1009670796,
+  "center": {
+    "lat": 35.8032934,
+    "lon": 51.5507976
+  },
+  "tags": {
+    "amenity": "animal_shelter",
+    "building": "yes",
+    "name": "پناهگاه حیوانات سوهانک"
+  }
+}
+
+  ]
+}

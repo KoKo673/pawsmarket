@@ -20,6 +20,13 @@ INSERT INTO stores (name, address, location, created_at) VALUES ('کلینیک �
 INSERT INTO stores (name, address, location, created_at) VALUES ('کلینیک دامپزشکی لارا', 'خیابان شاداب، پلاک ۵۸، تهران', ST_SetSRID(ST_MakePoint(51.415677, 35.710133), 4326), now());
 INSERT INTO stores (name, address, location, created_at) VALUES ('کلینیک دامپزشکی نیل پت', 'خیابان سعید اسلامیان، پلاک ۳۲، تهران', ST_SetSRID(ST_MakePoint(51.334059, 35.753772), 4326), now());
 INSERT INTO stores (name, address, location, created_at) VALUES ('shahoo veterinary clinic', 'خیابان نصرت، تهران', ST_SetSRID(ST_MakePoint(51.384564, 35.705562), 4326), now());
+INSERT INTO stores (name, address, location, created_at) VALUES ('هتل کانیس', 'خیابان تقی کریمی، کوچه یاس  ۱۵، تهران', ST_SetSRID(ST_MakePoint(51.118459, 35.669807), 4326), now());
+INSERT INTO stores (name, address, location, created_at) VALUES ('پانسیون گربه', 'خیابان ایوان مدائن، پلاک ۶، تهران', ST_SetSRID(ST_MakePoint(51.458951, 35.744881), 4326), now());
+INSERT INTO stores (name, address, location, created_at) VALUES ('آرایشگاه حیوانات خانگی ویدپت', 'خیابان نادری، تهران', ST_SetSRID(ST_MakePoint(51.309801, 35.742589), 4326), now());
+INSERT INTO stores (name, address, location, created_at) VALUES ('پت شاپ دلسا', 'تهران', ST_SetSRID(ST_MakePoint(51.339262, 35.655661), 4326), now());
+INSERT INTO stores (name, address, location, created_at) VALUES ('پت استایلیست', 'تهران', ST_SetSRID(ST_MakePoint(51.486796, 35.776833), 4326), now());
+INSERT INTO stores (name, address, location, created_at) VALUES ('دهکده مهربانی حیوانات چیتگر', 'تهران', ST_SetSRID(ST_MakePoint(51.213942, 35.738141), 4326), now());
+INSERT INTO stores (name, address, location, created_at) VALUES ('پناهگاه حیوانات سوهانک', 'تهران', ST_SetSRID(ST_MakePoint(51.550798, 35.803293), 4326), now());
 INSERT INTO products (name, price, store_id, location, created_at) VALUES ('غذای خشک سگ بالغ — ۱۲ کیلوگرم', 4850000, 1, ST_SetSRID(ST_MakePoint(51.371863, 35.722177), 4326), now());
 INSERT INTO products (name, price, store_id, location, created_at) VALUES ('غذای خشک گربه — ۲ کیلوگرم', 1250000, 1, ST_SetSRID(ST_MakePoint(51.371863, 35.722177), 4326), now());
 INSERT INTO products (name, price, store_id, location, created_at) VALUES ('تشویقی جویدنی طبیعی', 620000, 1, ST_SetSRID(ST_MakePoint(51.371863, 35.722177), 4326), now());
@@ -98,4 +105,10 @@ INSERT INTO products (name, price, store_id, location, created_at) VALUES ('شا
 INSERT INTO products (name, price, store_id, location, created_at) VALUES ('مکمل مفصل سگ — ۶۰ عدد', 1600000, 18, ST_SetSRID(ST_MakePoint(51.384564, 35.705562), 4326), now());
 INSERT INTO products (name, price, store_id, location, created_at) VALUES ('غذای درمانی کلیه گربه — ۲ کیلوگرم', 6900000, 18, ST_SetSRID(ST_MakePoint(51.384564, 35.705562), 4326), now());
 INSERT INTO products (name, price, store_id, location, created_at) VALUES ('شامپوی دارویی ضدقارچ', 380000, 18, ST_SetSRID(ST_MakePoint(51.384564, 35.705562), 4326), now());
+INSERT INTO products (name, price, store_id, location, created_at) VALUES ('شامپوی خشک سگ', 280000, 22, ST_SetSRID(ST_MakePoint(51.339262, 35.655661), 4326), now());
+INSERT INTO products (name, price, store_id, location, created_at) VALUES ('برس ضد ریزش مو', 340000, 22, ST_SetSRID(ST_MakePoint(51.339262, 35.655661), 4326), now());
+INSERT INTO products (name, price, store_id, location, created_at) VALUES ('حوله حمام پت', 230000, 22, ST_SetSRID(ST_MakePoint(51.339262, 35.655661), 4326), now());
+INSERT INTO products (name, price, store_id, location, created_at) VALUES ('شامپوی خشک سگ', 280000, 23, ST_SetSRID(ST_MakePoint(51.486796, 35.776833), 4326), now());
+INSERT INTO products (name, price, store_id, location, created_at) VALUES ('برس ضد ریزش مو', 340000, 23, ST_SetSRID(ST_MakePoint(51.486796, 35.776833), 4326), now());
+INSERT INTO products (name, price, store_id, location, created_at) VALUES ('حوله حمام پت', 230000, 23, ST_SetSRID(ST_MakePoint(51.486796, 35.776833), 4326), now());
 COMMIT;

@@ -105,7 +105,7 @@ export function StatsGrid({ item }: { item: ListingWithDistance }) {
             <Stat
               icon={<Scissors className="size-3.5 text-primary" />}
               label="دسته"
-              value={item.category === 'groomer' ? 'آرایشگاه' : item.category === 'vet' ? 'دامپزشکی' : item.category === 'shelter' ? 'پناهگاه' : item.category === 'cafe' ? 'کافه' : 'فروشگاه'}
+              value={item.category === 'groomer' ? 'آرایشگاه' : item.category === 'vet' ? 'دامپزشکی' : item.category === 'shelter' ? 'پناهگاه' : item.category === 'boarding' ? 'پانسیون' : item.category === 'cafe' ? 'کافه' : 'فروشگاه'}
             />
             <Stat icon={<MapPin className="size-3.5 text-accent" />} label="فاصله" value={formatDistance(item.distanceKm)} />
             <Stat

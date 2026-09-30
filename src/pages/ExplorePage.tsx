@@ -24,7 +24,8 @@ const URL_PRESETS: Record<string, Partial<Filters>> = {
   food: { kinds: ['product'], categories: ['food'] },
   vets: { kinds: ['store'], categories: ['vet'] },
   groomers: { kinds: ['store'], categories: ['groomer'] },
-  shelters: { kinds: ['store'], categories: ['shelter'] },
+  // پناهگاه‌ها در حومه‌اند — شعاع ۳۰کیلومتر تا همه نمایان شوند
+  shelters: { kinds: ['store'], categories: ['shelter'], radiusKm: 30 },
 }
 
 /**

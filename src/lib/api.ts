@@ -1,3 +1,4 @@
+import { PRODUCT_IMAGES } from '@/data/products'
 import { SHOP_ENRICHMENT } from '@/data/shops'
 import { applyFilters } from '@/lib/search'
 import { asset } from '@/lib/utils'
@@ -127,11 +128,12 @@ const PRODUCT_IMAGE: Record<ProductCategory, string> = {
 }
 
 const STORE_IMAGE: Record<StoreCategory, string> = {
-  shop: asset('images/listings/toys.jpg'),
-  vet: asset('images/listings/vet.jpg'),
-  groomer: asset('images/listings/petstore.jpg'),
-  shelter: asset('images/listings/dog-corgi.jpg'),
+  shop: asset('images/products/store-shop.jpg'),
+  vet: asset('images/products/store-vet.jpg'),
+  groomer: asset('images/products/store-grooming.jpg'),
+  shelter: asset('images/products/store-shelter.jpg'),
   cafe: asset('images/listings/grooming.jpg'),
+  boarding: asset('images/products/store-boarding.jpg'),
 }
 
 /** Infer display category from free-text name (backend doesn't store it yet). */
@@ -146,8 +148,9 @@ function inferProductCategory(name: string): ProductCategory {
 function inferStoreCategory(name: string, address: string): StoreCategory {
   const s = `${name} ${address}`.toLowerCase()
   if (/(vet|دامپزشک|clinic)/.test(s)) return 'vet'
-  if (/(groom|آرایش|bath|حمام)/.test(s)) return 'groomer'
-  if (/(shelter|پناهگاه|rescue)/.test(s)) return 'shelter'
+  if (/(groom|آرایش|bath|حمام|استایل)/.test(s)) return 'groomer'
+  if (/(shelter|پناهگاه|rescue|مهربانی)/.test(s)) return 'shelter'
+  if (/(پانسیون|هتل|hotel|boarding)/.test(s)) return 'boarding'
   if (/(cafe|کافه)/.test(s)) return 'cafe'
   return 'shop'
 }
@@ -209,7 +212,10 @@ function toProductListing(raw: RawRow, storeNames: Map<string, string>): Product
     kind: 'product',
     name,
     description: str(raw.description, `«${name}» — توضیحات از سمت فروشگاه ارائه نشده است.`),
-    images: Array.isArray(raw.images) && raw.images.length > 0 ? (raw.images as string[]) : [PRODUCT_IMAGE[category]],
+    images:
+      Array.isArray(raw.images) && raw.images.length > 0
+        ? (raw.images as string[])
+        : [PRODUCT_IMAGES[name] ?? PRODUCT_IMAGE[category]],
     location: toPoint(raw),
     address: str(raw.address, 'تهران'),
     createdAt: str(raw.created_at ?? raw.createdAt, new Date(0).toISOString()),

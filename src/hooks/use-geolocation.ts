@@ -3,6 +3,15 @@ import { useCallback, useEffect } from 'react'
 import { DEFAULT_ORIGIN } from '@/lib/geo'
 import { useGeoStore } from '@/store/geo.store'
 
+/**
+ * جعبه‌ی ایران (کمی سخاوتمندانه): عرض ۲۴–۴۰ / طول ۴۴–۶۴.
+ * اگر مختصات بیرون این محدوده باشد تقریباً همیشه یعنی VPN/پروکسی روشن است
+ * و مرورگر موقعیت گره خروجی را می‌دهد — نه موقعیت واقعی کاربر.
+ */
+function isInsideIran(lat: number, lng: number): boolean {
+  return lat >= 24 && lat <= 40 && lng >= 44 && lng <= 64
+}
+
 interface UseGeolocationOptions {
   /**
    * Ask for the location immediately on mount (app-level default: true).
@@ -58,6 +67,16 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
           Number.isFinite(longitude) &&
           !(latitude === 0 && longitude === 0)
         ) {
+          // موقعیت خارج از ایران = تقریباً همیشه VPN؛ نقشه را به کشور
+          // دیگری نبر و شفاف به کاربر بگو (به‌جای پرواز بی‌صدا به سوئد!)
+          if (!isInsideIran(latitude, longitude)) {
+            setStatus('out-of-region')
+            console.info(
+              '[PawsMarket] Geolocation returned a point outside Iran — a VPN/proxy is likely active. Keeping the Tehran origin.',
+              { latitude, longitude },
+            )
+            return
+          }
           setOrigin({ lat: latitude, lng: longitude })
         } else {
           setStatus('default')

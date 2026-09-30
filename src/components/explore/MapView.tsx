@@ -152,6 +152,8 @@ const STATUS_HINT: Record<GeoStatus, string> = {
   denied: 'دسترسی به مکان رد شد — نقشه روی تهران می‌ماند',
   unsupported: 'مرورگر شما از مکان‌یابی پشتیبانی نمی‌کند',
   insecure: 'مکان‌یابی فقط روی HTTPS کار می‌کند — با آدرس https باز کنید (راهنمای dev.cmd)',
+  'out-of-region':
+    'موقعیت برگشتی خارج از ایران است — VPN/پروکسی را خاموش کنید تا مکان واقعی‌تان پیدا شود',
 }
 
 /**
@@ -178,12 +180,18 @@ function MyLocationButton() {
     >
       {locating ? (
         <Loader2 className="size-4 animate-spin text-primary" />
-      ) : status === 'insecure' ? (
+      ) : status === 'insecure' || status === 'out-of-region' ? (
         <ShieldAlert className="size-4 text-destructive" />
       ) : (
         <Crosshair className={cn('size-4', status === 'active' ? 'text-primary' : 'text-muted-foreground')} />
       )}
-      {locating ? 'در حال مکان‌یابی…' : status === 'insecure' ? 'نیازمند HTTPS' : 'مکان من'}
+      {locating
+        ? 'در حال مکان‌یابی…'
+        : status === 'insecure'
+          ? 'نیازمند HTTPS'
+          : status === 'out-of-region'
+            ? 'خارج از ایران (VPN؟)'
+            : 'مکان من'}
     </button>
   )
 }
