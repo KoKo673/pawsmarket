@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Heart, MapPin, Menu, PawPrint, Plus, X } from 'lucide-react'
+import { Heart, LogIn, MapPin, Menu, Newspaper, PawPrint, Plus, User, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 
@@ -7,6 +7,7 @@ import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { Button } from '@/components/ui/button'
 import { faDigits } from '@/lib/fa'
 import { cn } from '@/lib/utils'
+import { useAuthStore } from '@/store/auth.store'
 import { useFavoritesStore } from '@/store/favorites.store'
 import { useFiltersStore } from '@/store/filters.store'
 import { useUiStore } from '@/store/ui.store'
@@ -14,6 +15,7 @@ import { useUiStore } from '@/store/ui.store'
 const NAV_LINKS = [
   { to: '/', label: 'خانه' },
   { to: '/explore', label: 'کاوش روی نقشه' },
+  { to: '/pets', label: 'حیوانات' },
 ]
 
 /**
@@ -29,6 +31,8 @@ export function Navbar() {
   const filterDrawerOpen = useUiStore((s) => s.filterDrawerOpen)
   const favCount = useFavoritesStore((s) => s.ids.length)
   const setFavoritesOnly = useFiltersStore((s) => s.setFavoritesOnly)
+  const authStatus = useAuthStore((s) => s.status)
+  const authUser = useAuthStore((s) => s.user)
 
   /** قلب نوار ناوبری: رفتن به کاوش با فیلتر «فقط ذخیره‌شده‌ها» */
   const openFavorites = () => {
@@ -87,6 +91,15 @@ export function Navbar() {
 
         {/* Actions */}
         <div className="flex items-center gap-1.5">
+          {/* فید لحظه‌ها (فقط برای کاربر وارد‌شده) */}
+          {authStatus === 'authed' && (
+            <Button asChild variant="ghost" size="icon" className="hidden md:inline-flex" aria-label="فید لحظه‌ها">
+              <Link to="/feed">
+                <Newspaper className="size-4" />
+              </Link>
+            </Button>
+          )}
+
           <Button
             variant="ghost"
             size="icon"
@@ -101,6 +114,27 @@ export function Navbar() {
               </span>
             )}
           </Button>
+
+          {/* حساب کاربری */}
+          {authStatus === 'authed' ? (
+            <Button asChild variant="ghost" size="icon" aria-label="حساب من" className="hidden md:inline-flex">
+              <Link to="/me">
+                {authUser?.avatar_url ? (
+                  <img src={authUser.avatar_url} alt="" className="size-6 rounded-full object-cover" />
+                ) : (
+                  <User className="size-4" />
+                )}
+              </Link>
+            </Button>
+          ) : authStatus === 'anon' ? (
+            <Button asChild variant="outline" size="sm" className="hidden md:inline-flex gap-1.5">
+              <Link to="/login">
+                <LogIn className="size-4" />
+                ورود
+              </Link>
+            </Button>
+          ) : null}
+
           <ThemeToggle />
           <Button asChild size="sm" className="hidden md:inline-flex gap-1.5">
             <Link to="/add">
@@ -169,6 +203,17 @@ export function Navbar() {
                 </span>
               )}
             </button>
+
+            {authStatus === 'authed' && (
+              <Link
+                to="/feed"
+                className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/60"
+              >
+                <Newspaper className="size-4 text-accent" />
+                لحظه‌ها (فید)
+              </Link>
+            )}
+
             <Link
               to="/explore"
               className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/60"
@@ -176,6 +221,24 @@ export function Navbar() {
               <MapPin className="size-4 text-accent" />
               آگهی‌های اطراف
             </Link>
+
+            {authStatus === 'authed' ? (
+              <Link
+                to="/me"
+                className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/60"
+              >
+                <User className="size-4 text-tide-500" />
+                حساب من
+              </Link>
+            ) : authStatus === 'anon' ? (
+              <Link
+                to="/login"
+                className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/60"
+              >
+                <LogIn className="size-4 text-primary" />
+                ورود / ثبت‌نام
+              </Link>
+            ) : null}
           </div>
         </motion.div>
       )}

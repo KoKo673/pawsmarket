@@ -2,6 +2,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect } from 'react'
 import { BrowserRouter, HashRouter, Route, Routes, useLocation } from 'react-router-dom'
 
+import { AuthCard } from '@/components/auth/AuthCard'
+import { RequireAuth } from '@/components/auth/RequireAuth'
 import { DetailModal } from '@/components/detail/DetailModal'
 import { Footer } from '@/components/layout/Footer'
 import { Navbar } from '@/components/layout/Navbar'
@@ -9,9 +11,14 @@ import { useGeolocation } from '@/hooks/use-geolocation'
 import { initEntranceMotion, MOTION } from '@/lib/motion'
 import { AddPage } from '@/pages/AddPage'
 import { ExplorePage } from '@/pages/ExplorePage'
+import { FeedPage } from '@/pages/FeedPage'
 import { HomePage } from '@/pages/HomePage'
+import { MyAccountPage } from '@/pages/MyAccountPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+import { PetProfilePage } from '@/pages/PetProfilePage'
+import { PetsDiscoverPage } from '@/pages/PetsDiscoverPage'
 import { AppProviders } from '@/providers/AppProviders'
+import { useAuthStore } from '@/store/auth.store'
 
 /**
  * Page transition wrapper — uses the SHARED entrance tokens
@@ -36,6 +43,11 @@ function AppRoutes() {
   const location = useLocation()
   // Detect the user's real coordinates once on mount (Tehran fallback until granted)
   useGeolocation({ autoRequest: true })
+  // راستی‌آزمایی توکن ذخیره‌شده با /api/auth/me در اولین لود
+  const hydrate = useAuthStore((s) => s.hydrate)
+  useEffect(() => {
+    void hydrate()
+  }, [hydrate])
   // سیستم واحد انیمیشن ورود — یک‌بار در مرز layout، برای همه‌ی صفحات
   useEffect(() => {
     const boot = initEntranceMotion()
@@ -78,6 +90,58 @@ function AppRoutes() {
               element={
                 <AnimatedPage>
                   <AddPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <AnimatedPage>
+                  <AuthCard mode="register" />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <AnimatedPage>
+                  <AuthCard mode="login" />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/pets"
+              element={
+                <AnimatedPage>
+                  <PetsDiscoverPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/pet/:id"
+              element={
+                <AnimatedPage>
+                  <PetProfilePage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/feed"
+              element={
+                <AnimatedPage>
+                  <RequireAuth>
+                    <FeedPage />
+                  </RequireAuth>
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/me"
+              element={
+                <AnimatedPage>
+                  <RequireAuth>
+                    <MyAccountPage />
+                  </RequireAuth>
                 </AnimatedPage>
               }
             />
