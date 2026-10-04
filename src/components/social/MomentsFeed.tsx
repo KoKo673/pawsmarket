@@ -1,6 +1,7 @@
-import { Heart, PawPrint } from 'lucide-react'
+import { PawPrint } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
+import { MomentActions } from '@/components/social/MomentActions'
 import { Button } from '@/components/ui/button'
 import { faDigits } from '@/lib/fa'
 import type { Post } from '@/lib/social-api'
@@ -64,12 +65,12 @@ export function MomentCard({ post }: { post: Post }) {
         </div>
       )}
 
-      <footer className="flex items-center gap-2 p-4 text-muted-foreground">
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold">
-          <Heart className="size-4" />
-          {faDigits(post.like_count)}
-        </span>
-      </footer>
+      <MomentActions
+        postId={post.id}
+        initialLiked={post.liked_by_me ?? false}
+        initialCount={post.like_count}
+        initialComments={post.comments_count ?? 0}
+      />
     </article>
   )
 }

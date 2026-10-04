@@ -107,6 +107,22 @@ export interface Post {
   expires_at: string | null
   pet_name?: string
   pet_avatar?: string | null
+  liked_by_me?: boolean
+  comments_count?: number
+}
+
+export interface Comment {
+  id: number
+  post_id: number
+  text: string
+  created_at: string
+  username: string
+  display_name: string | null
+  avatar_url: string | null
+}
+
+export interface Story extends Omit<Post, 'like_count'> {
+  kind: 'story'
 }
 
 export interface DiscoverPet {
@@ -167,6 +183,8 @@ export const socialApi = {
     request<{ items: Post[]; next_before: string | null }>(
       `/api/pets/${petId}/posts${before ? `?before=${encodeURIComponent(before)}` : ''}`,
     ),
+  petStories: (petId: number | string) =>
+    request<{ items: Story[]; next_before: string | null }>(`/api/pets/${petId}/stories`),
   createPost: (petId: number | string, text: string, images: string[], kind: 'post' | 'story' = 'post') =>
     request<Post>(`/api/pets/${petId}/posts`, {
       method: 'POST',
@@ -187,4 +205,19 @@ export const socialApi = {
     form.append('file', file)
     return request<{ url: string }>('/api/media', { method: 'POST', body: form })
   },
+
+  /* ── واکنش‌ها (فاز B) ── */
+  like: (postId: number | string) =>
+    request<{ liked: boolean; like_count: number }>(`/api/posts/${postId}/like`, { method: 'POST' }),
+  unlike: (postId: number | string) =>
+    request<{ liked: boolean; like_count: number }>(`/api/posts/${postId}/like`, { method: 'DELETE' }),
+  listComments: (postId: number | string, before?: string) =>
+    request<{ items: Comment[]; next_before: string | null }>(
+      `/api/posts/${postId}/comments${before ? `?before=${encodeURIComponent(before)}` : ''}`,
+    ),
+  addComment: (postId: number | string, text: string) =>
+    request<Comment>(`/api/posts/${postId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    }),
 }

@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom'
 import { FollowButton } from '@/components/social/FollowButton'
 import { CreateMomentDialog } from '@/components/social/CreateMomentDialog'
 import { MomentCard, EmptyFeed } from '@/components/social/MomentsFeed'
+import { StoryBar } from '@/components/social/StoryBar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -25,6 +26,7 @@ export function PetProfilePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [composeOpen, setComposeOpen] = useState(false)
+  const [composeKind, setComposeKind] = useState<'post' | 'story'>('post')
 
   const load = useCallback(async () => {
     if (!id) return
@@ -104,7 +106,7 @@ export function PetProfilePage() {
             </div>
             <div className="flex items-center gap-2 pb-1">
               {isOwnerMine ? (
-                <Button className="gap-2" onClick={() => setComposeOpen(true)}>
+                <Button className="gap-2" onClick={() => { setComposeKind('post'); setComposeOpen(true) }}>
                   <Plus className="size-4" />
                   لحظه‌ی تازه
                 </Button>
@@ -162,6 +164,18 @@ export function PetProfilePage() {
         </div>
       </header>
 
+      {/* نوار استوری (فاز B) — فقط برای صاحب پروفایل قابل انتشار است */}
+      <StoryBar
+        petId={pet.id}
+        petName={pet.name}
+        avatarUrl={p.avatar_url}
+        canPublish={isOwnerMine}
+        onPublish={() => {
+          setComposeKind('story')
+          setComposeOpen(true)
+        }}
+      />
+
       {/* گالری */}
       {profile.gallery.length > 0 && (
         <section data-motion-section className="mt-8">
@@ -204,10 +218,12 @@ export function PetProfilePage() {
 
       {isOwnerMine && (
         <CreateMomentDialog
+          key={composeKind}
           open={composeOpen}
           onOpenChange={setComposeOpen}
           petId={pet.id}
           petName={pet.name}
+          initialKind={composeKind}
           onCreated={() => void load()}
         />
       )}
