@@ -10,6 +10,7 @@ import { Navbar } from '@/components/layout/Navbar'
 import { useGeolocation } from '@/hooks/use-geolocation'
 import { initEntranceMotion, MOTION } from '@/lib/motion'
 import { AddPage } from '@/pages/AddPage'
+import { AdoptionPage } from '@/pages/AdoptionPage'
 import { ExplorePage } from '@/pages/ExplorePage'
 import { FeedPage } from '@/pages/FeedPage'
 import { HomePage } from '@/pages/HomePage'
@@ -114,6 +115,14 @@ function AppRoutes() {
               element={
                 <AnimatedPage>
                   <PetsDiscoverPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/adoption"
+              element={
+                <AnimatedPage>
+                  <AdoptionPage />
                 </AnimatedPage>
               }
             />

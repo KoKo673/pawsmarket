@@ -125,6 +125,20 @@ export interface Story extends Omit<Post, 'like_count'> {
   kind: 'story'
 }
 
+export interface AdoptionRequest {
+  id: number
+  pet_id: number
+  user_id: number
+  message: string
+  status: 'pending' | 'accepted' | 'rejected'
+  created_at: string
+  decided_at: string | null
+  pet_name: string
+  pet_avatar: string | null
+  requester_username: string
+  requester_name: string | null
+}
+
 export interface DiscoverPet {
   id: number
   name: string
@@ -215,6 +229,28 @@ export const socialApi = {
     request<{ items: Comment[]; next_before: string | null }>(
       `/api/posts/${postId}/comments${before ? `?before=${encodeURIComponent(before)}` : ''}`,
     ),
+  /* ── سرپرستی (فاز C) ── */
+  requestAdoption: (petId: number | string, message: string) =>
+    request<AdoptionRequest>(`/api/pets/${petId}/adoption-requests`, {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    }),
+  petAdoptionRequests: (petId: number | string) =>
+    request<{ items: AdoptionRequest[] }>(`/api/pets/${petId}/adoption-requests`),
+  myAdoptionBox: () =>
+    request<{ outgoing: AdoptionRequest[]; incoming: AdoptionRequest[] }>(
+      '/api/me/adoption-requests',
+    ),
+  decideAdoption: (requestId: number | string, action: 'accept' | 'reject') =>
+    request<{ id: number; status: string; pet_id?: number }>(
+      `/api/adoption-requests/${requestId}/decision`,
+      { method: 'POST', body: JSON.stringify({ action }) },
+    ),
+  adoptablePets: (lat: number, lng: number, radius = 50000) =>
+    request<{ items: DiscoverPet[] }>(
+      `/api/discover/pets?lat=${lat}&lng=${lng}&radius=${radius}`,
+    ),
+
   addComment: (postId: number | string, text: string) =>
     request<Comment>(`/api/posts/${postId}/comments`, {
       method: 'POST',

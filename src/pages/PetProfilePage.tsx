@@ -1,4 +1,4 @@
-import { Cake, Heart, MapPin, PawPrint, Plus, Share2 } from 'lucide-react'
+import { Cake, Heart, Loader2, MapPin, PawPrint, Plus, Share2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
@@ -27,6 +27,7 @@ export function PetProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [composeOpen, setComposeOpen] = useState(false)
   const [composeKind, setComposeKind] = useState<'post' | 'story'>('post')
+  const [adoptionBusy, setAdoptionBusy] = useState(false)
 
   const load = useCallback(async () => {
     if (!id) return
@@ -106,10 +107,32 @@ export function PetProfilePage() {
             </div>
             <div className="flex items-center gap-2 pb-1">
               {isOwnerMine ? (
-                <Button className="gap-2" onClick={() => { setComposeKind('post'); setComposeOpen(true) }}>
-                  <Plus className="size-4" />
-                  لحظه‌ی تازه
-                </Button>
+                <>
+                  <Button
+                    variant={p.adoption_status === 'available' ? 'outline' : 'ghost'}
+                    className="gap-2"
+                    disabled={adoptionBusy}
+                    onClick={async () => {
+                      setAdoptionBusy(true)
+                      try {
+                        const next = p.adoption_status === 'available' ? '' : 'available'
+                        const updated = await socialApi.patchProfile(pet.id, { adoption_status: next })
+                        setProfile(updated)
+                      } catch (err) {
+                        setError(err instanceof Error ? err.message : 'تغییر وضعیت انجام نشد')
+                      } finally {
+                        setAdoptionBusy(false)
+                      }
+                    }}
+                  >
+                    {adoptionBusy ? <Loader2 className="size-4 animate-spin" /> : <Heart className="size-4" />}
+                    {p.adoption_status === 'available' ? 'لغو واگذاری' : 'آماده‌ی واگذاری'}
+                  </Button>
+                  <Button className="gap-2" onClick={() => { setComposeKind('post'); setComposeOpen(true) }}>
+                    <Plus className="size-4" />
+                    لحظه‌ی تازه
+                  </Button>
+                </>
               ) : (
                 <FollowButton
                   petId={pet.id}
@@ -128,6 +151,7 @@ export function PetProfilePage() {
               <h1 className="text-2xl font-extrabold tracking-tight">{pet.name}</h1>
               <Badge variant="secondary">{SPECIES_FA[pet.species] ?? pet.species}</Badge>
               {p.adoption_status === 'available' && <Badge variant="accent">آماده‌ی سرپرستی</Badge>}
+              {p.adoption_status === 'adopted' && <Badge variant="secondary">سرپرستی شده 🎉</Badge>}
               {!p.is_public && <Badge variant="muted">خصوصی</Badge>}
             </div>
             {p.bio && <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">{p.bio}</p>}

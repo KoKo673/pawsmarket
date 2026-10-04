@@ -12,7 +12,8 @@ const FOOTER_LINKS = [
     links: [
       { label: 'کاوش روی نقشه', to: '/explore' },
       { label: 'ثبت آگهی رایگان', to: '/add' },
-      { label: 'مراکز سرپرستی', to: '/explore?preset=shelters' },
+      { label: 'سرپرستی حیوانات', to: '/adoption' },
+      { label: 'مراکز و پناهگاه‌ها', to: '/explore?preset=shelters' },
       { label: 'دامپزشکان نزدیک', to: '/explore?preset=vets' },
     ],
   },

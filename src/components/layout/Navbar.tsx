@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Heart, LogIn, MapPin, Menu, Newspaper, PawPrint, Plus, User, X } from 'lucide-react'
+import { Heart, Home, LogIn, MapPin, Menu, Newspaper, PawPrint, Plus, User, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 
@@ -16,6 +16,7 @@ const NAV_LINKS = [
   { to: '/', label: 'خانه' },
   { to: '/explore', label: 'کاوش روی نقشه' },
   { to: '/pets', label: 'حیوانات' },
+  { to: '/adoption', label: 'سرپرستی' },
 ]
 
 /**
@@ -220,6 +221,13 @@ export function Navbar() {
             >
               <MapPin className="size-4 text-accent" />
               آگهی‌های اطراف
+            </Link>
+            <Link
+              to="/adoption"
+              className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/60"
+            >
+              <Home className="size-4 text-primary" />
+              سرپرستی
             </Link>
 
             {authStatus === 'authed' ? (
