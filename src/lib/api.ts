@@ -274,11 +274,21 @@ function toStoreListing(raw: RawRow): StoreListing {
 
 /* ── Geo query strings ─────────────────────────────────────────── */
 
+/**
+ * Radius is sent as BOTH `radius` and `max_distance`.
+ *
+ * The nearby endpoints declare `max_distance` (metres) and default it to 5000;
+ * `/api/pets` instead takes `radius`. Sending only `radius` left the store
+ * query pinned at the 5 km default, so widening the sidebar slider changed
+ * nothing for stores/products — the catalog silently looked tiny.
+ */
 function geoParams(origin: GeoPoint, filters: Filters): URLSearchParams {
+  const metres = String(filters.radiusKm * 1000)
   return new URLSearchParams({
     lat: origin.lat.toFixed(6),
     lng: origin.lng.toFixed(6),
-    radius: String(filters.radiusKm),
+    radius: metres,
+    max_distance: metres,
     ...(filters.query ? { q: filters.query } : {}),
   })
 }

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Build the FULL Tehran pet catalog from the city-wide Overpass dump
-(scripts/tehran_all.json — 22 districts: shops, vets, groomers, shelters,
-boarding) and emit:
+Build the FULL Tehran pet catalog from the city-wide Overpass dumps
+(scripts/tehran_wide.json preferred, scripts/tehran_all.json as fallback —
+covering all districts: shops, vets, groomers, shelters, boarding) and emit:
   1) scripts/seed_real.sql     → executed against the PostGIS container
   2) src/data/shops.ts         → client-side enrichment (phone/hours/cats/
                                  desc/image — the API only serialises a few
@@ -31,7 +31,8 @@ import zlib
 
 CENTER = (35.6892, 51.389)
 HERE = os.path.dirname(os.path.abspath(__file__))
-OVERPASS_DUMP = os.path.join(HERE, "tehran_all.json")
+OVERPASS_DUMP = os.path.join(HERE, "tehran_wide.json")
+OVERPASS_FALLBACK = os.path.join(HERE, "tehran_all.json")
 
 
 def hav(a, b):
@@ -145,18 +146,59 @@ def parse_hours(oh):
     return ("", "")
 
 
+def is_pet_business(name, tags):
+    """Reject human-facing businesses that the name sweep swept up.
+
+    «آرایش» alone matches ~140 human barbershops in Tehran, so anything that
+    only says آرایشگاه/آرایش مردانه with no animal word is NOT a pet groomer.
+    Returns True only if the row plausibly serves animals.
+    """
+    blob = f"{name} {tags.get('shop','')} {tags.get('amenity','')} {tags.get('craft','')}"
+    if re.search(r"حیوان|سگ|گربه|پت|خرگوش|پرنده|همستر|شتر|گاو|اسب|ماهی|dog|cat|pet|animal",
+                 blob, re.I):
+        return True
+    # unambiguous service tags are enough on their own
+    if tags.get("amenity") in ("veterinary", "animal_shelter", "animal_boarding") \
+            or tags.get("shop") in ("pet", "pet_food", "animal", "pet_grooming", "aquarium") \
+            or tags.get("craft") == "pet_grooming":
+        return True
+    return False
+
+
 def infer_category(name, kind, osm_tags=None):
+    """Classify a POI into shop / vet / groomer / shelter / boarding / cafe.
+
+    Order matters: an explicit OSM amenity beats the name, but a Persian name
+    like «آرایشگاه حیوانات» is decisive even when OSM only tagged it shop=pet —
+    that under-tagging is why the first pass found only 5 groomers.
+    """
     tags = osm_tags or {}
     if tags.get("amenity") == "animal_shelter" or tags.get("shop") == "animal_shelter":
         return "shelter"
-    if tags.get("amenity") == "animal_boarding" or re.search(r"پانسیون|هتل\s*کانیس|هتل.*حیوان", name):
+
+    # An explicit grooming word in the name beats the OSM tag: OSM maps
+    # «آرایشگاه حیوانات خانگی ویدپت» as amenity=animal_boarding and
+    # «پت شاپ دلسا» as shop=pet_grooming, but both names describe otherwise.
+    grooming_in_name = bool(re.search(
+        r"آرایشگاه|آرایش.{0,10}(حیوان|سگ|گربه)|گرومینگ|استایلیست|"
+        r"پت\s*استایل|اصلاح شستشو|حمام\s*(سگ|حیوان)| grooming|قیچی", name, re.I))
+    boarding_in_name = bool(re.search(
+        r"پانسیون|هتل\s*(کانیس|حیوان|پت)|نگهداری\s*حیوان", name))
+
+    if boarding_in_name and not grooming_in_name:
         return "boarding"
-    if kind == "vet":
-        return "vet"
-    if tags.get("shop") in ("pet_grooming",) or tags.get("craft") == "pet_grooming" \
-            or re.search(r"آرایش|گرومینگ|groom|استایلیست|اسپا", name):
+    if grooming_in_name:
         return "groomer"
-    if tags.get("amenity") == "pet_cafe" or re.search(r"کافه", name):
+    if tags.get("amenity") == "animal_boarding":
+        return "boarding"
+    if tags.get("shop") == "pet_grooming" or tags.get("craft") == "pet_grooming":
+        return "groomer"
+    if kind == "vet" or tags.get("amenity") == "veterinary" \
+            or tags.get("healthcare") in ("veterinary", "animal_doctor") \
+            or re.search(r"دامپزشک|بیمارستان\s*دامپزشکی|کلینیک\s*دامپزشکی|حیوان‌درمانگاه", name):
+        return "vet"
+    return "shop"
+    if tags.get("amenity") == "pet_cafe" or re.search(r"کافه\s*(حیوان|پت)|حیوان‌کافه", name):
         return "cafe"
     return "shop"
 
@@ -268,43 +310,55 @@ def jitter_price(name, price):
 
 
 def main():
-    if not os.path.exists(OVERPASS_DUMP):
-        raise SystemExit(f"missing {OVERPASS_DUMP} — run scripts/fetch_tehran_all.py first")
-    d = json.load(open(OVERPASS_DUMP, encoding="utf-8"))
+    # Merge every dump we have: the wide harvest plus the original city-wide
+    # pass. The wide dump only covers the tiles that got answers before the
+    # mirror stalled, so without the fallback the catalog would shrink.
+    dumps = [p for p in (OVERPASS_DUMP, OVERPASS_FALLBACK) if os.path.exists(p)]
+    if not dumps:
+        raise SystemExit(
+            f"missing {OVERPASS_DUMP} — run scripts/fetch_tehran_wide.py first")
+    print(f"reading: {', '.join(os.path.basename(p) for p in dumps)}")
 
     rows, dropped_latin = [], []
+    dropped_nonpet = 0
     seen = {}  # (name, ~80m grid) dedupe
-    for e in d["elements"]:
-        t = e.get("tags", {})
-        lat = e.get("lat") or (e.get("center") or {}).get("lat")
-        lng = e.get("lon") or (e.get("center") or {}).get("lon")
-        if not lat or not lng:
-            continue
-        name, how = resolve_name(t)
-        if not name:
-            dropped_latin.append((t.get("name") or "?", round(lat, 4), round(lng, 4)))
-            continue
-        key = (name, round(lat / 0.0008), round(lng / 0.0008))
-        if key in seen:
-            continue
-        seen[key] = True
-        kind = "vet" if (t.get("amenity") in ("veterinary",) or t.get("healthcare") in ("veterinary", "animal_doctor")) else "shop"
-        rows.append(dict(
-            name=name,
-            name_src=how,
-            kind=kind,
-            lat=round(lat, 6),
-            lng=round(lng, 6),
-            address=build_address(
-                t.get("addr:street") or "", t.get("addr:housenumber") or "",
-                t.get("addr:suburb") or "",
-                t.get("addr:city") or "تهران"),
-            phone_raw=t.get("phone") or t.get("contact:phone") or t.get("contact:mobile") or "",
-            website=t.get("website") or "",
-            hours=parse_hours(t.get("opening_hours") or ""),
-            category=infer_category(name, kind, osm_tags=t),
-            dist=round(hav(CENTER, (lat, lng)), 2),
-        ))
+    for dump_path in dumps:
+        d = json.load(open(dump_path, encoding="utf-8"))
+        for e in d["elements"]:
+            t = e.get("tags", {})
+            lat = e.get("lat") or (e.get("center") or {}).get("lat")
+            lng = e.get("lon") or (e.get("center") or {}).get("lon")
+            if not lat or not lng:
+                continue
+            name, how = resolve_name(t)
+            if not name:
+                dropped_latin.append((t.get("name") or "?", round(lat, 4), round(lng, 4)))
+                continue
+            if not is_pet_business(name, t):
+                dropped_nonpet += 1
+                continue
+            key = (name, round(lat / 0.0008), round(lng / 0.0008))
+            if key in seen:
+                continue
+            seen[key] = True
+            kind = "vet" if (t.get("amenity") in ("veterinary",)
+                             or t.get("healthcare") in ("veterinary", "animal_doctor")) else "shop"
+            rows.append(dict(
+                name=name,
+                name_src=how,
+                kind=kind,
+                lat=round(lat, 6),
+                lng=round(lng, 6),
+                address=build_address(
+                    t.get("addr:street") or "", t.get("addr:housenumber") or "",
+                    t.get("addr:suburb") or "",
+                    t.get("addr:city") or "تهران"),
+                phone_raw=t.get("phone") or t.get("contact:phone") or t.get("contact:mobile") or "",
+                website=t.get("website") or "",
+                hours=parse_hours(t.get("opening_hours") or ""),
+                category=infer_category(name, kind, osm_tags=t),
+                dist=round(hav(CENTER, (lat, lng)), 2),
+            ))
 
     # نام‌های اجباری فوتر/فیلترها — اگر در دامپ نبودند از dump قدیمی برنده‌اند
     names = {r["name"] for r in rows}
@@ -499,6 +553,8 @@ def main():
         print(f"latin-only dropped ({len(dropped_latin)}):")
         for nm, la, lo in dropped_latin[:15]:
             print(f"  - {nm} @ {la},{lo}")
+    if dropped_nonpet:
+        print(f"non-pet businesses dropped: {dropped_nonpet} (human barbershops etc.)")
     with_phone = sum(1 for v in enrichment.values() if v.get("phone"))
     print(f"with phone: {with_phone}/{len(enrichment)}")
 
