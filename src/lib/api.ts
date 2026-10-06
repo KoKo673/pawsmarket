@@ -128,12 +128,12 @@ const PRODUCT_IMAGE: Record<ProductCategory, string> = {
 }
 
 const STORE_IMAGE: Record<StoreCategory, string> = {
-  shop: asset('images/products/store-shop.jpg'),
-  vet: asset('images/products/store-vet.jpg'),
-  groomer: asset('images/products/store-grooming.jpg'),
-  shelter: asset('images/products/store-shelter.jpg'),
-  cafe: asset('images/listings/grooming.jpg'),
-  boarding: asset('images/products/store-boarding.jpg'),
+  shop: asset('images/stores/shop-1.jpg'),
+  vet: asset('images/stores/vet-2.jpg'),
+  groomer: asset('images/stores/groomer-1.jpg'),
+  shelter: asset('images/stores/shelter-1.jpg'),
+  cafe: asset('images/stores/shop-3.jpg'),
+  boarding: asset('images/stores/shop-2.jpg'),
 }
 
 /** Infer display category from free-text name (backend doesn't store it yet). */
@@ -254,7 +254,10 @@ function toStoreListing(raw: RawRow): StoreListing {
       str(raw.description, '') ||
       meta?.description ||
       `«${name}» — توضیحات تکمیلی از سمت مجموعه ثبت نشده است.`,
-    images: Array.isArray(raw.images) && raw.images.length > 0 ? (raw.images as string[]) : [STORE_IMAGE[category]],
+    images:
+      Array.isArray(raw.images) && raw.images.length > 0
+        ? (raw.images as string[])
+        : [meta?.image ? asset(meta.image) : STORE_IMAGE[category]],
     location: toPoint(raw),
     address,
     createdAt: str(raw.created_at ?? raw.createdAt, new Date(0).toISOString()),

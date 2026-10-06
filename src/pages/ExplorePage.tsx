@@ -1,5 +1,5 @@
 import { Heart, List, Loader2, Map as MapIcon, PawPrint, ServerCrash, SlidersHorizontal, WifiOff } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { FilterSheet, FilterSidebar } from '@/components/explore/FilterSidebar'
@@ -58,6 +58,14 @@ export function ExplorePage() {
 
   // مشتق‌سازی: حالت «فقط ذخیره‌شده‌ها» روی نتایج زنده اعمال می‌شود
   const listings = favoritesOnly ? (data ?? []).filter((l) => favorites.includes(l.id)) : (data ?? [])
+
+  // رندر تدریجی — با ۲۰۰+ فروشگاه و ۷۰۰+ محصول، همه‌ی کارت‌ها یکجا
+  // mount نمی‌شوند (کارت + تصویر + motion observer برای هر کدام سنگین است)
+  const PAGE = 48
+  const [visible, setVisible] = useState(PAGE)
+  useEffect(() => {
+    setVisible(PAGE)
+  }, [listings.length, favoritesOnly])
 
   const mobileView = useUiStore((s) => s.mobileView)
   const setMobileView = useUiStore((s) => s.setMobileView)
@@ -192,9 +200,21 @@ export function ExplorePage() {
               </div>
             ) : (
               <div data-motion-section="group" className="grid gap-5 min-[1700px]:grid-cols-2">
-                {listings.map((item, i) => (
+                {listings.slice(0, visible).map((item, i) => (
                   <ListingCard key={item.id} item={item} index={i} />
                 ))}
+              </div>
+            )}
+            {listings.length > visible && (
+              <div className="mt-6 flex justify-center">
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => setVisible((v) => v + PAGE)}
+                >
+                  <List className="size-4" />
+                  نمایش موارد بیشتر ({faDigits(listings.length - visible)} مورد دیگر)
+                </Button>
               </div>
             )}
           </div>

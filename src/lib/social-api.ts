@@ -7,6 +7,13 @@ import { ApiError } from '@/lib/api'
 const API_BASE = ''
 const TOKEN_KEY = 'pawsmarket-auth-token'
 
+/**
+ * نسخه‌ی منتشرشده‌ی Pages فقط کاتالوگ استاتیک دارد (بک‌اند لوکال است).
+ * در این حالت هر فراخوانی اجتماعی با پیام روشن رد می‌شود — نه خطای
+ * شبکه‌ی مبهم، و نه فرم ورودی که ظاهراً کار می‌کند ولی هیچ‌وقت جواب نمی‌دهد.
+ */
+const STATIC_MODE = import.meta.env.VITE_CATALOG_MODE === 'static'
+
 export function getToken(): string | null {
   try {
     return localStorage.getItem(TOKEN_KEY)
@@ -38,6 +45,13 @@ function detailOf(status: number, body: unknown): string {
 }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  if (STATIC_MODE) {
+    // پیام شفاف برای نسخه‌ی نمایشی روی GitHub Pages
+    throw new ApiError(
+      'قابلیت‌های اجتماعی فقط روی نسخه‌ی محلی فعال‌اند (بک‌اند در حال اجرا نیست)',
+      0,
+    )
+  }
   const token = getToken()
   let res: Response
   try {

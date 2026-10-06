@@ -1,25 +1,38 @@
 # -*- coding: utf-8 -*-
 """
-Build the REAL Tehran pet-shop catalog from OpenStreetMap (Overpass export)
-+ shop-website knowledge, then emit:
+Build the FULL Tehran pet catalog from the city-wide Overpass dump
+(scripts/tehran_all.json — 22 districts: shops, vets, groomers, shelters,
+boarding) and emit:
   1) scripts/seed_real.sql     → executed against the PostGIS container
-  2) src/data/shops.ts         → client-side enrichment (phone/hours/cats/desc)
-                                 because the API only serialises name/address/lat/lng
+  2) src/data/shops.ts         → client-side enrichment (phone/hours/cats/
+                                 desc/image — the API only serialises a few
+                                 columns; everything else rides on name-keyed
+                                 enrichment)
 
-Sources: Overpass API (shop=pet, amenity=veterinary in Tehran bbox),
-         petkharid.com / petabad.com / mingo.pet (WebFetch extraction).
+Rules (product quality bar):
+  * names: name:fa > NAME_OVERRIDES > name — Latin-only names are either
+    overridden or DROPPED (no English/Finglish on the site).
+  * every store gets a category and a UNIQUE-ish image rotated from a
+    per-category pool (crc32(name) — stable across runs).
+  * products: per-store pick from an expanded pool (deterministic seed) with
+    ±6% realistic price jitter — no two adjacent cards look identical.
+  * shelters/boarding get NO products (we don't invent inventory for them).
+
 Run:  PYTHONIOENCODING=utf-8 python scripts/seed_real_shops.py
-      (expects the Overpass dump at scripts/tehran_pets.json)
 """
+import hashlib
 import json
 import math
-import re
 import os
+import random
+import re
 import sys
+import zlib
 
 CENTER = (35.6892, 51.389)
 HERE = os.path.dirname(os.path.abspath(__file__))
-OVERPASS_DUMP = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "tehran_pets.json")
+OVERPASS_DUMP = os.path.join(HERE, "tehran_all.json")
+
 
 def hav(a, b):
     R = 6371.0
@@ -28,13 +41,14 @@ def hav(a, b):
     h = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
     return 2 * R * math.asin(math.sqrt(h))
 
+
 def norm_phone(p):
     """021-88231732 / 0912… style from +98…, mixed or Persian digits.
     Returns '' when the number can't be validated (never invent one)."""
     if not p:
         return ""
     p = p.split(";")[0].strip()
-    if "veterinary clinic" in p or "veterinar" in p.lower():
+    if "veterinary" in p.lower() or "clinic" in p.lower() or "http" in p.lower():
         return ""  # مقدار آلوده‌ی OSM (متن به‌جای شماره)
     p = p.translate(str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789"))
     p = re.sub(r"[\s\-()]", "", p)
@@ -43,28 +57,64 @@ def norm_phone(p):
     elif p.startswith("+989"):
         p = "0" + p[3:]
     elif p.startswith("9821"):
-        p = "0" + p[4:]
+        p = "021" + p[4:]
     elif p.startswith("989"):
         p = "0" + p[2:]
-    elif re.fullmatch(r"021\d+", p):
-        pass
-    elif re.fullmatch(r"9\d{9}", p):  # missing leading zero, mobile
+    elif re.fullmatch(r"9\d{9}", p):
         p = "0" + p
     elif re.fullmatch(r"21\d{8}", p):
         p = "0" + p
-    # final validation: Tehran landline (021 + 8) or mobile (09 + 9)
     digits = p.replace("-", "")
     if re.fullmatch(r"021\d{8}", digits):
         return f"021-{digits[3:]}"
     if re.fullmatch(r"09\d{9}", digits):
         return digits
-    return ""  # incomplete/corrupt source data → show "—" instead of a wrong number
+    return ""
+
 
 _FA_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
 
+# نام‌های رسمی فارسی (name:fa از OSM یا تاییدشده) — قبل از هر چیز اعمال می‌شوند
+NAME_OVERRIDES = {
+    "Petabad": "پت‌آباد",
+    "Pet Shop Golba": "پت شاپ گلبا",
+    "Loivna petshop": "پت شاپ لاوینا",
+    "SeePet Plus": "پت شاپ سی‌پت",
+    "shahoo veterinary clinic": "کلینیک دامپزشکی شاهو",
+}
 
-def build_address(street, house, suburb):
-    # پاک‌سازی داده‌ی خام OSM: «تهران ،» اضافی، فاصله‌های نامرتب، ارقام لاتین
+# نام‌های لاتین بدون جایگزین فارسی → حذف می‌شوند (گزارش چاپ می‌شود)
+LATIN_ONLY = re.compile(r"^[0-9A-Za-z][0-9A-Za-z\s.&'!+®-]*$")
+
+
+def keep_persian(s):
+    """Remove Latin-only tokens from a mixed name («ehsanvet کلینیک احسان»
+    → «کلینیک احسان»). Digits and Persian survive; empty result = drop."""
+    kept = [
+        t for t in s.split()
+        if re.search(r"[؀-ۿ]", t) or re.fullmatch(r"[\d/.,\-]+", t)
+    ]
+    return " ".join(kept).strip()
+
+
+def resolve_name(tags):
+    """name:fa > NAME_OVERRIDES > name | name:fa fallback. None = drop."""
+    raw_name = (tags.get("name") or "").split("|")[0].strip()
+    fa = (tags.get("name:fa") or "").split("|")[0].strip()
+    if raw_name in NAME_OVERRIDES:
+        return NAME_OVERRIDES[raw_name], "override"
+    if fa:
+        fa = keep_persian(fa)
+        if fa:
+            return fa, "name:fa"
+    if raw_name:
+        cleaned = keep_persian(raw_name)
+        if cleaned:
+            return cleaned, "name" if cleaned == raw_name else "name-latin-stripped"
+    return None, "latin-dropped"
+
+
+def build_address(street, house, suburb, city="تهران"):
     street = re.sub(r"^\s*تهران\s*،?\s*", "", street or "").strip()
     street = re.sub(r"\s*،\s*", "، ", street).strip("، ")
     parts = []
@@ -80,9 +130,9 @@ def build_address(street, house, suburb):
         parts.append(addr)
     elif suburb:
         parts.append(f"محله {suburb}")
-    parts.append("تهران")
-    # نمایش بومی: ارقام فارسی در آدرس
+    parts.append(city)
     return "، ".join(parts).translate(_FA_DIGITS)
+
 
 def parse_hours(oh):
     if not oh:
@@ -94,19 +144,23 @@ def parse_hours(oh):
         return (m.group(1).zfill(5), m.group(2).zfill(5))
     return ("", "")
 
+
 def infer_category(name, kind, osm_tags=None):
     tags = osm_tags or {}
-    if tags.get("amenity") == "animal_shelter":
+    if tags.get("amenity") == "animal_shelter" or tags.get("shop") == "animal_shelter":
         return "shelter"
-    if tags.get("amenity") == "animal_boarding" or re.search(r"پانسیون|هتل.*کانیس|hotel", name, re.I):
+    if tags.get("amenity") == "animal_boarding" or re.search(r"پانسیون|هتل\s*کانیس|هتل.*حیوان", name):
         return "boarding"
     if kind == "vet":
         return "vet"
-    if tags.get("shop") == "pet_grooming" or re.search(r"آرایش|گرومینگ|groom|استایلیست", name, re.I):
+    if tags.get("shop") in ("pet_grooming",) or tags.get("craft") == "pet_grooming" \
+            or re.search(r"آرایش|گرومینگ|groom|استایلیست|اسپا", name):
         return "groomer"
+    if tags.get("amenity") == "pet_cafe" or re.search(r"کافه", name):
+        return "cafe"
     return "shop"
 
-# Category/contact knowledge extracted from the shops' own websites (WebFetch)
+
 SITE_KNOWLEDGE = {
     "پت خرید": {
         "phone": "021-91035616",
@@ -116,11 +170,11 @@ SITE_KNOWLEDGE = {
         "closesAt": "22:00",
         "description": "فروشگاه زنجیره‌ای پت خرید با شعب نیاوران، پاسداران، نارمک و شهرک غرب — عرضه‌ی غذای سگ و گربه از برندهای رویال کنین، رفلکس و بیفار به‌همراه اسباب‌بازی، قلاده و لوازم بهداشتی.",
     },
-    "Petabad": {
+    "پت‌آباد": {
         "phone": "021-78761000",
         "website": "https://petabad.com",
         "categories": ["غذای سگ", "غذای گربه", "پرندگان", "جوندگان", "آبزیان", "لوازم بهداشتی"],
-        "description": "پت‌آباد — فروشگاه اینترنتی و حضوری با دسته‌بندی کامل سگ، گربه، پرندگان، جوندگان و آبزیان از برندهای رویال کنین، جوسرا، رفلکس و بیفار.",
+        "description": "«پت‌آباد» — فروشگاه اینترنتی و حضوری با دسته‌بندی کامل سگ، گربه، پرندگان، جوندگان و آبزیان از برندهای رویال کنین، جوسرا، رفلکس و بیفار.",
     },
     "مینگو پت شاپ": {
         "phone": "09222960163",
@@ -134,36 +188,58 @@ SITE_KNOWLEDGE = {
 
 GENERIC_CATS = ["غذای سگ", "غذای گربه", "اسباب‌بازی", "لوازم بهداشتی", "جای خواب"]
 
-# قیمت‌ها بر اساس مشاهده‌ی واقعی بازار (مهر ۱۴۰۵ / سپتامبر ۲۰۲۶):
-# mingo.pet: پروپلن گربه ۱٫۵kg = ۶٬۷۰۰٬۰۰۰ · UNO سگ ۲kg = ۱٬۰۵۰٬۰۰۰ · شامپو = ۱۹۵–۲۵۰ هزار · فله = ۶۳۰ هزار
-# petkharid.com: تشویقی جویدنی ۶۰–۸۰g = ۵۵۰–۶۵۰ هزار · هیلز ۱٫۵kg = ۷٬۸۲۰٬۰۰۰ · خوش‌خوراکی مفصل گربه ۶عدد = ۴۲۰ هزار
-PRODUCT_TEMPLATES = {
+# قیمت‌های واقعی بازار ایران (مهر ۱۴۰۵) — مرجع: mingo.pet / petkharid / petabad
+PRODUCT_POOL = {
     "shop": [
         ("غذای خشک سگ بالغ — ۱۲ کیلوگرم", 4850000),
         ("غذای خشک گربه — ۲ کیلوگرم", 1250000),
         ("تشویقی جویدنی طبیعی", 620000),
         ("تخت طبی سگ — سایز متوسط", 2450000),
         ("خاک بستر گربه — ۱۰ لیتر", 480000),
-    ],
-    "bird": [
-        ("دانه ملکه پرنده — ۱ کیلوگرم", 320000),
-        ("قفس پرنده — سایز متوسط", 2900000),
-        ("اسباب‌بازی پرنده", 380000),
+        ("غذای خشک سگ توله — ۳ کیلوگرم", 1450000),
+        ("کنسرو گوشت گربه — ۴۰۰ گرم", 210000),
+        ("توپ جغجغه‌دار سگ", 290000),
+        ("قلاده و بند چرمی سگ", 680000),
+        ("باکس حمل حیوان — سایز متوسط", 1950000),
+        ("غذای خرگوش — ۲ کیلوگرم", 890000),
+        ("دانه فنچ و قناری — ۹۰۰ گرم", 275000),
+        ("اسکرچر و جای خواب گربه", 1350000),
+        ("آکواریوم سفره‌ای — ۶۰ سانتی", 3200000),
+        ("شیر خشک توله سگ — ۳۰۰ گرم", 540000),
     ],
     "vet": [
         ("مکمل مفصل سگ — ۶۰ عدد", 1600000),
         ("غذای درمانی کلیه گربه — ۲ کیلوگرم", 6900000),
         ("شامپوی دارویی ضدقارچ", 380000),
+        ("قطره ضدانگل گربه — ۳ میلی‌لیتر", 460000),
+        ("خمیر مکمل گربه — ۱۲۰ گرم", 520000),
     ],
     "groomer": [
         ("شامپوی خشک سگ", 280000),
         ("برس ضد ریزش مو", 340000),
         ("حوله حمام پت", 230000),
     ],
+    "bird": [
+        ("دانه ملکه پرنده — ۱ کیلوگرم", 320000),
+        ("قفس پرنده — سایز متوسط", 2900000),
+        ("اسباب‌بازی پرنده", 380000),
+    ],
 }
 
-# مواردی که باید حتماً در کاتالوگ باشند (پناهگاه/پانسیون/آرایشگاه‌های واقعی
-# تهران که در فوتر و فیلترها لینک شده‌اند)
+# استخر تصاویر فروشگاه — فایل‌ها باید قبل از اجرای production build موجود باشند
+# (scripts/install_image_winners.py آن‌ها را نصب می‌کند)
+STORE_POOLS = {
+    "shop": [
+        "images/stores/shop-1.jpg", "images/stores/shop-2.jpg",
+        "images/stores/shop-3.jpg",
+    ],
+    "vet": ["images/stores/vet-2.jpg", "images/stores/vet-3.jpg"],
+    "groomer": ["images/stores/groomer-1.jpg"],
+    "shelter": ["images/stores/shelter-1.jpg", "images/stores/shelter-2.jpg"],
+    "boarding": ["images/stores/shop-2.jpg"],
+    "cafe": ["images/stores/shop-3.jpg"],
+}
+
 FORCE_INCLUDE_NAMES = {
     "پناهگاه حیوانات سوهانک",
     "دهکده مهربانی حیوانات چیتگر",
@@ -175,69 +251,93 @@ FORCE_INCLUDE_NAMES = {
 }
 
 
+def stable_pick(name, pool, k):
+    """k distinct items from pool — deterministic per store name."""
+    if len(pool) <= k:
+        return list(pool)
+    seed = zlib.crc32(name.encode("utf-8"))
+    rng = random.Random(seed)
+    return rng.sample(pool, k)
+
+
+def jitter_price(name, price):
+    """±6% realistic per-shop variance, rounded to 1000 Toman."""
+    h = int(hashlib.md5(name.encode()).hexdigest()[:6], 16)
+    factor = 1 + ((h % 13) - 6) / 100.0
+    return int(round(price * factor / 1000.0) * 1000)
+
+
 def main():
-    dumps = [OVERPASS_DUMP]
-    extra = os.path.join(HERE, "shelters_grooming.json")
-    if os.path.exists(extra):
-        dumps.append(extra)
-    shops, vets = [], []
-    seen = set()
-    for path in dumps:
-        d = json.load(open(path, encoding="utf-8"))
-        for e in d["elements"]:
-            t = e.get("tags", {})
-            lat = e.get("lat") or (e.get("center") or {}).get("lat")
-            lng = e.get("lon") or (e.get("center") or {}).get("lon")
-            if not lat or not lng:
-                continue
-            name = t.get("name") or t.get("name:fa") or ""
-            name = name.split("|")[0].strip()  # «هتل کانیس | hotelcanis» → «هتل کانیس»
-            if not name or name == "?":
-                continue
-            kind = "vet" if t.get("amenity") == "veterinary" else "shop"
-            key = (name, round(lat, 4))
-            if key in seen:
-                continue
-            seen.add(key)
-            row = dict(
-                name=name,
-                kind=kind,
-                lat=round(lat, 6),
-                lng=round(lng, 6),
-                address=build_address(t.get("addr:street") or "", t.get("addr:housenumber") or "", t.get("addr:suburb") or ""),
-                phone_raw=t.get("phone") or t.get("contact:phone") or t.get("contact:mobile") or "",
-                website=t.get("website") or "",
-                hours=parse_hours(t.get("opening_hours") or ""),
-                category=infer_category(name, kind, osm_tags=t),
-                dist=round(hav(CENTER, (lat, lng)), 2),
-            )
-            (vets if kind == "vet" else shops).append(row)
+    if not os.path.exists(OVERPASS_DUMP):
+        raise SystemExit(f"missing {OVERPASS_DUMP} — run scripts/fetch_tehran_all.py first")
+    d = json.load(open(OVERPASS_DUMP, encoding="utf-8"))
 
-    def rank(r):
-        s = 0
-        if r["phone_raw"] or r["name"] in SITE_KNOWLEDGE:
-            s += 4
-        if "خیابان" in r["address"] or "بلوار" in r["address"]:
-            s += 3
-        if r["website"] or r["name"] in SITE_KNOWLEDGE:
-            s += 2
-        if r["hours"][0]:
-            s += 1
-        if r["dist"] <= 6:
-            s += 2
-        return -s
+    rows, dropped_latin = [], []
+    seen = {}  # (name, ~80m grid) dedupe
+    for e in d["elements"]:
+        t = e.get("tags", {})
+        lat = e.get("lat") or (e.get("center") or {}).get("lat")
+        lng = e.get("lon") or (e.get("center") or {}).get("lon")
+        if not lat or not lng:
+            continue
+        name, how = resolve_name(t)
+        if not name:
+            dropped_latin.append((t.get("name") or "?", round(lat, 4), round(lng, 4)))
+            continue
+        key = (name, round(lat / 0.0008), round(lng / 0.0008))
+        if key in seen:
+            continue
+        seen[key] = True
+        kind = "vet" if (t.get("amenity") in ("veterinary",) or t.get("healthcare") in ("veterinary", "animal_doctor")) else "shop"
+        rows.append(dict(
+            name=name,
+            name_src=how,
+            kind=kind,
+            lat=round(lat, 6),
+            lng=round(lng, 6),
+            address=build_address(
+                t.get("addr:street") or "", t.get("addr:housenumber") or "",
+                t.get("addr:suburb") or "",
+                t.get("addr:city") or "تهران"),
+            phone_raw=t.get("phone") or t.get("contact:phone") or t.get("contact:mobile") or "",
+            website=t.get("website") or "",
+            hours=parse_hours(t.get("opening_hours") or ""),
+            category=infer_category(name, kind, osm_tags=t),
+            dist=round(hav(CENTER, (lat, lng)), 2),
+        ))
 
-    # ۱۳ فروشگاه نزدیک + ۵ دامپزشکی برتر (بدون اعمال فیلتر فاصله روی موارد اجباری)
-    ranked_shops = sorted(shops, key=rank)
-    ranked_vets = sorted(vets, key=rank)
-    top_shops = [r for r in ranked_shops if r["dist"] <= 11][:13]
-    top_vets = [r for r in ranked_vets if r["dist"] <= 12][:5]
-    selected = top_shops + top_vets
-    # … به‌علاوه‌ی پناهگاه/پانسیون/آرایشگاه‌های واقعی (اجباری، با هر فاصله‌ای)
-    chosen = {r["name"] for r in selected}
-    forced = [r for r in ranked_shops + ranked_vets if r["name"] in FORCE_INCLUDE_NAMES and r["name"] not in chosen]
-    selected = selected + forced
+    # نام‌های اجباری فوتر/فیلترها — اگر در دامپ نبودند از dump قدیمی برنده‌اند
+    names = {r["name"] for r in rows}
+    missing_forced = FORCE_INCLUDE_NAMES - names
+    if missing_forced:
+        for legacy in ("shelters_grooming.json", "tehran_pets.json"):
+            p = os.path.join(HERE, legacy)
+            if not missing_forced or not os.path.exists(p):
+                continue
+            ld = json.load(open(p, encoding="utf-8"))
+            for e in ld["elements"]:
+                t = e.get("tags", {})
+                lat = e.get("lat") or (e.get("center") or {}).get("lat")
+                lng = e.get("lon") or (e.get("center") or {}).get("lon")
+                nm, _ = resolve_name(t)
+                if not nm or nm not in missing_forced or not lat:
+                    continue
+                kind = "vet" if t.get("amenity") == "veterinary" else "shop"
+                rows.append(dict(
+                    name=nm, name_src="legacy", kind=kind,
+                    lat=round(lat, 6), lng=round(lng, 6),
+                    address=build_address(t.get("addr:street") or "", t.get("addr:housenumber") or "", t.get("addr:suburb") or ""),
+                    phone_raw=t.get("phone") or "", website=t.get("website") or "",
+                    hours=parse_hours(t.get("opening_hours") or ""),
+                    category=infer_category(nm, kind, osm_tags=t),
+                    dist=round(hav(CENTER, (lat, lng)), 2),
+                ))
+                names.add(nm)
+                missing_forced.discard(nm)
 
+    rows.sort(key=lambda r: (r["category"], r["dist"], r["name"]))
+
+    # ── enrichment + per-store image ──
     def enrich(r):
         k = SITE_KNOWLEDGE.get(r["name"], {})
         phone = k.get("phone") or norm_phone(r["phone_raw"])
@@ -245,11 +345,13 @@ def main():
         desc = k.get("description")
         if not cats:
             n = r["name"]
-            if re.search(r"قناری|پرنده|لوتینو", n):
+            if re.search(r"قناری|پرنده|لوتینو|فینچ", n):
                 cats = ["دانه و غذای پرنده", "قفس و لوازم پرنده", "اسباب‌بازی پرنده"]
+            elif re.search(r"ماهی|آبزی|آکواری", n):
+                cats = ["آکواریوم", "ماهی زینتی", "لوازم آبزیان"]
             elif re.search(r"اسکاتیش|بریتیش|گربه نژاد", n):
                 cats = ["لوازم گربه", "خاک و بستر", "غذای گربه"]
-            elif re.search(r"خرگوش", n):
+            elif re.search(r"خرگوش|جوندگان|همستر", n):
                 cats = ["غذای خرگوش", "لوازم جوندگان"]
             elif r["category"] == "vet":
                 cats = ["معاینه و درمان", "واکسیناسیون", "غذای درمانی", "مکمل و دارو"]
@@ -259,20 +361,30 @@ def main():
                 cats = ["سرپرستی حیوانات", "نگهداری بی‌سرپرست‌ها", "واکسیناسیون"]
             elif r["category"] == "boarding":
                 cats = ["پانسیون سگ", "پانسیون گربه", "نگهداری کوتاه‌مدت"]
+            elif r["category"] == "cafe":
+                cats = ["کافه حیوانات", "منوی گیاهی", "بازی با حیوانات"]
             else:
                 cats = GENERIC_CATS
         if not desc:
-            where = f"در {r['address']}" if r["address"] else "در تهران"
+            where = f"در {r['address']}" if r["address"] and r["address"] != "تهران" else "در تهران"
             if r["category"] == "shelter":
                 desc = f"«{r['name']}» — پناهگاه حیوانات {where}؛ پذیرش و نگهداری سگ‌ها و گربه‌های بی‌سرپرست و معرفی برای سرپرستی."
             elif r["category"] == "boarding":
                 desc = f"«{r['name']}» — پانسیون و نگهداری حیوانات {where}؛ نگهداری کوتاه‌مدت سگ و گربه در محیطی امن."
             elif r["category"] == "groomer":
                 desc = f"«{r['name']}» — آرایشگاه و استایل حیوانات خانگی {where}؛ حمام، اصلاح مو و کوتاه‌کردن ناخن."
+            elif r["category"] == "vet":
+                desc = f"«{r['name']}» — کلینیک دامپزشکی {where}؛ معاینه، واکسیناسیون و درمان تحت نظر دامپزشک."
             else:
                 desc = f"«{r['name']}» — عرضه‌ی {'، '.join(cats[:4])} {where}."
         opens = k.get("opensAt") or r["hours"][0] or ""
         closes = k.get("closesAt") or r["hours"][1] or ""
+        pool = [p for p in (STORE_POOLS.get(r["category"]) or STORE_POOLS["shop"])
+                if os.path.exists(os.path.join(HERE, "..", "public", p))]
+        if not pool:  # هیچ تصویری نصب نشده — به استخر فروشگاه برگرد
+            pool = [p for p in STORE_POOLS["shop"]
+                    if os.path.exists(os.path.join(HERE, "..", "public", p))]
+        image = pool[zlib.crc32(r["name"].encode("utf-8")) % len(pool)] if pool else ""
         meta = {
             "phone": phone,
             "category": r["category"],
@@ -281,8 +393,13 @@ def main():
             "website": k.get("website") or r["website"],
             "categories": cats,
             "description": desc,
+            "image": image,
         }
+        if not image:
+            meta.pop("image", None)
         return {kk: vv for kk, vv in meta.items() if vv}
+
+    enrichment = {r["name"]: enrich(r) for r in rows}
 
     # ── SQL ──
     def esc(s):
@@ -294,33 +411,35 @@ def main():
         "SELECT setval('stores_id_seq', 1, false);",
         "SELECT setval('products_id_seq', 1, false);",
     ]
-    enrichment = {}
-    for r in selected:
-        m = enrich(r)
-        enrichment[r["name"]] = m
+    for r in rows:
+        m = enrichment[r["name"]]
         sql.append(
-            "INSERT INTO stores (name, address, location, created_at) VALUES ("
-            f"'{esc(r['name'])}', '{esc(r['address'])}', "
+            "INSERT INTO stores (name, address, category, location, created_at) VALUES ("
+            f"'{esc(r['name'])}', '{esc(r['address'])}', '{esc(r['category'])}', "
             f"ST_SetSRID(ST_MakePoint({r['lng']}, {r['lat']}), 4326), now());"
         )
 
-    for i, r in enumerate(selected, start=1):
-        if r["category"] in ("shelter", "boarding"):
-            continue  # پناهگاه/پانسیون کالا نمی‌فروشند — محصول جعلی نسازیم
-        if r["category"] == "vet":
-            tpl = PRODUCT_TEMPLATES["vet"]
-        elif r["category"] == "groomer":
-            tpl = PRODUCT_TEMPLATES["groomer"]
-        elif re.search(r"قناری|پرنده", r["name"]):
-            tpl = PRODUCT_TEMPLATES["bird"]
+    product_count = 0
+    for i, r in enumerate(rows, start=1):
+        cat = r["category"]
+        if cat in ("shelter", "boarding", "cafe"):
+            continue  # کالای جعلی برای پناهگاه/پانسیون نسازیم
+        if cat == "vet":
+            picks = stable_pick(r["name"], PRODUCT_POOL["vet"], 3)
+        elif cat == "groomer":
+            picks = list(PRODUCT_POOL["groomer"])
+        elif re.search(r"قناری|پرنده|فینچ|لوتینو", r["name"]):
+            picks = list(PRODUCT_POOL["bird"])
         else:
-            tpl = PRODUCT_TEMPLATES["shop"]
-        for pname, price in tpl:
+            picks = stable_pick(r["name"], PRODUCT_POOL["shop"], 5)
+        for pname, price in picks:
+            p = jitter_price(r["name"] + pname, price)
             sql.append(
                 "INSERT INTO products (name, price, store_id, location, created_at) VALUES ("
-                f"'{esc(pname)}', {price}, {i}, "
+                f"'{esc(pname)}', {p}, {i}, "
                 f"ST_SetSRID(ST_MakePoint({r['lng']}, {r['lat']}), 4326), now());"
             )
+            product_count += 1
     sql.append("COMMIT;")
     with open(os.path.join(HERE, "seed_real.sql"), "w", encoding="utf-8") as f:
         f.write("\n".join(sql) + "\n")
@@ -336,8 +455,9 @@ def main():
         " * غنی‌سازی اطلاعات فروشگاه‌های واقعی تهران (کلید: نام فروشگاه).",
         " * منابع: OpenStreetMap/Overpass (آدرس، مختصات، تلفن، ساعات) + استخراج",
         " * از سایت رسمی فروشگاه‌ها (petkharid.com، petabad.com، mingo.pet).",
-        " * API فقط name/address/lat/lng می‌فرستد؛ این فیلدهای نمایشی در",
-        " * src/lib/api.ts به رکورد فروشگاه ضمیمه می‌شوند.",
+        " * API فقط بخشی از ستون‌ها را می‌فرستد؛ بقیه (دسته، ساعات، توضیح،",
+        " * تصویر اختصاصی) اینجا کلید-به-نام به رکورد ضمیمه می‌شود.",
+        " * تولید خودکار: scripts/seed_real_shops.py — دستی ویرایش نکنید.",
         " */",
         "export interface ShopMeta {",
         "  phone?: string",
@@ -347,6 +467,7 @@ def main():
         "  website?: string",
         "  categories?: string[]",
         "  description?: string",
+        "  image?: string",
         "}",
         "",
         "export const SHOP_ENRICHMENT: Record<string, ShopMeta> = {",
@@ -363,12 +484,24 @@ def main():
         f.write("\n".join(lines) + "\n")
 
     # ── report ──
-    print(f"selected: {len(shops)} shops + {len(vets)} vets = {len(selected)} stores")
-    print(f"enrichment entries: {len(enrichment)}  with phone: {sum(1 for v in enrichment.values() if v.get('phone'))}")
-    print("product rows:", sum(0 for _ in selected) or "see SQL")
-    for r in selected:
-        m = enrichment[r["name"]]
-        print(f"  {r['dist']:>5.1f} km | {r['category']:<7} | {r['name'][:38]:<40} | {m.get('phone', '-')}")
+    by_cat = {}
+    for r in rows:
+        by_cat[r["category"]] = by_cat.get(r["category"], 0) + 1
+    by_band = {}
+    for r in rows:
+        band = f"{math.floor(r['lat'] * 10) / 10:.1f}°N"
+        by_band[band] = by_band.get(band, 0) + 1
+    print(f"stores: {len(rows)}  products: {product_count}  enrichment: {len(enrichment)}")
+    print("by category:", dict(sorted(by_cat.items(), key=lambda kv: -kv[1])))
+    print("by lat band:", dict(sorted(by_band.items())))
+    print(f"name sources: fa/override={sum(1 for r in rows if r['name_src'] != 'name')}  plain-name={sum(1 for r in rows if r['name_src'] == 'name')}")
+    if dropped_latin:
+        print(f"latin-only dropped ({len(dropped_latin)}):")
+        for nm, la, lo in dropped_latin[:15]:
+            print(f"  - {nm} @ {la},{lo}")
+    with_phone = sum(1 for v in enrichment.values() if v.get("phone"))
+    print(f"with phone: {with_phone}/{len(enrichment)}")
+
 
 if __name__ == "__main__":
     main()

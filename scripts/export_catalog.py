@@ -31,7 +31,7 @@ SELECT json_build_object(
             ST_Y(location) AS lat, ST_X(location) AS lng, created_at
      FROM products) t), '[]'::json),
   'stores', COALESCE((SELECT json_agg(t) FROM (
-     SELECT id, name, address,
+     SELECT id, name, address, category,
             ST_Y(location) AS lat, ST_X(location) AS lng, created_at
      FROM stores) t), '[]'::json)
 );
