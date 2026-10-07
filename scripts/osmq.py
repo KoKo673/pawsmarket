@@ -94,18 +94,23 @@ def query(q, tries=14, timeout=180, verbose=False):
 def build(bbox, selector, timeout=120):
     """Build an Overpass query.
 
-    Two things that cost real debugging time here, so they are explicit:
+    `selector` is the inner filter text, e.g. '"shop"="pet"' — build() adds the
+    brackets. A bracketed selector used to be stripped here, which silently
+    mangled the few valid selector shapes that legitimately contain brackets
+    (set-union forms) into a *different* filter that still returned rows, so
+    the harvest looked fine while collecting the wrong data. Reject instead.
+
+    Two other things that cost real debugging time, kept explicit:
       * `node`, not `nwr` — with `nwr` this mirror times out on every Tehran
-        bbox; the same query returns data as `node`.
-      * the bbox is a PARENTHESIS group `(s,w,n,e)`, not `[...]`. Using `[...]`
-        makes Overpass fail with "parse error: ',' found".
-      * `selector` must NOT carry its own brackets — pass the inner text
-        (e.g. '"shop"="pet"'), build() adds them.
+        bbox while the same query returns data as `node`.
+      * the bbox is a PARENTHESIS group `(s,w,n,e)`, not `[...]`; the latter
+        fails with "parse error: ',' found".
     """
     s, w, n, e = bbox
     sel = selector.strip()
-    if sel.startswith("["):
-        sel = sel[1:-1] if sel.endswith("]") else sel[1:]
+    if sel.startswith('[') or sel.endswith(']'):
+        raise ValueError(
+            f'selector must be inner filter text without brackets: {selector!r}')
     return ("[out:json][timeout:%d];" % timeout
             + f"node[{sel}]({s},{w},{n},{e});"
             + "out center tags;")
@@ -125,7 +130,7 @@ def query_many(pairs, verbose=True):
 
 
 if __name__ == "__main__":
-    sel = sys.argv[1] if len(sys.argv) > 1 else '["shop"="pet"]'
+    sel = sys.argv[1] if len(sys.argv) > 1 else '"shop"="pet"'
     bbox = (35.55, 51.05, 35.85, 51.65)
     if len(sys.argv) > 2:
         bbox = tuple(float(x) for x in sys.argv[2:6])

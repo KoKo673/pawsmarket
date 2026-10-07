@@ -4,13 +4,14 @@
  */
 import { ApiError } from '@/lib/api'
 
-const API_BASE = ''
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
 const TOKEN_KEY = 'pawsmarket-auth-token'
 
 /**
- * نسخه‌ی منتشرشده‌ی Pages فقط کاتالوگ استاتیک دارد (بک‌اند لوکال است).
- * در این حالت هر فراخوانی اجتماعی با پیام روشن رد می‌شود — نه خطای
- * شبکه‌ی مبهم، و نه فرم ورودی که ظاهراً کار می‌کند ولی هیچ‌وقت جواب نمی‌دهد.
+ * Publish mode without a backend: VITE_CATALOG_MODE=static ships a
+ * catalog.json snapshot and every social call is rejected with a clear
+ * message, so no one sees a login form that silently never submits.
+ * The current Pages build sets VITE_API_BASE_URL instead, so this is off.
  */
 const STATIC_MODE = import.meta.env.VITE_CATALOG_MODE === 'static'
 

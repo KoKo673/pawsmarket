@@ -146,23 +146,69 @@ def parse_hours(oh):
     return ("", "")
 
 
-def is_pet_business(name, tags):
-    """Reject human-facing businesses that the name sweep swept up.
+# Standalone tokens that mean the business serves animals.
+ANIMAL_WORDS = {
+    'سگ', 'dog', 'گربه', 'cat', 'حیوان', 'animal', 'pets',
+    'خرگوش', 'rabbit', 'همستر', 'hamster', 'پرنده', 'bird', 'ماهی', 'fish',
+    'توله', 'puppy', 'بچه‌گربه', 'kitten', 'گوگول', 'guinea',
+    'پت', 'pet',
+}
 
-    «آرایش» alone matches ~140 human barbershops in Tehran, so anything that
-    only says آرایشگاه/آرایش مردانه with no animal word is NOT a pet groomer.
-    Returns True only if the row plausibly serves animals.
+# «پت»/«pet» alone are not proof: Tehran has «پت‌شور» (bottled water delivery)
+# and similar compounds. These only count with a recognised compound suffix.
+AMBIGUOUS_WORDS = {'پت', 'pet'}
+
+# «پت» is also the prefix of a real compound (پت‌شاپ, پت‌کلینیک, pet shop) but
+# of unrelated ones too (پت‌شور = water delivery). Only these suffixes count.
+PET_COMPOUND_SUFFIXES = (
+    'شاپ', 'شاپی', 'کلینیک', 'استایل', 'استایلیست', 'پت', 'کالا', 'لندینگ',
+    'مغازه', 'هایپر', 'سیمون', 'شاپینگ',
+)
+# Compound animal nouns where the first part alone is not an animal word.
+ANIMAL_COMPOUNDS = (
+    'قناری', 'لوتینو', 'فینچ', 'بچه‌گربه', 'بچه‌سگ', 'سگ‌پت', 'پت‌شاپ',
+    'پت‌کلینیک', 'پت‌کالا', 'پت‌استایل', 'پت‌مغازه', 'پت‌هایپر',
+)
+
+# Splits on whitespace/punctuation but NOT on letters (Persian included) and
+# NOT on ZWNJ (U+200C), so «پت‌شور» stays one token while «پت شاپ» splits.
+_WORD_SPLIT = re.compile(r"[\s،؛:()\[\]{}/.,!؟?\-–—«»\"']+")
+
+
+def is_pet_business(name, tags):
+    """Reject rows the name sweep swept up that do not serve animals.
+
+    Two failure modes seen in the Tehran data:
+      * «آرایش» alone matches ~140 human barbershops.
+      * «پت» as a substring matches unrelated names («پت‌شور» water delivery).
+
+    So a name qualifies only via a standalone animal word, an animal word
+    followed by a known compound suffix, or an unambiguous animal compound —
+    never a bare substring match.
     """
-    blob = f"{name} {tags.get('shop','')} {tags.get('amenity','')} {tags.get('craft','')}"
-    if re.search(r"حیوان|سگ|گربه|پت|خرگوش|پرنده|همستر|شتر|گاو|اسب|ماهی|dog|cat|pet|animal",
-                 blob, re.I):
-        return True
-    # unambiguous service tags are enough on their own
+    # Unambiguous service tags are decisive on their own — a place tagged
+    # amenity=veterinary serves animals whatever its name says.
     if tags.get("amenity") in ("veterinary", "animal_shelter", "animal_boarding") \
             or tags.get("shop") in ("pet", "pet_food", "animal", "pet_grooming", "aquarium") \
             or tags.get("craft") == "pet_grooming":
         return True
-    return False
+
+    blob = f"{name} {tags.get('shop','')} {tags.get('amenity','')} {tags.get('craft','')}"
+    if any(c in blob for c in ANIMAL_COMPOUNDS):
+        return True
+    if any(re.search(rf"پت[\s‌]*{s}\b", blob) for s in PET_COMPOUND_SUFFIXES):
+        return True
+    # Words that are animal-specific wherever they appear.
+    if re.search(r"حیوان|سگ|گربه|خرگوش|پرنده|همستر|ماهی|خزنده|قناری|لوتینو|فینچ",
+                 blob):
+        return True
+    # Unambiguous animal tokens (سگ، گربه، خرگوش …) match as whole words. «پت» is
+    # deliberately NOT here: on its own it is just as likely to be part of an
+    # unrelated compound («پت شور» = water delivery) and the compound rules
+    # above already accept the real ones («پت‌شاپ», «پت استایلیست»).
+    words = {w.strip('.,()[]-/') for w in _WORD_SPLIT.split(blob)
+             if w.strip('.,()[]-/')}
+    return bool((ANIMAL_WORDS - AMBIGUOUS_WORDS) & words)
 
 
 def infer_category(name, kind, osm_tags=None):

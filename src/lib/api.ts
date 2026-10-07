@@ -39,8 +39,11 @@ import type {
  * which also computes display distances (mirrors ST_DWithin).
  */
 
-/** Same-origin always — the dev proxy owns the backend URL (see .env). */
-const API_BASE = ''
+/**
+ * Backend origin. Empty in dev so the Vite proxy owns the backend URL
+ * (see .env); set VITE_API_BASE_URL to point a build at a deployed API.
+ */
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
 
 /**
  * Publish mode (GitHub Pages et al.): the backend lives on localhost and
