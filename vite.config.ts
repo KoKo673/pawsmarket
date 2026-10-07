@@ -6,11 +6,14 @@ import { defineConfig, loadEnv } from 'vite'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   // Read .env / .env.local so the proxy target is configurable without
-  // rebuilding. VITE_API_BASE_URL is the Flask + PostGIS backend.
-  // loadEnv(mode, root, '') — prefix صریح «» لازم است تا متغیرهای
-  // بدون پیشوندِ VITE_ (مثل HTTPS_DEV) هم از .env / .env.local خوانده شوند.
+  // rebuilding.
+  // loadEnv(mode, root, '') — an explicit '' prefix is required so non-VITE_
+  // vars (HTTPS_DEV, DEV_PROXY_TARGET) are read from .env / .env.local too.
   const env = loadEnv(mode, process.cwd(), '')
-  const apiTarget = env.VITE_API_BASE_URL || 'http://localhost:9232'
+  // Where the DEV SERVER forwards /api. Distinct from VITE_API_BASE_URL, which
+  // is baked into the browser bundle for production (where there is no proxy).
+  // Point this at a deployed API to develop against the real backend.
+  const apiTarget = env.DEV_PROXY_TARGET || 'http://localhost:9232'
   // HTTPS_DEV=1 → serve over HTTPS so geolocation works from a phone on
   // the LAN (browsers require a secure context for navigator.geolocation).
   const httpsDev = env.HTTPS_DEV === '1' || env.HTTPS_DEV === 'true'

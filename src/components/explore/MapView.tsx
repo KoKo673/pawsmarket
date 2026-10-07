@@ -1,6 +1,6 @@
 import { Crosshair, Loader2, ShieldAlert } from 'lucide-react'
 import L from 'leaflet'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
 // Leaflet's own stylesheet — tiles/markers/panes are position:absolute here;
 // without it everything falls into normal flow and the map shreds apart.
@@ -18,8 +18,14 @@ import type { GeoPoint, ListingWithDistance } from '@/types'
  * tail, colored dot per kind. Rendered as inline-styled HTML inside a
  * Leaflet divIcon — Tailwind classes aren't guaranteed to cascade into
  * Leaflet's panes, so styles are inlined here on purpose.
+ *
+ * Icons are cached by their visible label: with 200+ listings many share the
+ * same rounded price («۱٫۵م» etc.), and one divIcon per distinct label means
+ * Leaflet clones a template instead of rebuilding identical DOM each time.
  */
-function createDivIcon(item: ListingWithDistance): L.DivIcon {
+const iconCache = new Map<string, L.DivIcon>()
+
+function markerIcon(item: ListingWithDistance): L.DivIcon {
   const dotColor = item.kind === 'pet' ? '#FA5C00' : item.kind === 'product' ? '#14B8A6' : '#0EA5A4'
   const label =
     item.kind === 'store'
@@ -27,6 +33,10 @@ function createDivIcon(item: ListingWithDistance): L.DivIcon {
       : item.price === 0
         ? 'سرپرستی'
         : faPriceShort(item.price)
+
+  const key = `${dotColor}|${label}`
+  const cached = iconCache.get(key)
+  if (cached) return cached
 
   const html = `
     <div style="
@@ -36,8 +46,7 @@ function createDivIcon(item: ListingWithDistance): L.DivIcon {
       padding:7px 11px;border-radius:999px;
       box-shadow:0 4px 14px rgba(0,0,0,.22);
       border:1.5px solid rgba(0,0,0,.06);
-      white-space:nowrap;transform:translateY(0);
-      transition:transform .15s ease;
+      white-space:nowrap;will-change:transform;
     ">
       <span style="width:8px;height:8px;border-radius:999px;background:${dotColor};flex:none"></span>
       ${label}
@@ -47,12 +56,14 @@ function createDivIcon(item: ListingWithDistance): L.DivIcon {
     </div>
   `
 
-  return L.divIcon({
+  const icon = L.divIcon({
     html,
     className: '',
     iconSize: undefined, // let Leaflet size from content
     iconAnchor: [24, 40],
   })
+  iconCache.set(key, icon)
+  return icon
 }
 
 /**
@@ -210,11 +221,52 @@ interface MapViewProps {
  * Container is `isolate-map` wrapped so Leaflet's internal z-indexes can
  * never paint over the z-nav navbar.
  */
+/**
+ * Listing markers as ONE imperative Leaflet layer instead of one React
+ * <Marker> per listing.
+ *
+ * With 200+ results the per-marker component approach cost a React subtree,
+ * an effect and an icon rebuild for every pin — visible as sluggish panning,
+ * because the marker pane is re-laid-out on each frame. A LayerGroup lets
+ * Leaflet own the markers directly: we only touch the DOM when the result set
+ * actually changes, and pan/zoom stay inside Leaflet's own transform path.
+ */
+function ListingMarkers({
+  listings,
+  onSelect,
+}: {
+  listings: ListingWithDistance[]
+  onSelect: (id: string) => void
+}) {
+  const map = useMap()
+  // onSelect is re-created on every parent render; keep the latest in a ref so
+  // marker handlers are bound once instead of on every listing change.
+  const selectRef = useRef(onSelect)
+  selectRef.current = onSelect
+
+  useEffect(() => {
+    const layer = L.layerGroup().addTo(map)
+
+    for (const item of listings) {
+      L.marker([item.location.lat, item.location.lng], {
+        icon: markerIcon(item),
+        riseOnHover: true,
+        keyboard: false,
+      })
+        .on('click', () => selectRef.current(item.id))
+        .addTo(layer)
+    }
+
+    return () => {
+      layer.remove()
+    }
+  }, [map, listings])
+
+  return null
+}
+
 export function MapView({ listings, origin, onSelect, className }: MapViewProps) {
   const theme = useUiStore((s) => s.theme)
-
-  // Rebuild markers only when the result set changes
-  const markers = useMemo(() => listings.map((item) => [item, createDivIcon(item)] as const), [listings])
 
   return (
     <div
@@ -233,19 +285,15 @@ export function MapView({ listings, origin, onSelect, className }: MapViewProps)
         <TileLayer
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          // Panning re-requests tiles constantly; keeping them cached stops the
+          // slow, blank-tile feeling on repeat drags over the same area.
+          keepBuffer={4}
         />
         <MapSync origin={origin} />
 
         <Marker position={[origin.lat, origin.lng]} icon={originIcon} interactive={false} zIndexOffset={1000} />
 
-        {markers.map(([item, icon]) => (
-          <Marker
-            key={item.id}
-            position={[item.location.lat, item.location.lng]}
-            icon={icon}
-            eventHandlers={{ click: () => onSelect(item.id) }}
-          />
-        ))}
+        <ListingMarkers listings={listings} onSelect={onSelect} />
       </MapContainer>
 
       {/* «مکان من» — re-center on the real GPS position */}
