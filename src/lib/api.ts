@@ -277,8 +277,10 @@ function toStoreListing(raw: RawRow): StoreListing {
     address,
     createdAt: str(raw.created_at ?? raw.createdAt, new Date(0).toISOString()),
     category,
-    rating: num(raw.rating, 0),
-    reviewCount: num(raw.reviewCount ?? raw.review_count, 0),
+    // Google Maps rating from the enrichment; the wire row carries none, so
+    // fall back to it rather than showing 0 for a shop that is rated 4.8.
+    rating: num(raw.rating, meta?.rating ?? 0),
+    reviewCount: num(raw.reviewCount ?? raw.review_count, meta?.reviewCount ?? 0),
     opensAt: meta?.opensAt ?? str(raw.opensAt ?? raw.opens_at, '09:00'),
     closesAt: meta?.closesAt ?? str(raw.closesAt ?? raw.closes_at, '21:00'),
     phone: meta?.phone ?? str(raw.phone, ''),

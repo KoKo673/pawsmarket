@@ -127,7 +127,14 @@ export function StatsGrid({ item }: { item: ListingWithDistance }) {
             <Stat
               icon={<Activity className="size-3.5 text-accent" />}
               label="حوزه‌ها"
-              value={item.categories?.length ? item.categories.slice(0, 3).join('، ') : '—'}
+              value={
+                // show whole items only — slicing to 3 cut a word in half
+                // ("… واکسیناسیون، غذ…") with no hint that more existed
+                item.categories?.length
+                  ? item.categories.slice(0, 3).join('، ') +
+                    (item.categories.length > 3 ? ` (+${faDigits(item.categories.length - 3)})` : '')
+                  : '—'
+              }
             />
           </>
         )}

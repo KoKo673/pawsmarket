@@ -7,7 +7,7 @@ import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 
 import { useGeolocation } from '@/hooks/use-geolocation'
-import { faPriceShort } from '@/lib/fa'
+import { faDigits, faPriceShort } from '@/lib/fa'
 import { cn } from '@/lib/utils'
 import { useGeoStore, type GeoStatus } from '@/store/geo.store'
 import { useUiStore } from '@/store/ui.store'
@@ -221,6 +221,56 @@ interface MapViewProps {
  * Container is `isolate-map` wrapped so Leaflet's internal z-indexes can
  * never paint over the z-nav navbar.
  */
+/** Listings sharing (almost) the same point — e.g. one shop's product rows. */
+interface Cluster {
+  lat: number
+  lng: number
+  items: ListingWithDistance[]
+}
+
+/**
+ * Group listings that sit on the same point.
+ *
+ * A shop's products are stored at the shop's coordinates, so a vet with three
+ * products produced three pins stacked on one pixel — unreadable and it made a
+ * single business look like three. Listings within ~40 m are one pin; clicking
+ * it opens the first, and the rest are reachable from the card list.
+ */
+function clusterListings(listings: ListingWithDistance[]): Cluster[] {
+  // ~4 decimal places ≈ 11 m; products inherit their shop's coordinates, so
+  // this is enough to collapse a shop's rows while keeping neighbours apart.
+  const byKey = new Map<string, Cluster>()
+  for (const item of listings) {
+    const key = `${item.location.lat.toFixed(4)}|${item.location.lng.toFixed(4)}`
+    const at = byKey.get(key)
+    if (at) {
+      at.items.push(item)
+    } else {
+      byKey.set(key, {
+        lat: item.location.lat,
+        lng: item.location.lng,
+        items: [item],
+      })
+    }
+  }
+  return [...byKey.values()]
+}
+
+/** Pin showing a count when several listings share a point. */
+function clusterIcon(count: number): L.DivIcon {
+  const label = faDigits(count)
+  const html = `
+    <div style="
+      display:flex;align-items:center;gap:5px;
+      background:#FA5C00;color:#fff;
+      font:800 12px/1 Vazirmatn,system-ui,sans-serif;
+      padding:7px 11px;border-radius:999px;
+      box-shadow:0 4px 14px rgba(250,92,0,.42);
+      border:2px solid #fff;white-space:nowrap;
+    ">${label}</div>`
+  return L.divIcon({ html, className: '', iconSize: undefined, iconAnchor: [24, 18] })
+}
+
 /**
  * Listing markers as ONE imperative Leaflet layer instead of one React
  * <Marker> per listing.
@@ -247,13 +297,16 @@ function ListingMarkers({
   useEffect(() => {
     const layer = L.layerGroup().addTo(map)
 
-    for (const item of listings) {
-      L.marker([item.location.lat, item.location.lng], {
-        icon: markerIcon(item),
+    for (const cluster of clusterListings(listings)) {
+      const icon = cluster.items.length > 1
+        ? clusterIcon(cluster.items.length)
+        : markerIcon(cluster.items[0])
+      L.marker([cluster.lat, cluster.lng], {
+        icon,
         riseOnHover: true,
         keyboard: false,
       })
-        .on('click', () => selectRef.current(item.id))
+        .on('click', () => selectRef.current(cluster.items[0].id))
         .addTo(layer)
     }
 

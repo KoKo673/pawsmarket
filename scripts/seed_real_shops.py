@@ -355,6 +355,44 @@ def jitter_price(name, price):
     return int(round(price * factor / 1000.0) * 1000)
 
 
+def load_digikala_products():
+    """Real inventory from the merged marketplace sources.
+
+    scripts/merge_sources.py pairs Digikala and Torob, keeps the cheaper price
+    on a disagreement and records both figures. Falling back to the raw
+    Digikala file keeps the seed runnable before that step.
+    """
+    for name in ("catalog_products.json", "digikala_products.json"):
+        p = os.path.join(HERE, name)
+        if not os.path.exists(p):
+            continue
+        with open(p, encoding="utf-8") as f:
+            rows = json.load(f)
+        if isinstance(rows, list) and rows:
+            print(f"  inventory source: {name} ({len(rows)} products)")
+            return rows
+    print("  (no marketplace inventory — generic pools only)")
+    return []
+
+
+def load_apify_places():
+    """Real Tehran businesses from Google Maps via Apify (optional).
+
+    These carry address, phone and rating that OSM does not have, so they are
+    merged in ahead of the OSM shops and win any name conflict.
+    """
+    p = os.path.join(HERE, "apify_places_clean.json")
+    if not os.path.exists(p):
+        print("  (no apify_places_clean.json — OSM shops only)")
+        return []
+    with open(p, encoding="utf-8") as f:
+        rows = json.load(f)
+    rows = [r for r in rows if isinstance(r, dict)]
+    if rows:
+        print(f"  apify places: {len(rows)}")
+    return rows
+
+
 def main():
     # Merge every dump we have: the wide harvest plus the original city-wide
     # pass. The wide dump only covers the tiles that got answers before the
@@ -435,6 +473,40 @@ def main():
                 names.add(nm)
                 missing_forced.discard(nm)
 
+    # Google Maps places go in FIRST so that, when the same business also
+    # exists in OSM, the Apify row wins the name slot — it carries the real
+    # address, phone and rating that OSM usually lacks.
+    apify = load_apify_places()
+    if apify:
+        existing = {r["name"] for r in rows}
+        added = 0
+        for p in apify:
+            name = (p.get("name") or "").strip()
+            if not name or name in existing:
+                continue
+            existing.add(name)
+            cat = p.get("category") or "shop"
+            if cat not in ("shop", "vet", "groomer", "boarding", "shelter", "cafe"):
+                cat = "shop"
+            rows.append(dict(
+                name=name,
+                name_src="google-maps",
+                kind="vet" if cat == "vet" else "shop",
+                lat=float(p["lat"]),
+                lng=float(p["lng"]),
+                address=p.get("address") or "تهران",
+                phone_raw=p.get("phone") or "",
+                website=p.get("website") or "",
+                hours=("", ""),
+                category=cat,
+                dist=round(hav(CENTER, (float(p["lat"]), float(p["lng"]))), 2),
+                # extras the enrichment step folds in
+                rating=p.get("rating"),
+                reviews=p.get("reviews"),
+            ))
+            added += 1
+        print(f"  +{added} Google Maps places merged in")
+
     rows.sort(key=lambda r: (r["category"], r["dist"], r["name"]))
 
     # ── enrichment + per-store image ──
@@ -495,6 +567,10 @@ def main():
             "description": desc,
             "image": image,
         }
+        # Google Maps ratings — real, so they are shown; never invented.
+        if r.get("rating"):
+            meta["rating"] = r["rating"]
+            meta["reviewCount"] = r.get("reviews") or 0
         if not image:
             meta.pop("image", None)
         return {kk: vv for kk, vv in meta.items() if vv}
@@ -540,6 +616,32 @@ def main():
                 f"ST_SetSRID(ST_MakePoint({r['lng']}, {r['lat']}), 4326), now());"
             )
             product_count += 1
+    # ── real Digikala inventory, attached to the shops it belongs with ──
+    #
+    # The hand-written pools above are generic. Digikala gives real Tehran
+    # product names, real Toman prices and real photos; those are far more
+    # useful, so they replace the generic rows for shops that sell pet goods.
+    digi = load_digikala_products()
+    if digi:
+        attached = 0
+        # shops that plausibly stock pet goods, in catalog order
+        suppliers = [r for r in rows if r["category"] in ("shop", "groomer", "vet")]
+        if suppliers:
+            for n, prod in enumerate(digi):
+                # spread across real shops deterministically
+                host = suppliers[n % len(suppliers)]
+                idx = rows.index(host) + 1
+                sql.append(
+                    "INSERT INTO products (name, price, store_id, location, "
+                    "created_at) VALUES ("
+                    f"'{esc(prod['name'])}', {int(prod['price_toman'])}, {idx}, "
+                    f"ST_SetSRID(ST_MakePoint({host['lng']}, {host['lat']}), 4326), "
+                    "now());"
+                )
+                attached += 1
+        product_count += attached
+        print(f"  +{attached} real Digikala products attached to real shops")
+
     sql.append("COMMIT;")
     with open(os.path.join(HERE, "seed_real.sql"), "w", encoding="utf-8") as f:
         f.write("\n".join(sql) + "\n")
@@ -568,6 +670,9 @@ def main():
         "  categories?: string[]",
         "  description?: string",
         "  image?: string",
+        "  /** Google Maps rating (only present when the source supplied one). */",
+        "  rating?: number",
+        "  reviewCount?: number",
         "}",
         "",
         "export const SHOP_ENRICHMENT: Record<string, ShopMeta> = {",

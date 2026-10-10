@@ -101,8 +101,16 @@ export function Hero() {
           </ul>
         </div>
 
-        {/* ── کلاج تصاویر (دسکتاپ) ── */}
-        <div data-motion-item className="relative mx-auto hidden aspect-[4/4.4] w-full max-w-md lg:block">
+        {/* ── کلاج تصاویر ──
+            Shown at every width, just smaller on phones: hiding it entirely
+            left the mobile home page as a wall of text with no product
+            imagery at all. The float animation is dropped on small screens
+            because several simultaneously floating photos on a phone reads
+            as jitter rather than polish. */}
+        <div
+          data-motion-item
+          className="relative mx-auto aspect-[4/3.2] w-full max-w-xs motion-reduce:animate-none sm:aspect-[4/4.4] sm:max-w-md"
+        >
           <img
             src={asset('images/listings/dog-golden.jpg')}
             alt="توله‌ی گلدن رتریور"
@@ -123,7 +131,7 @@ export function Hero() {
           />
 
           {/* چیپ شیشه‌ای شناور روی کلاج */}
-          <div className="glass animate-float absolute right-4 top-10 flex items-center gap-2.5 rounded-2xl px-4 py-3" style={{ animationDuration: '5s' }}>
+          <div className="glass absolute right-4 top-10 sm:animate-float flex items-center gap-2.5 rounded-2xl px-4 py-3" style={{ animationDuration: '5s' }}>
             <span className="grid size-9 place-items-center rounded-xl bg-accent/15 text-accent">
               <PawPrint className="size-5" />
             </span>
