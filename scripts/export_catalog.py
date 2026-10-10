@@ -12,6 +12,7 @@ Run before the production build:
 """
 import datetime
 import json
+import os
 import subprocess
 import sys
 import urllib.request
@@ -39,6 +40,10 @@ SELECT json_build_object(
 
 
 def from_db():
+    # Prefer the deployed database: the local Docker Postgres is optional and
+    # often absent, and the published catalog must match what the API serves.
+    if os.environ.get("RAILWAY_PGPASSWORD"):
+        return from_railway()
     out = subprocess.run(
         ["docker", "exec", CONTAINER, "psql", "-U", "myuser", "-d", "mydatabase",
          "-t", "-A", "-c", SQL],
@@ -50,6 +55,29 @@ def from_db():
     if out.returncode != 0:
         raise RuntimeError(stderr.strip() or "psql failed")
     data = json.loads(stdout.strip())
+    for k in ("pets", "products", "stores"):
+        if not isinstance(data.get(k), list):
+            raise RuntimeError(f"db payload missing list: {k}")
+    return data
+
+
+def from_railway():
+    import psycopg2
+
+    conn = psycopg2.connect(
+        host=os.environ.get("RAILWAY_DB_HOST", "iriguchi.proxy.rlwy.net"),
+        port=int(os.environ.get("RAILWAY_DB_PORT", "49437")),
+        dbname=os.environ.get("RAILWAY_DB_NAME", "railway"),
+        user=os.environ.get("RAILWAY_DB_USER", "postgres"),
+        password=os.environ["RAILWAY_PGPASSWORD"],
+        connect_timeout=30,
+    )
+    try:
+        with conn.cursor() as cur:
+            cur.execute(SQL)
+            data = cur.fetchone()[0]
+    finally:
+        conn.close()
     for k in ("pets", "products", "stores"):
         if not isinstance(data.get(k), list):
             raise RuntimeError(f"db payload missing list: {k}")
