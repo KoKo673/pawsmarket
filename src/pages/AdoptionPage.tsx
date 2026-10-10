@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/input'
 import { faDigits } from '@/lib/fa'
 import { formatDistance } from '@/lib/geo'
-import { socialApi, type AdoptionRequest, type DiscoverPet } from '@/lib/social-api'
+import { mediaUrl, socialApi, type AdoptionRequest, type DiscoverPet } from '@/lib/social-api'
 import { useAuthStore } from '@/store/auth.store'
 import { useGeoStore } from '@/store/geo.store'
 
@@ -143,7 +143,7 @@ export function AdoptionPage() {
               >
                 <Link to={`/pet/${r.pet_id}`} className="flex min-w-0 items-center gap-3">
                   {r.pet_avatar ? (
-                    <img src={r.pet_avatar} alt="" className="size-12 rounded-2xl object-cover" />
+                    <img src={mediaUrl(r.pet_avatar)} alt="" className="size-12 rounded-2xl object-cover" />
                   ) : (
                     <span className="grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary">
                       <PawPrint className="size-5" />
@@ -208,7 +208,7 @@ export function AdoptionPage() {
             >
               <Link to={`/pet/${pet.id}`} className="block aspect-[4/3] overflow-hidden bg-muted">
                 {pet.avatar_url ? (
-                  <img src={pet.avatar_url} alt={pet.name} loading="lazy" className="size-full object-cover" />
+                  <img src={mediaUrl(pet.avatar_url)} alt={pet.name} loading="lazy" className="size-full object-cover" />
                 ) : (
                   <span className="grid size-full place-items-center text-primary/40">
                     <PawPrint className="size-14" />

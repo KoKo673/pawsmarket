@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { faDigits } from '@/lib/fa'
 import { formatDistance } from '@/lib/geo'
-import { socialApi, type DiscoverPet } from '@/lib/social-api'
+import { mediaUrl, socialApi, type DiscoverPet } from '@/lib/social-api'
 import { useGeoStore } from '@/store/geo.store'
 
 const SPECIES_FA: Record<string, string> = {
@@ -89,7 +89,7 @@ export function PetsDiscoverPage() {
               <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                 {pet.avatar_url ? (
                   <img
-                    src={pet.avatar_url}
+                    src={mediaUrl(pet.avatar_url)}
                     alt={pet.name}
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"

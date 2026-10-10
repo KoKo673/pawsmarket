@@ -15,6 +15,23 @@ const TOKEN_KEY = 'pawsmarket-auth-token'
  */
 const STATIC_MODE = import.meta.env.VITE_CATALOG_MODE === 'static'
 
+/**
+ * Resolve a media path returned by the API into a URL the browser can load.
+ *
+ * The API returns relative paths (`/media/<id>.png`) because that is the only
+ * thing it knows. Rendered raw, the browser resolves them against the page
+ * origin — which on the Pages build is koko673.github.io, not the API — so
+ * every uploaded photo 404s and a post shows up as caption-only. Prefixing
+ * with the API origin fixes it; absolute URLs and same-origin (dev) are left
+ * alone.
+ */
+export function mediaUrl(path: string | null | undefined): string | undefined {
+  if (!path) return undefined
+  if (/^https?:\/\//i.test(path)) return path
+  if (!path.startsWith('/')) return path
+  return `${API_BASE}${path}`
+}
+
 export function getToken(): string | null {
   try {
     return localStorage.getItem(TOKEN_KEY)
@@ -166,6 +183,14 @@ export interface DiscoverPet {
   distance_m: number
 }
 
+/** One row of the followers / following lists. */
+export interface FollowListItem {
+  id: number
+  name: string
+  species: string
+  avatar_url: string | null
+}
+
 /* ── احراز هویت ─────────────────────────────────────────────── */
 
 export const authApi = {
@@ -223,6 +248,14 @@ export const socialApi = {
     request<{ following: boolean; followers: number }>(`/api/pets/${petId}/follow`, { method: 'POST' }),
   unfollow: (petId: number | string) =>
     request<{ following: boolean; followers: number }>(`/api/pets/${petId}/follow`, { method: 'DELETE' }),
+  followers: (petId: number | string) =>
+    request<{ items: FollowListItem[]; next_before: string | null }>(
+      `/api/pets/${petId}/followers`,
+    ),
+  following: (petId: number | string) =>
+    request<{ items: FollowListItem[]; next_before: string | null }>(
+      `/api/pets/${petId}/following`,
+    ),
   feed: (before?: string) =>
     request<{ items: Post[]; next_before: string | null }>(
       `/api/feed${before ? `?before=${encodeURIComponent(before)}` : ''}`,

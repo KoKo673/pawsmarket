@@ -57,12 +57,28 @@ export function StatsGrid({ item }: { item: ListingWithDistance }) {
       <div className="grid grid-cols-2 gap-3 [&>*]:min-w-0 sm:grid-cols-3">
         {item.kind === 'pet' && (
           <>
-            <Stat icon={<Baby className="size-3.5 text-primary" />} label="سن" value={formatAge(item.ageMonths)} />
-            <Stat icon={<Dog className="size-3.5 text-primary" />} label="نژاد" value={item.breed} />
-            <Stat icon={<Tag className="size-3.5 text-primary" />} label="جنسیت" value={item.gender === 'male' ? 'نر' : 'ماده'} />
+            {/* Fields the owner never entered are omitted rather than shown as
+                a made-up value — «ثبت‌نشده» is honest, «۱ سال» is not. */}
+            {item.ageMonths !== undefined && (
+              <Stat icon={<Baby className="size-3.5 text-primary" />} label="سن" value={formatAge(item.ageMonths)} />
+            )}
+            {item.breed && (
+              <Stat icon={<Dog className="size-3.5 text-primary" />} label="نژاد" value={item.breed} />
+            )}
+            {item.gender && (
+              <Stat
+                icon={<Tag className="size-3.5 text-primary" />}
+                label="جنسیت"
+                value={item.gender === 'male' ? 'نر' : 'ماده'}
+              />
+            )}
             <Stat icon={<MapPin className="size-3.5 text-accent" />} label="فاصله" value={formatDistance(item.distanceKm)} />
-            <Stat icon={<ShoppingBag className="size-3.5 text-accent" />} label="قیمت" value={item.price === 0 ? 'رایگان' : faPrice(item.price)} />
-            <Stat icon={<ShieldCheck className="size-3.5 text-accent" />} label="ثبت‌کننده" value={item.ownerName} />
+            {item.price > 0 && (
+              <Stat icon={<ShoppingBag className="size-3.5 text-accent" />} label="قیمت" value={faPrice(item.price)} />
+            )}
+            {item.ownerName && (
+              <Stat icon={<ShieldCheck className="size-3.5 text-accent" />} label="ثبت‌کننده" value={item.ownerName} />
+            )}
           </>
         )}
 

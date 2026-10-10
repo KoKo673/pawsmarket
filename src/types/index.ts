@@ -39,15 +39,21 @@ export interface BaseListing {
 export interface PetListing extends BaseListing {
   kind: 'pet'
   species: Species
-  breed: string
+  /**
+   * Optional because the social API never asks for these — showing a made-up
+   * value ("۱ سال", "نر") for a profile whose owner entered nothing is worse
+   * than showing nothing. Absent = not stated.
+   */
+  breed?: string
   /** Age in months — stored as an int for easy API math. */
-  ageMonths: number
-  gender: 'male' | 'female'
+  ageMonths?: number
+  gender?: 'male' | 'female'
   /** Sale price in USD. `0` + `adoptable: true` = shelter adoption. */
   price: number
-  adoptable: boolean
+  /** Explicitly flagged available for adoption; not inferred from price. */
+  adoptable?: boolean
   medical: MedicalFlag[]
-  ownerName: string
+  ownerName?: string
 }
 
 export interface ProductListing extends BaseListing {

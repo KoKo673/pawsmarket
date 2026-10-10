@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input, Textarea } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { faDigits } from '@/lib/fa'
-import { socialApi, type PetProfile } from '@/lib/social-api'
+import { mediaUrl, socialApi, type PetProfile } from '@/lib/social-api'
 import { useAuthStore } from '@/store/auth.store'
 import { useGeoStore } from '@/store/geo.store'
 import { useCallback, useEffect } from 'react'
@@ -200,7 +200,7 @@ export function MyAccountPage() {
               >
                 {p.profile.avatar_url ? (
                   <img
-                    src={p.profile.avatar_url}
+                    src={mediaUrl(p.profile.avatar_url)}
                     alt={p.pet.name}
                     className="size-14 rounded-2xl object-cover"
                   />

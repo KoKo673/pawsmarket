@@ -13,6 +13,7 @@ import { AddPage } from '@/pages/AddPage'
 import { AdoptionPage } from '@/pages/AdoptionPage'
 import { ExplorePage } from '@/pages/ExplorePage'
 import { FeedPage } from '@/pages/FeedPage'
+import { FollowListPage } from '@/pages/FollowListPage'
 import { HomePage } from '@/pages/HomePage'
 import { MyAccountPage } from '@/pages/MyAccountPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
@@ -54,6 +55,11 @@ function AppRoutes() {
     const boot = initEntranceMotion()
     return () => boot.dispose()
   }, [])
+  // هر مسیر جدید از بالای صفحه شروع شود. بدون این، پیمایش از انتهای یک صفحه‌ی
+  // بلند، نمای پایینی صفحه‌ی بعدی را نشان می‌دهد.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }, [location.pathname, location.search])
   // The Explore view is a full-height app surface — no footer there
   const isExplore = location.pathname === '/explore'
 
@@ -131,6 +137,14 @@ function AppRoutes() {
               element={
                 <AnimatedPage>
                   <PetProfilePage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/pet/:id/followers"
+              element={
+                <AnimatedPage>
+                  <FollowListPage />
                 </AnimatedPage>
               }
             />

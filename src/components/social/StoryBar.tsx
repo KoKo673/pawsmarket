@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { faDigits } from '@/lib/fa'
-import { socialApi, type Story } from '@/lib/social-api'
+import { mediaUrl, socialApi, type Story } from '@/lib/social-api'
 import { cn } from '@/lib/utils'
 
 /**
@@ -55,7 +55,7 @@ export function StoryBar({
           >
             <span className="relative grid size-16 place-items-center rounded-full border-2 border-dashed border-primary/50 bg-background">
               <img
-                src={avatarUrl || '/images/listings/dog-pug.jpg'}
+                src={mediaUrl(avatarUrl) || '/images/listings/dog-pug.jpg'}
                 alt=""
                 className="size-full rounded-full object-cover opacity-70"
               />
@@ -87,7 +87,7 @@ export function StoryBar({
               >
                 <span className="grid size-full place-items-center rounded-full bg-card p-0.5">
                   <img
-                    src={story.images[0] || avatarUrl || '/images/listings/dog-pug.jpg'}
+                    src={mediaUrl(story.images[0]) || mediaUrl(avatarUrl) || '/images/listings/dog-pug.jpg'}
                     alt=""
                     className="size-full rounded-full object-cover"
                   />
@@ -147,7 +147,7 @@ export function StoryBar({
 
           <figure className="relative aspect-[9/16] w-[min(92vw,26rem)] overflow-hidden rounded-3xl bg-card shadow-lifted">
             {active.images[0] ? (
-              <img src={active.images[0]} alt="" className="size-full object-cover" />
+              <img src={mediaUrl(active.images[0])} alt="" className="size-full object-cover" />
             ) : (
               <div className="grid size-full place-items-center bg-muted/40 p-8">
                 <p className="text-center text-lg leading-relaxed">{active.text}</p>

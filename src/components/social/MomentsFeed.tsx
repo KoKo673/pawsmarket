@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { MomentActions } from '@/components/social/MomentActions'
 import { Button } from '@/components/ui/button'
 import { faDigits } from '@/lib/fa'
-import type { Post } from '@/lib/social-api'
+import { mediaUrl, type Post } from '@/lib/social-api'
 
 function faTime(iso: string): string {
   const d = new Date(iso)
@@ -27,7 +27,7 @@ export function MomentCard({ post }: { post: Post }) {
         <Link to={`/pet/${post.pet_id}`} className="shrink-0">
           {post.pet_avatar ? (
             <img
-              src={post.pet_avatar}
+              src={mediaUrl(post.pet_avatar)}
               alt={post.pet_name ?? ''}
               className="size-11 rounded-full border-2 border-primary/30 object-cover"
             />
@@ -52,7 +52,7 @@ export function MomentCard({ post }: { post: Post }) {
           {post.images.slice(0, 4).map((src, i) => (
             <img
               key={i}
-              src={src}
+              src={mediaUrl(src)}
               alt=""
               loading="lazy"
               className={

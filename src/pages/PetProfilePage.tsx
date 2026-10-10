@@ -1,6 +1,6 @@
 import { Cake, Heart, Loader2, MapPin, PawPrint, Plus, Share2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 
 import { FollowButton } from '@/components/social/FollowButton'
 import { CreateMomentDialog } from '@/components/social/CreateMomentDialog'
@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { faDigits } from '@/lib/fa'
-import { socialApi, type PetProfile, type Post } from '@/lib/social-api'
+import { mediaUrl, socialApi, type PetProfile, type Post } from '@/lib/social-api'
 
 const SPECIES_FA: Record<string, string> = {
   dog: 'سگ', cat: 'گربه', rabbit: 'خرگوش', bird: 'پرنده',
@@ -95,7 +95,7 @@ export function PetProfilePage() {
             <div className="flex items-end gap-4">
               {p.avatar_url ? (
                 <img
-                  src={p.avatar_url}
+                  src={mediaUrl(p.avatar_url)}
                   alt={pet.name}
                   className="size-24 rounded-3xl border-4 border-card object-cover shadow-lifted"
                 />
@@ -176,14 +176,32 @@ export function PetProfilePage() {
           <div data-motion-item className="mt-5 grid grid-cols-3 divide-x divide-border rounded-2xl border border-border/70 bg-muted/40 text-center">
             {[
               { label: 'لحظه‌ها', value: counts.posts },
-              { label: 'دنبال‌کننده', value: counts.followers },
-              { label: 'دنبال‌شده', value: counts.following },
-            ].map((s) => (
-              <div key={s.label} className="px-2 py-3">
-                <p className="text-lg font-extrabold text-primary">{faDigits(s.value)}</p>
-                <p className="text-[11px] font-bold text-muted-foreground">{s.label}</p>
-              </div>
-            ))}
+              { label: 'دنبال‌کننده', value: counts.followers, to: `/pet/${pet.id}/followers?kind=followers` },
+              { label: 'دنبال‌شده', value: counts.following, to: `/pet/${pet.id}/followers?kind=following` },
+            ].map((s) => {
+              const inner = (
+                <>
+                  <p className="text-lg font-extrabold text-primary">{faDigits(s.value)}</p>
+                  <p className="text-[11px] font-bold text-muted-foreground">{s.label}</p>
+                </>
+              )
+              // لحظه‌ها has no list page yet, so it stays a plain cell rather
+              // than a link that would go nowhere.
+              return s.to ? (
+                <Link
+                  key={s.label}
+                  to={s.to}
+                  aria-label={`${s.label}: ${faDigits(s.value)}`}
+                  className="px-2 py-3 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  {inner}
+                </Link>
+              ) : (
+                <div key={s.label} className="px-2 py-3">
+                  {inner}
+                </div>
+              )
+            })}
           </div>
         </div>
       </header>
@@ -192,7 +210,7 @@ export function PetProfilePage() {
       <StoryBar
         petId={pet.id}
         petName={pet.name}
-        avatarUrl={p.avatar_url}
+        avatarUrl={mediaUrl(p.avatar_url)}
         canPublish={isOwnerMine}
         onPublish={() => {
           setComposeKind('story')
@@ -212,7 +230,7 @@ export function PetProfilePage() {
               <img
                 key={photo.id}
                 data-motion-item
-                src={photo.url}
+                src={mediaUrl(photo.url)}
                 alt={photo.caption ?? ''}
                 loading="lazy"
                 className="aspect-square w-full rounded-2xl border border-border/60 object-cover"

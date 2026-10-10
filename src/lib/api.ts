@@ -166,13 +166,21 @@ function inferStoreCategory(name: string, address: string): StoreCategory {
 const wireId = (kind: 'pet' | 'product' | 'store', raw: RawRow): string =>
   `${kind}:${String(raw.id ?? 'unknown')}`
 
-/** Wire row → PetListing (type-specific fields defaulted for display). */
+/**
+ * Wire row → PetListing.
+ *
+ * Fields the source never provided stay undefined instead of being filled with
+ * a plausible-looking default: a social profile that never recorded an age
+ * must not display «۱ سال», and one with no owner must not claim «نر».
+ */
 function toPetListing(raw: RawRow): PetListing {
   const speciesRaw = str(raw.species, 'other')
   const species: Species = KNOWN_SPECIES.includes(speciesRaw as Species)
     ? (speciesRaw as Species)
     : 'other'
   const price = num(raw.price, 0)
+  const has = (v: unknown) => (v === null || v === undefined || v === '' ? undefined : v)
+  const genderRaw = raw.gender
 
   return {
     id: wireId('pet', raw),
@@ -184,15 +192,19 @@ function toPetListing(raw: RawRow): PetListing {
     address: str(raw.address, 'تهران'),
     createdAt: str(raw.created_at ?? raw.createdAt, new Date(0).toISOString()),
     species,
-    breed: str(raw.breed, 'نژاد نامشخص'),
-    ageMonths: num(raw.ageMonths, 12),
-    gender: raw.gender === 'female' ? 'female' : 'male',
+    ...(has(raw.breed) ? { breed: str(raw.breed, '') } : {}),
+    ...(raw.ageMonths !== null && raw.ageMonths !== undefined
+      ? { ageMonths: num(raw.ageMonths, 0) }
+      : {}),
+    ...(genderRaw === 'female' || genderRaw === 'male' ? { gender: genderRaw } : {}),
     price,
-    adoptable: bool(raw.adoptable, price === 0),
+    ...(raw.adoptable !== null && raw.adoptable !== undefined
+      ? { adoptable: bool(raw.adoptable, false) }
+      : {}),
     medical: Array.isArray(raw.medical)
       ? (raw.medical.filter((m): m is MedicalFlag => KNOWN_MEDICAL.includes(m as MedicalFlag)) as MedicalFlag[])
       : [],
-    ownerName: str(raw.ownerName, 'مالک ناشناس'),
+    ...(has(raw.ownerName) ? { ownerName: str(raw.ownerName, '') } : {}),
   }
 }
 

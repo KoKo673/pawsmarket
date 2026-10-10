@@ -6,6 +6,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { Button } from '@/components/ui/button'
 import { faDigits } from '@/lib/fa'
+import { mediaUrl } from '@/lib/social-api'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/store/auth.store'
 import { useFavoritesStore } from '@/store/favorites.store'
@@ -121,7 +122,7 @@ export function Navbar() {
             <Button asChild variant="ghost" size="icon" aria-label="حساب من" className="hidden md:inline-flex">
               <Link to="/me">
                 {authUser?.avatar_url ? (
-                  <img src={authUser.avatar_url} alt="" className="size-6 rounded-full object-cover" />
+                  <img src={mediaUrl(authUser.avatar_url)} alt="" className="size-6 rounded-full object-cover" />
                 ) : (
                   <User className="size-4" />
                 )}

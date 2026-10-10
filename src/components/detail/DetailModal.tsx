@@ -100,7 +100,9 @@ export function DetailModal() {
             <div className="min-w-0 text-sm leading-snug">
               <p className="font-bold">
                 {item.kind === 'pet'
-                  ? `ثبت‌کننده: ${item.ownerName}`
+                  ? item.ownerName
+                    ? `ثبت‌کننده: ${item.ownerName}`
+                    : 'ثبت‌کننده‌ای ثبت نشده است'
                   : item.kind === 'product'
                     ? `فروشنده: ${item.storeName}`
                     : item.name}
@@ -187,7 +189,9 @@ export function DetailModal() {
                 (() => {
                   // شماره‌ی مالک/پناهگاه در صورت وجود در داده‌ی واقعی فروشگاه‌ها
                   const ownerPhone =
-                    item.kind === 'pet' ? (SHOP_ENRICHMENT[item.ownerName]?.phone ?? '') : ''
+                    item.kind === 'pet' && item.ownerName
+                      ? (SHOP_ENRICHMENT[item.ownerName]?.phone ?? '')
+                      : ''
                   const label = item.adoptable ? 'تماس با پناهگاه' : 'تماس با مالک'
                   if (ownerPhone) {
                     return (

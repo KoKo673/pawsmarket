@@ -39,7 +39,9 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
           : 'ناموجود'
         : item.adoptable
           ? 'قابل سرپرستی'
-          : 'برای فروش'
+          : item.price > 0
+            ? 'برای فروش'
+            : 'بدون قیمت'
 
   const priceLabel =
     item.kind === 'store' ? null : item.price === 0 ? 'رایگان' : `${faPriceShort(item.price)} تومان`
@@ -123,7 +125,15 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
         {/* خط متادیتای نوع‌محور */}
         <p className="line-clamp-1 text-sm text-muted-foreground">
           {item.kind === 'pet'
-            ? `${item.breed} · ${formatAge(item.ageMonths)} · ${status}`
+            ? // join only what exists, so a profile with no breed/age shows
+              // just the status instead of "undefined · undefined · …"
+              [
+                item.breed,
+                item.ageMonths !== undefined ? formatAge(item.ageMonths) : undefined,
+                status,
+              ]
+                .filter(Boolean)
+                .join(' · ')
             : item.kind === 'product'
               ? `${item.brand} · ${status}`
               : status}
