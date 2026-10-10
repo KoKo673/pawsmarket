@@ -14,6 +14,7 @@ import {
   Stethoscope,
   ToyBrick,
 } from 'lucide-react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useNearbyListings } from '@/hooks/use-listings'
@@ -168,6 +169,26 @@ export function CategoryGrid() {
   const { data } = useNearbyListings()
   const listings = data ?? []
 
+  // Count every tile in ONE pass. Filtering the whole listing array inside the
+  // map ran it once per tile — 14 scans of a 2400-row result set on every
+  // render, including on every keystroke in the search box.
+  const counts = useMemo(() => {
+    const acc = new Map<CategoryTile, number>()
+    for (const group of GROUPS) {
+      for (const tile of group.tiles) acc.set(tile, 0)
+    }
+    for (const item of listings) {
+      for (const group of GROUPS) {
+        for (const tile of group.tiles) {
+          if (tile.match(item)) {
+            acc.set(tile, (acc.get(tile) ?? 0) + 1)
+          }
+        }
+      }
+    }
+    return acc
+  }, [listings])
+
   return (
     <section data-motion-section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
       <div className="mb-8">
@@ -185,8 +206,9 @@ export function CategoryGrid() {
               <p className="text-xs text-muted-foreground">{group.blurb}</p>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {group.tiles.map(({ label, icon: Icon, tint, preset, match }, i) => {
-                const count = listings.filter((l) => match(l)).length
+              {group.tiles.map((tile, i) => {
+                const { label, icon: Icon, tint, preset } = tile
+                const count = counts.get(tile) ?? 0
                 return (
                   <button
                     key={label}

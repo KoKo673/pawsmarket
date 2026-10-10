@@ -166,17 +166,42 @@ def main():
             stats["conflicts"] += 1
 
     # torob products Digikala did not list — add them (they still carry a real
-    # name, price and photo, so they belong in the catalog)
+    # name, price and photo, so they belong in the catalog).
+    # The key set makes this a single pass instead of rescanning `merged` for
+    # every remaining row (which was O(n²) at ~500k comparisons).
+    merged_keys = {m["key"] for m in merged}
     added_torob = 0
     for r in tr:
         marker = r.get("prk") or id(r)
-        if marker in used_torob:
-            continue
-        if any(m["key"] == r["key"] for m in merged):
+        if marker in used_torob or r["key"] in merged_keys:
             continue
         r["price_conflict"] = None
         merged.append(r)
+        merged_keys.add(r["key"])
         added_torob += 1
+
+    # ── drop unusable photos ──
+    #
+    # A visual audit of 84 catalog photos found 4 off-subject ones: a generic
+    # lifestyle shot (a curry dinner) standing in for a seascape print, a robot
+    # vacuum for a cat toy car, a flat cartoon pattern for a pet blanket, a
+    # fish statue where the product is a tiny prop. Torob contributes most of
+    # them — it lists lifestyle/AI imagery alongside the product shot.
+    # A row with no usable photo falls back to the category image in the UI,
+    # which is honest; a wrong photo is not.
+    BANNED_IMG = set()
+    _qa = os.path.join(HERE, "..", "..", "_qa", "offsubject.json")
+    if os.path.exists(_qa):
+        with open(_qa, encoding="utf-8") as f:
+            BANNED_IMG = set(json.load(f))
+
+    if BANNED_IMG:
+        before = len(merged)
+        merged = [r for r in merged if r.get("image") not in BANNED_IMG]
+        dropped_img = before - len(merged)
+    else:
+        dropped_img = 0
+        print("  (no _qa/offsubject.json — every photo kept)")
 
     merged.sort(key=lambda r: (r.get("category") or "", r["price_toman"]))
     with open(OUT, "w", encoding="utf-8") as f:
@@ -184,6 +209,7 @@ def main():
 
     print(f"\nwrote {OUT}")
     print(f"  products: {len(merged)}")
+    print(f"  dropped for unusable photo: {dropped_img}")
     print(f"  paired across both sources: {stats['merged']} "
           f"({stats['conflicts']} with a price conflict)")
     print(f"  digikala-only: {stats['digikala_only']}   torob-only: {added_torob}")

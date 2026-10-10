@@ -212,15 +212,14 @@ interface MapViewProps {
   origin: GeoPoint
   /** Called when a marker pin is clicked. */
   onSelect: (id: string) => void
+  /**
+   * Called when a pin covering several listings is clicked, with all of them,
+   * so the caller can offer the group instead of silently opening one.
+   */
+  onCluster?: (items: ListingWithDistance[]) => void
   className?: string
 }
 
-/**
- * Interactive geospatial pane (Iranian market default: Tehran).
- * Tiles: keyless OSM, dark mode via CSS invert (see index.css).
- * Container is `isolate-map` wrapped so Leaflet's internal z-indexes can
- * never paint over the z-nav navbar.
- */
 /** Listings sharing (almost) the same point — e.g. one shop's product rows. */
 interface Cluster {
   lat: number
@@ -232,13 +231,13 @@ interface Cluster {
  * Group listings that sit on the same point.
  *
  * A shop's products are stored at the shop's coordinates, so a vet with three
- * products produced three pins stacked on one pixel — unreadable and it made a
- * single business look like three. Listings within ~40 m are one pin; clicking
- * it opens the first, and the rest are reachable from the card list.
+ * products produced three pins stacked on one pixel — unreadable, and it made
+ * one business look like three. Clicking a cluster offers the whole group
+ * rather than opening an arbitrary one.
  */
 function clusterListings(listings: ListingWithDistance[]): Cluster[] {
-  // ~4 decimal places ≈ 11 m; products inherit their shop's coordinates, so
-  // this is enough to collapse a shop's rows while keeping neighbours apart.
+  // 4 decimal places ≈ 11 m: products inherit their shop's exact coordinates,
+  // so this collapses a shop's rows while keeping neighbouring shops apart.
   const byKey = new Map<string, Cluster>()
   for (const item of listings) {
     const key = `${item.location.lat.toFixed(4)}|${item.location.lng.toFixed(4)}`
@@ -256,7 +255,14 @@ function clusterListings(listings: ListingWithDistance[]): Cluster[] {
   return [...byKey.values()]
 }
 
-/** Pin showing a count when several listings share a point. */
+/**
+ * Pin showing a count when several listings share a point.
+ *
+ * The width is left for Leaflet to measure (`iconSize: undefined`) and the
+ * anchor is derived from that measured size, so a wide label like «۱۲۳» still
+ * points at the right coordinate — a fixed anchor visibly misplaced the tip on
+ * anything wider than two digits.
+ */
 function clusterIcon(count: number): L.DivIcon {
   const label = faDigits(count)
   const html = `
@@ -268,7 +274,7 @@ function clusterIcon(count: number): L.DivIcon {
       box-shadow:0 4px 14px rgba(250,92,0,.42);
       border:2px solid #fff;white-space:nowrap;
     ">${label}</div>`
-  return L.divIcon({ html, className: '', iconSize: undefined, iconAnchor: [24, 18] })
+  return L.divIcon({ html, className: '', iconSize: undefined })
 }
 
 /**
@@ -284,15 +290,19 @@ function clusterIcon(count: number): L.DivIcon {
 function ListingMarkers({
   listings,
   onSelect,
+  onCluster,
 }: {
   listings: ListingWithDistance[]
   onSelect: (id: string) => void
+  onCluster?: (items: ListingWithDistance[]) => void
 }) {
   const map = useMap()
   // onSelect is re-created on every parent render; keep the latest in a ref so
   // marker handlers are bound once instead of on every listing change.
   const selectRef = useRef(onSelect)
   selectRef.current = onSelect
+  const clusterRef = useRef(onCluster)
+  clusterRef.current = onCluster
 
   useEffect(() => {
     const layer = L.layerGroup().addTo(map)
@@ -306,7 +316,16 @@ function ListingMarkers({
         riseOnHover: true,
         keyboard: false,
       })
-        .on('click', () => selectRef.current(cluster.items[0].id))
+        .on('click', () => {
+          // A cluster stands for several listings. Opening an arbitrary one
+          // made the other four unreachable, so the parent is asked to offer
+          // the whole group instead.
+          if (cluster.items.length > 1 && clusterRef.current) {
+            clusterRef.current(cluster.items)
+          } else {
+            selectRef.current(cluster.items[0].id)
+          }
+        })
         .addTo(layer)
     }
 
@@ -318,7 +337,19 @@ function ListingMarkers({
   return null
 }
 
-export function MapView({ listings, origin, onSelect, className }: MapViewProps) {
+/**
+ * Interactive geospatial pane (Iranian market default: Tehran).
+ * Tiles: keyless OSM, dark mode via CSS invert (see index.css).
+ * Container is `isolate-map` wrapped so Leaflet's internal z-indexes can
+ * never paint over the z-nav navbar.
+ */
+export function MapView({
+  listings,
+  origin,
+  onSelect,
+  onCluster,
+  className,
+}: MapViewProps) {
   const theme = useUiStore((s) => s.theme)
 
   return (
@@ -346,7 +377,7 @@ export function MapView({ listings, origin, onSelect, className }: MapViewProps)
 
         <Marker position={[origin.lat, origin.lng]} icon={originIcon} interactive={false} zIndexOffset={1000} />
 
-        <ListingMarkers listings={listings} onSelect={onSelect} />
+        <ListingMarkers listings={listings} onSelect={onSelect} onCluster={onCluster} />
       </MapContainer>
 
       {/* «مکان من» — re-center on the real GPS position */}

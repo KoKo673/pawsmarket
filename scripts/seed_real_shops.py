@@ -616,30 +616,55 @@ def main():
                 f"ST_SetSRID(ST_MakePoint({r['lng']}, {r['lat']}), 4326), now());"
             )
             product_count += 1
-    # ── real Digikala inventory, attached to the shops it belongs with ──
+    # ── real marketplace inventory, attached to the shops it fits ──
     #
-    # The hand-written pools above are generic. Digikala gives real Tehran
-    # product names, real Toman prices and real photos; those are far more
-    # useful, so they replace the generic rows for shops that sell pet goods.
+    # The hand-written pools above are generic. Digikala and Torob give real
+    # Tehran product names, real Toman prices and real photos.
+    #
+    # Products are NOT spread round-robin: that put a dog toy on a veterinary
+    # clinic's page, which is simply wrong. A product only goes to a shop that
+    # actually sells goods (a clinic listing toys is not a thing), and every
+    # such shop keeps a bounded, deterministic share so no single shop is
+    # credited with the entire catalogue.
     digi = load_digikala_products()
     if digi:
-        attached = 0
-        # shops that plausibly stock pet goods, in catalog order
-        suppliers = [r for r in rows if r["category"] in ("shop", "groomer", "vet")]
+        attached = skipped_bad_price = 0
+        suppliers = [r for r in rows if r["category"] in ("shop", "groomer")]
         if suppliers:
+            per_shop_cap = max(3, -(-len(digi) // len(suppliers)))  # ceil, fair share
+            counts = {}
             for n, prod in enumerate(digi):
-                # spread across real shops deterministically
-                host = suppliers[n % len(suppliers)]
-                idx = rows.index(host) + 1
-                sql.append(
-                    "INSERT INTO products (name, price, store_id, location, "
-                    "created_at) VALUES ("
-                    f"'{esc(prod['name'])}', {int(prod['price_toman'])}, {idx}, "
-                    f"ST_SetSRID(ST_MakePoint({host['lng']}, {host['lat']}), 4326), "
-                    "now());"
-                )
-                attached += 1
+                try:
+                    price = int(prod["price_toman"])
+                except (KeyError, TypeError, ValueError):
+                    skipped_bad_price += 1
+                    continue
+                if price <= 0:
+                    skipped_bad_price += 1
+                    continue
+                # rotate for fairness, but stop piling onto one shop
+                for offset in range(len(suppliers)):
+                    host = suppliers[(n + offset) % len(suppliers)]
+                    used = counts.get(host["name"], 0)
+                    if used >= per_shop_cap:
+                        continue
+                    counts[host["name"]] = used + 1
+                    idx = rows.index(host) + 1
+                    name = (prod.get("name") or "").strip()
+                    if not name:
+                        break
+                    sql.append(
+                        "INSERT INTO products (name, price, store_id, location, "
+                        "created_at) VALUES ("
+                        f"'{esc(name)}', {price}, {idx}, "
+                        f"ST_SetSRID(ST_MakePoint({host['lng']}, {host['lat']}), 4326), "
+                        "now());"
+                    )
+                    attached += 1
+                    break
         product_count += attached
+        if skipped_bad_price:
+            print(f"  skipped {skipped_bad_price} rows with a bad price")
         print(f"  +{attached} real Digikala products attached to real shops")
 
     sql.append("COMMIT;")

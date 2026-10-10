@@ -114,19 +114,19 @@ export function Hero() {
           <img
             src={asset('images/listings/dog-golden.jpg')}
             alt="توله‌ی گلدن رتریور"
-            className="animate-float absolute inset-x-6 top-0 aspect-[4/5] w-[85%] rounded-[2.5rem] object-cover shadow-lifted"
+            className="absolute inset-x-6 top-0 aspect-[4/5] w-[85%] rounded-[2.5rem] object-cover shadow-lifted sm:animate-float"
             style={{ animationDuration: '6s' }}
           />
           <img
             src={asset('images/listings/cat-orange.jpg')}
             alt="گربه‌ی نارنجی"
-            className="animate-float absolute bottom-14 right-0 aspect-square w-[52%] rounded-[2rem] border-4 border-card object-cover shadow-lifted"
+            className="absolute bottom-14 right-0 aspect-square w-[52%] rounded-[2rem] border-4 border-card object-cover shadow-lifted sm:animate-float"
             style={{ animationDuration: '7s', animationDelay: '-1s' }}
           />
           <img
             src={asset('images/listings/store2.jpg')}
             alt="سگ روی تشک راحتی"
-            className="animate-float absolute bottom-0 left-0 aspect-[4/3] w-[55%] rounded-3xl border-4 border-card object-cover shadow-lifted"
+            className="absolute bottom-0 left-0 aspect-[4/3] w-[55%] rounded-3xl border-4 border-card object-cover shadow-lifted sm:animate-float"
             style={{ animationDuration: '5.5s', animationDelay: '-0.5s' }}
           />
 
