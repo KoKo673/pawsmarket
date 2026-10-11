@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="تصویری برای این محصول ثبت نشده است">
+  <rect width="400" height="300" fill="#F6EFE7"/>
+  <g fill="none" stroke="#C9B8A6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="118" y="96" width="164" height="126" rx="12"/>
+    <path d="M148 168l30-32 24 26 20-20 30 32"/>
+    <circle cx="164" cy="128" r="11"/>
+  </g>
+  <text x="200" y="256" font-family="Vazirmatn, Tahoma, sans-serif" font-size="19"
+        font-weight="700" fill="#8A7767" text-anchor="middle" direction="rtl">
+    تصویری ثبت نشده است
+  </text>
+</svg>
