@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { SHOP_ENRICHMENT } from '@/data/shops'
-import { faDecimal, faPrice } from '@/lib/fa'
+import { faDecimal, faDigits, faPrice, faTimeRange } from '@/lib/fa'
 import { formatDistance } from '@/lib/geo'
 import { useNearbyListings } from '@/hooks/use-listings'
 import { useUiStore } from '@/store/ui.store'
@@ -45,8 +45,12 @@ export function DetailModal() {
     <Dialog open={open} onOpenChange={(v) => !v && closeDetail()}>
       {item && (
         <DialogContent className="max-w-3xl gap-5">
-          {/* گالری */}
-          <ImageGallery images={item.images} alt={item.name} />
+          {/* گالری — محصول‌ها عکس بسته‌بندی دارند و نباید بریده شوند */}
+          <ImageGallery
+            images={item.images}
+            alt={item.name}
+            fit={item.kind === 'product' ? 'contain' : 'cover'}
+          />
 
           {/* سربرگ */}
           <DialogHeader>
@@ -76,7 +80,7 @@ export function DetailModal() {
                 <>
                   <span aria-hidden>·</span>
                   <span className="font-semibold text-foreground">
-                    {faDecimal(item.rating)} ★ ({item.reviewCount} نظر)
+                    {faDecimal(item.rating)} ★ ({faDigits(item.reviewCount)} نظر)
                   </span>
                 </>
               )}
@@ -109,7 +113,7 @@ export function DetailModal() {
               </p>
               <p className="text-xs text-muted-foreground">
                 {item.kind === 'store'
-                  ? `همه‌روزه ${item.opensAt} تا ${item.closesAt} · ${item.address}`
+                  ? `ساعات کار: ${faTimeRange(item.opensAt, item.closesAt)} · ${item.address}`
                   : 'تاییدشده در پازمارکت · معمولاً کمتر از ۲ ساعت پاسخ می‌دهد'}
               </p>
             </div>

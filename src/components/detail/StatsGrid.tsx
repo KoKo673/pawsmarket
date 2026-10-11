@@ -16,23 +16,44 @@ import {
 import type { ReactNode } from 'react'
 
 import { Badge } from '@/components/ui/badge'
-import { faDecimal, faDigits, faPrice } from '@/lib/fa'
+import { faDecimal, faDigits, faPhone, faPrice, faTimeRange } from '@/lib/fa'
 import { formatAge, formatDistance } from '@/lib/geo'
 import { cn } from '@/lib/utils'
 import type { ListingWithDistance, MedicalFlag } from '@/types'
 
 /* ── کاشی آمار کوچک ──────────────────────────────────────────── */
 
-function Stat({ icon, label, value }: { icon: ReactNode; label: string; value: ReactNode }) {
+function Stat({
+  icon,
+  label,
+  value,
+  wide = false,
+}: {
+  icon: ReactNode
+  label: string
+  value: ReactNode
+  /** Take the whole grid row — for values that are lists, not scalars. */
+  wide?: boolean
+}) {
   // min-w-0 روی هر دو سطح: ستون‌های grid هرگز نباید با min-content
   // (متن بلند/بی‌فاصله) پهن‌تر از کادر خودشان شوند — همان overflow موبایل
+  // Two lines, not one: `truncate` rendered the «حوزه‌ها» list as
+  // «معاینه و درمان، واکسیناسیون، غذ…» with no hint anything followed.
   return (
-    <div className="min-w-0 overflow-hidden rounded-2xl border border-border/70 bg-muted/40 p-3.5">
+    <div
+      className={
+        wide
+          ? 'col-span-2 min-w-0 rounded-2xl border border-border/70 bg-muted/40 p-3.5 sm:col-span-3'
+          : 'min-w-0 rounded-2xl border border-border/70 bg-muted/40 p-3.5'
+      }
+    >
       <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
         {icon}
         {label}
       </div>
-      <p className="mt-1.5 min-w-0 truncate text-sm font-extrabold">{value}</p>
+      <p className={wide ? 'mt-1.5 min-w-0 text-sm font-extrabold leading-relaxed' : 'mt-1.5 min-w-0 line-clamp-2 text-sm font-extrabold'}>
+        {value}
+      </p>
     </div>
   )
 }
@@ -107,16 +128,12 @@ export function StatsGrid({ item }: { item: ListingWithDistance }) {
             <Stat
               icon={<Clock className="size-3.5 text-primary" />}
               label="ساعات کار"
-              value={
-                <span className="ltr-inline">
-                  {item.opensAt} – {item.closesAt}
-                </span>
-              }
+              value={faTimeRange(item.opensAt, item.closesAt)}
             />
             <Stat
               icon={<Phone className="size-3.5 text-primary" />}
               label="تلفن"
-              value={item.phone ? <span className="ltr-inline">{faDigits(item.phone)}</span> : 'ثبت نشده'}
+              value={item.phone ? <span className="ltr-inline">{faPhone(item.phone)}</span> : 'ثبت نشده'}
             />
             <Stat
               icon={<Scissors className="size-3.5 text-primary" />}
@@ -125,15 +142,13 @@ export function StatsGrid({ item }: { item: ListingWithDistance }) {
             />
             <Stat icon={<MapPin className="size-3.5 text-accent" />} label="فاصله" value={formatDistance(item.distanceKm)} />
             <Stat
+              wide
               icon={<Activity className="size-3.5 text-accent" />}
               label="حوزه‌ها"
               value={
-                // show whole items only — slicing to 3 cut a word in half
-                // ("… واکسیناسیون، غذ…") with no hint that more existed
-                item.categories?.length
-                  ? item.categories.slice(0, 3).join('، ') +
-                    (item.categories.length > 3 ? ` (+${faDigits(item.categories.length - 3)})` : '')
-                  : '—'
+                // every item, in full, on its own row: 4–5 scopes do not fit a
+                // third-width cell, and slicing used to cut a word in half
+                item.categories?.length ? item.categories.join('، ') : '—'
               }
             />
           </>

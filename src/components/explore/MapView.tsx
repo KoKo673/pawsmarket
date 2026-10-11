@@ -256,25 +256,65 @@ function clusterListings(listings: ListingWithDistance[]): Cluster[] {
 }
 
 /**
- * Pin showing a count when several listings share a point.
+ * Pin for a point carrying several listings.
  *
- * The width is left for Leaflet to measure (`iconSize: undefined`) and the
- * anchor is derived from that measured size, so a wide label like «۱۲۳» still
- * points at the right coordinate — a fixed anchor visibly misplaced the tip on
- * anything wider than two digits.
+ * A bare orange pill reading «۳» was ugly and, worse, said nothing about what
+ * it stood for. This is a layered bubble instead: a soft halo that grows with
+ * the count, a brand-gradient core with a paw glyph, and the count on a small
+ * dark chip so it stays legible against the orange. The count survives because
+ * it is the one number a shopper wants — it just isn't the only thing there.
+ *
+ * Size is left for Leaflet to measure (`iconSize: undefined`) and the anchor
+ * comes from that measured box, so a wide label like «۱۲۳» still points at the
+ * right coordinate — a fixed anchor visibly misplaced the tip on anything
+ * wider than two digits.
  */
+const clusterCache = new Map<number, L.DivIcon>()
+
 function clusterIcon(count: number): L.DivIcon {
-  const label = faDigits(count)
+  const cached = clusterCache.get(count)
+  if (cached) return cached
+
+  // The bubble widens with the count so «۹۹» visibly outweighs «۳».
+  const core = Math.min(46, 30 + Math.log2(count) * 4)
+
   const html = `
-    <div style="
-      display:flex;align-items:center;gap:5px;
-      background:#FA5C00;color:#fff;
-      font:800 12px/1 Vazirmatn,system-ui,sans-serif;
-      padding:7px 11px;border-radius:999px;
-      box-shadow:0 4px 14px rgba(250,92,0,.42);
-      border:2px solid #fff;white-space:nowrap;
-    ">${label}</div>`
-  return L.divIcon({ html, className: '', iconSize: undefined })
+    <div style="position:relative;width:${core}px;height:${core}px;
+                display:grid;place-items:center;will-change:transform">
+      <span style="
+        position:absolute;inset:-6px;border-radius:999px;
+        background:radial-gradient(circle at 50% 45%,
+          rgba(250,92,0,.30) 0%, rgba(250,92,0,.10) 58%, rgba(250,92,0,0) 72%);
+      "></span>
+      <span style="
+        position:absolute;inset:0;border-radius:999px;
+        background:linear-gradient(160deg,#FF8A3D 0%,#FA5C00 46%,#E24700 100%);
+        border:2px solid rgba(255,255,255,.94);
+        box-shadow:0 6px 18px rgba(226,71,0,.38),
+                   inset 0 1px 0 rgba(255,255,255,.55);
+        display:grid;place-items:center;
+      ">
+        <svg width="${core * 0.56}" height="${core * 0.56}" viewBox="0 0 24 24"
+             fill="rgba(255,255,255,.9)" style="margin-top:-1px">
+          <ellipse cx="12" cy="16.2" rx="5.4" ry="4.2"/>
+          <ellipse cx="5.6" cy="11.4" rx="2.5" ry="3"/>
+          <ellipse cx="18.4" cy="11.4" rx="2.5" ry="3"/>
+          <ellipse cx="10.1" cy="6.1" rx="2.3" ry="2.9"/>
+          <ellipse cx="16.6" cy="6.4" rx="2.1" ry="2.6"/>
+        </svg>
+        <span style="
+          position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);
+          background:#1C1A17;color:#fff;
+          font:800 10px/1 Vazirmatn,system-ui,sans-serif;
+          padding:2.5px 6px;border-radius:999px;
+          border:1.5px solid rgba(255,255,255,.9);
+          box-shadow:0 2px 6px rgba(0,0,0,.28);
+        ">${faDigits(count)}</span>
+      </span>
+    </div>`
+  const icon = L.divIcon({ html, className: '', iconSize: undefined, iconAnchor: [0, 0] })
+  clusterCache.set(count, icon)
+  return icon
 }
 
 /**

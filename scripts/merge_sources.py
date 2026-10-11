@@ -76,6 +76,37 @@ def to_int(v):
         return None
 
 
+# Persian digits, for display only. Kept Latin everywhere else.
+_FA = "۰۱۲۳۴۵۶۷۸۹"
+
+# «کد A35» / «مدل B122» / «مدل 001» are SKUs the shopper matches against the
+# packaging, and Iranian vendors print them in Latin — rewriting those would
+# make the title unmatchable. Bare quantities (وزن 200 گرم) are ours to render.
+_SKU_HEAD = re.compile(r"(کد|مدل|Model|model|Code|code)\s*:?\s*$", re.I)
+
+
+def fa_title(name):
+    """Latin digits → Persian, except inside a product's model/SKU number.
+
+    Iranian shopfronts write «وزن ۲۰۰ گرم»; both marketplaces' APIs return
+    «وزن 200 گرم», which put English numerals in a Persian-only UI for 624 of
+    1071 titles. A digit run that continues a SKU keyword, or that is glued to
+    Latin letters, stays Latin.
+    """
+    if not name:
+        return name
+
+    out = []
+    for token in re.split(r"(\s+)", name):
+        if re.search(r"\d", token) and (
+            _SKU_HEAD.search("".join(out)) or re.search(r"[A-Za-z]", token)
+        ):
+            out.append(token)          # part of a model number — keep Latin
+        else:
+            out.append(token.translate(str.maketrans("0123456789", _FA)))
+    return "".join(out)
+
+
 def load_digikala():
     p = os.path.join(HERE, "digikala_products.json")
     if not os.path.exists(p):
@@ -86,7 +117,7 @@ def load_digikala():
         if not price:
             continue
         out.append({
-            "name": (r.get("name") or "").strip(),
+            "name": fa_title((r.get("name") or "").strip()),
             "key": norm_name(r.get("name")),
             "price_toman": price,
             "brand": r.get("brand"),
@@ -107,7 +138,7 @@ def load_torob():
         if not price:
             continue
         out.append({
-            "name": (r.get("name") or "").strip(),
+            "name": fa_title((r.get("name") or "").strip()),
             "key": norm_name(r.get("name")),
             "price_toman": price,
             "brand": r.get("brand"),

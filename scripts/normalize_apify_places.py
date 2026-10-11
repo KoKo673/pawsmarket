@@ -58,7 +58,51 @@ HUMAN_HAIRCUT = re.compile(r"آرایشگاه\s*(آقایان|خانم‌ها|م
 
 IR_PHONE = re.compile(r"^(?:\+?98|0)?9\d{9}$|^(?:\+?98|0)?2\d{9,10}$")
 
-PLUS_CODE = re.compile(r"\b[A-Z]{2,4}\d{1,3}\+[A-Z0-9]{2,}\b")
+PLUS_CODE = re.compile(r"\b[A-Z0-9]{2,8}\+[A-Z0-9]{2,}\b")
+
+# Google's own English wrappers around the one part of the address a visitor can
+# use. Kept out of the row entirely: "Tehran Province, Tajrish, District 1,
+# Bahonar St, No. 333, Iran" is Latin noise around «خیابان بهار، پلاک ۳۳۳».
+_ADMIN_TAIL = re.compile(
+    r"[,،]?\s*(?:Tehran\s+Province|Karaj\s+Province|Alborz\s+Province|Iran)\b.*$",
+    re.I)
+_DISTRICT = re.compile(r"\bDistrict\s*([0-9۰-۹٠-٩]+)\b", re.I)
+# A run of Latin words with digits — Google's transliteration of the street the
+# Persian half already named.
+_LATIN_STREET = re.compile(r"[،,]?\s*[A-Za-z][A-Za-z\s.\-]*\s+St\b\.?", re.I)
+_PERSIAN = re.compile(r"[؀-ۿ]")
+
+
+def clean_address(addr):
+    """Strip plus-codes and English admin tails; keep the Persian remainder.
+
+    Falls back to «منطقه ۱» when nothing Persian survives — a district number is
+    something an Iranian visitor can act on, unlike "RC6H+8C5 District 1".
+    """
+    if not addr:
+        return None
+    m = _DISTRICT.search(addr)
+    district = f"منطقه {m.group(1)}" if m else ""
+    if district:
+        addr = _DISTRICT.sub("", addr)   # don't repeat it once we add it back
+    a = PLUS_CODE.sub(" ", addr)
+    a = _ADMIN_TAIL.sub("", a)
+    a = re.sub(r"\s*،\s*", "، ", a)
+    a = re.sub(r"\bNo\.?\s*", "", a, flags=re.I)
+    # Google repeats the street in Latin right after the Persian one
+    # («خیابان فناخسرو، Fana Khosrow St») and prefixes a bare city name.
+    # The Persian half is the one an Iranian visitor reads.
+    a = _LATIN_STREET.sub("", a)
+    a = re.sub(r"\bTehran\b", " ", a, flags=re.I)
+    # «استان تهران، Tehran» / «عمو محمدی» — with the city name gone there is
+    # sometimes nothing left worth showing; the district fallback covers it.
+    a = re.sub(r"(?:استان\s*تهران|شهرستان\s*تهران)", " ", a)
+    a = re.sub(r"[,\s]+", " ", a).strip(" ،,")
+    if not a or not _PERSIAN.search(a):
+        return district or None
+    if district and "منطقه" not in a:
+        a = f"{district}، {a}"
+    return a
 
 DROPPED = {
     "wrong_category": 0,
@@ -99,6 +143,26 @@ def norm_text(s):
     return re.sub(r"\s+", " ", s).strip().lower()
 
 
+# Arabic ي/ك/ة folded to their Persian forms, and invisible join/spacing marks
+# normalised. Google returns whatever keyboard the owner typed, so the same
+# shop appears as «پانكي اسپا» and «پانکی اسپا» — two rows for one business.
+_ARABIC_GLYPHS = str.maketrans({
+    "ي": "ی", "ى": "ی", "ك": "ک", "ڪ": "ک", "ة": "ه",
+    "أ": "ا", "إ": "ا", "ٱ": "ا", "ؤ": "و", "ئ": "ی",
+    "ـ": "",
+})
+_SPACERS = re.compile("[   -   　‌]")
+
+
+def persian_text(s):
+    """One canonical Persian spelling, so a shop is indexed exactly once."""
+    if not s:
+        return s
+    s = _SPACERS.sub(" ", s.translate(_ARABIC_GLYPHS))
+    s = "".join(ch for ch in s if unicodedata.category(ch) != "Cf")
+    return re.sub(r"\s+", " ", s).strip()
+
+
 def classify(category):
     cat = (category or "").lower()
     for pattern, kind in CATEGORY_MAP:
@@ -128,7 +192,7 @@ def main():
     out = []
 
     for r in rows:
-        name = (r.get("name") or "").strip()
+        name = persian_text((r.get("name") or "").strip())
         if not name:
             continue
 
@@ -169,7 +233,7 @@ def main():
             "name": name,
             "category": kind,
             "google_category": r.get("category"),
-            "address": None if PLUS_CODE.search(addr) else addr,
+            "address": clean_address(addr),
             "address_is_plus_code": bool(PLUS_CODE.search(addr)),
             "neighborhood": r.get("neighborhood"),
             "phone": clean_phone(r.get("phone")),

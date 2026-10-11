@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 scripts/.overpass-cache/
+
+# Harvest scratch: resumable progress markers, not source
+scripts/.store_images_done.json
+scripts/*.tmp

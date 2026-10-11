@@ -11,12 +11,23 @@ covering all districts: shops, vets, groomers, shelters, boarding) and emit:
 
 Rules (product quality bar):
   * names: name:fa > NAME_OVERRIDES > name — Latin-only names are either
-    overridden or DROPPED (no English/Finglish on the site).
-  * every store gets a category and a UNIQUE-ish image rotated from a
-    per-category pool (crc32(name) — stable across runs).
-  * products: per-store pick from an expanded pool (deterministic seed) with
-    ±6% realistic price jitter — no two adjacent cards look identical.
+    overridden or DROPPED (no English/Finglish on the site). Every name is also
+    folded to one spelling (persian_text): Google returns the owner's own
+    keyboard, so the same shop appeared as «پانكي اسپا» and «پانکی اسپا».
+  * addresses: Google's plus-codes and English admin tails are stripped, so the
+    UI never shows «M9RQ+VFX District 11, Tehran Province, Iran».
+  * images: a shop's OWN Google Maps photo when scripts/fetch_store_images.py
+    collected one, else a per-category stock image (crc32(name) — stable).
+    537 shops sharing 3 photos made two different clinics look identical.
+  * products: real Digikala/Torob rows only, and only on shops that actually
+    sell goods. Each carries its own downloaded photo
+    (scripts/download_product_images.py) — never another product's picture.
   * shelters/boarding get NO products (we don't invent inventory for them).
+
+Optional inputs (absent → the build still works, just with stock images):
+  scripts/apify_places_clean.json  real Google Maps businesses
+  scripts/store_images.json        shop name → its own photos
+  scripts/product_images.json      product name → its own photo
 
 Run:  PYTHONIOENCODING=utf-8 python scripts/seed_real_shops.py
 """
@@ -27,6 +38,7 @@ import os
 import random
 import re
 import sys
+import unicodedata
 import zlib
 
 CENTER = (35.6892, 51.389)
@@ -98,6 +110,60 @@ def keep_persian(s):
     return " ".join(kept).strip()
 
 
+# Arabic ي/ك/ة and the ZWNJ-inconsistent spacing Persian UIs render badly:
+# «پانكي اسپا» sorts and searches differently from «پانکی اسپا» while looking
+# identical to a reader. Fold them to their Persian forms at ingest so the
+# catalog has exactly one spelling per shop.
+_ARABIC_GLYPHS = str.maketrans({
+    "\u064a": "\u06cc",  # ARABIC YEH -> FARSI YEH
+    "\u0649": "\u06cc",  # ALEF MAKSURA -> FARSI YEH
+    "\u0643": "\u06a9",  # ARABIC KAF -> KEHEH
+    "\u06aa": "\u06a9",  # SWASH KAF -> KEHEH
+    "\u0629": "\u0647",  # TEH MARBUTA -> HEH
+    "\u0623": "\u0627", "\u0625": "\u0627", "\u0671": "\u0627",
+    "\u0624": "\u0648", "\u0626": "\u06cc",
+    "\u0640": "",        # tatweel - a kashida artifact, never meaningful alone
+    # ZWNJ is a joining control, not a space: dropping it outright
+    # fused «\u067e\u062a\u200c\u0634\u0627\u067e». It is removed above as
+    # category Cf, and _SPACERS puts the separating space back.
+    "\u200c": " ",
+})
+
+# Spacing characters str.maketrans cannot key because they are not single
+# characters: NBSP and the Unicode space separators. Directional marks (LRM,
+# RLE, PDF...) are already removed above as category Cf.
+_SPACERS = re.compile("[\u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]\u200c")
+
+
+def persian_text(s):
+    """Normalise Arabic glyph variants, invisible marks and spacing."""
+    if not s:
+        return s
+    s = unicodedata.normalize("NFC", s)
+    # Translate FIRST: ZWNJ must become a space, and it is category Cf, so the
+    # join-filter below would otherwise delete it and fuse «پت‌شاپ».
+    s = _SPACERS.sub(" ", s.translate(_ARABIC_GLYPHS))
+    s = "".join(ch for ch in s if unicodedata.category(ch) != "Cf")
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def fa_name(raw_name):
+    """Pick the Persian spelling of a Google Maps place name, or None.
+
+    Google returns whatever the owner typed, so the same shop can appear as
+    «پت شاپ تهران» and «پت شاپ تهران» with different ی/ك. Everything is folded
+    and a name with no Persian at all is dropped — a Latin-only name is a shop
+    the visitor cannot read in a Persian-only UI.
+    """
+    raw = (raw_name or "").split("|")[0].strip()
+    if not raw:
+        return None, "empty"
+    folded = persian_text(raw)
+    if re.search(r"[؀-ۿ]", folded):
+        return folded, "name:fa"
+    return None, "latin-dropped"
+
+
 def resolve_name(tags):
     """name:fa > NAME_OVERRIDES > name | name:fa fallback. None = drop."""
     raw_name = (tags.get("name") or "").split("|")[0].strip()
@@ -105,23 +171,30 @@ def resolve_name(tags):
     if raw_name in NAME_OVERRIDES:
         return NAME_OVERRIDES[raw_name], "override"
     if fa:
-        fa = keep_persian(fa)
+        fa = keep_persian(persian_text(fa))
         if fa:
             return fa, "name:fa"
     if raw_name:
-        cleaned = keep_persian(raw_name)
+        cleaned = keep_persian(persian_text(raw_name))
         if cleaned:
             return cleaned, "name" if cleaned == raw_name else "name-latin-stripped"
     return None, "latin-dropped"
 
 
 def build_address(street, house, suburb, city="تهران"):
-    street = re.sub(r"^\s*تهران\s*،?\s*", "", street or "").strip()
-    street = re.sub(r"\s*،\s*", "، ", street).strip("، ")
+    # OSM tags carry the same English admin noise as Google ("Tehran Province
+    # Tajrish District 1"), so both sources go through the same cleaner —
+    # otherwise the catalog is half-translated depending on where a row came from.
+    district = _DISTRICT.search(city or "")
+    if district:
+        city = "تهران"
+    street = clean_gmaps_address(street) or clean_gmaps_address(suburb) or ""
+    if street and not street.startswith(
+            ("خیابان", "بلوار", "جاده", "شهرک", "بازار", "بزرگراه", "میدان", "محله")):
+        street = f"خیابان {street}"
     parts = []
     if street:
-        s = street if street.startswith(("خیابان", "بلوار", "جاده", "شهرک", "بازار", "بزرگراه", "میدان")) else f"خیابان {street}"
-        addr = s
+        addr = street
         if house:
             h = house.replace("پلاک", "").strip(" ،")
             if h and re.match(r"^[\d/\-]+$", h):
@@ -130,9 +203,66 @@ def build_address(street, house, suburb, city="تهران"):
                 addr += f"، {h}"
         parts.append(addr)
     elif suburb:
-        parts.append(f"محله {suburb}")
+        parts.append(f"محله {persian_text(suburb)}")
     parts.append(city)
-    return "، ".join(parts).translate(_FA_DIGITS)
+    out = "، ".join(p for p in parts if p).translate(_FA_DIGITS)
+    if district and f"منطقه {district.group(1)}" not in out:
+        out = f"منطقه {district.group(1)}، {out}"
+    return out
+
+
+# Google's Open Location Code — «M9RQ+VFX». It is a location, not an address:
+# no Iranian visitor can act on it, and it renders as a line of Latin noise in
+# an otherwise Persian address line. The coordinates already place the pin, so
+# we drop the code and keep whatever human-readable part Google gave us.
+_PLUS_CODE = re.compile(r"\b[A-Z0-9]{2,8}\+[A-Z0-9]{2,}\b")
+
+# Google addresses are English boilerplate wrapped around the one useful part:
+#   "M9RQ+VFX District 11, Tehran, Tehran Province, Iran"   → no real street
+#   "QCWR+3J7, Tajrish, Tehran Province, Iran"              → "Tajrish"
+#   "خیابان اعرابی، …, QCQ2+4J9, Iran"                     → keep the Persian
+# So: cut at the first province/country marker, and if what survives has no
+# Persian in it, fall back to the district Google named.
+_ADMIN_TAIL = re.compile(
+    r",\s*(?:Tehran\s+Province|Karaj\s+Province|Alborz\s+Province|Iran|Tehran|Karaj)\b.*$",
+    re.I)
+# «District 11» — the group is matched after a digit translation elsewhere, so
+# accept Persian digits too and emit «منطقه ۱۱» (never a half-English line).
+_DIGITS = r"[0-9۰-۹٠-٩]+"
+_DISTRICT = re.compile(rf"\bDistrict\s*({_DIGITS})\b", re.I)
+# A surviving fragment that is still pure English (a street name we do not
+# translate) is worse than the district, which at least reads as Persian.
+_NO_PERSIAN = re.compile(r"[؀-ۿ]")
+
+
+def clean_gmaps_address(addr):
+    """Turn a raw Google Maps address into something readable in Persian.
+
+    Returns '' when nothing usable survives, so the caller can fall back to the
+    city — an honest «تهران» beats «M9RQ+VFX District 11, Tehran, Tehran
+    Province, Iran» rendered to a Persian-speaking visitor.
+    """
+    if not addr:
+        return ""
+    district = ""
+    m = _DISTRICT.search(addr)
+    if m:
+        district = f"منطقه {m.group(1)}"
+
+    a = _PLUS_CODE.sub(" ", addr)
+    a = _ADMIN_TAIL.sub("", a)
+    a = re.sub(r"\s*،\s*", "، ", a)
+    a = re.sub(r"[,\s]+", " ", a).strip(" ،,")
+    # «No. پلاک ۱» and similar plate fragments are noise in a one-line address.
+    a = re.sub(r"\bNo\.?\s*", "", a, flags=re.I).strip(" ،,")
+
+    if not a or not _NO_PERSIAN.search(a):
+        # Nothing Persian survived — the district number is the one part of
+        # this address an Iranian visitor can act on.
+        return district.translate(_FA_DIGITS)
+    if district and "منطقه" not in a:
+        a = f"{district}، {a}"
+    return a.translate(_FA_DIGITS)
 
 
 def parse_hours(oh):
@@ -339,6 +469,29 @@ FORCE_INCLUDE_NAMES = {
 }
 
 
+def _load_map(name):
+    """Optional side-file written by one of the image fetchers.
+
+    Both maps are absent on a fresh clone, so every read degrades to {} and the
+    stock pools above keep working — the fetchers add real photos, they are not
+    a prerequisite for a build.
+    """
+    path = os.path.join(HERE, name)
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+# Shop name → its own Google Maps photos (scripts/fetch_store_images.py)
+STORE_PHOTOS = _load_map("store_images.json")
+# Product name → its own marketplace photo (scripts/download_product_images.py)
+PRODUCT_PHOTOS = _load_map("product_images.json")
+
+
 def stable_pick(name, pool, k):
     """k distinct items from pool — deterministic per store name."""
     if len(pool) <= k:
@@ -481,20 +634,22 @@ def main():
         existing = {r["name"] for r in rows}
         added = 0
         for p in apify:
-            name = (p.get("name") or "").strip()
+            raw_name = (p.get("name") or "").strip()
+            name, src = fa_name(raw_name) or (None, "")
             if not name or name in existing:
                 continue
             existing.add(name)
             cat = p.get("category") or "shop"
             if cat not in ("shop", "vet", "groomer", "boarding", "shelter", "cafe"):
                 cat = "shop"
+            address = clean_gmaps_address(p.get("address")) or "تهران"
             rows.append(dict(
                 name=name,
-                name_src="google-maps",
+                name_src="google-maps" if src == "name" else f"google-maps/{src}",
                 kind="vet" if cat == "vet" else "shop",
                 lat=float(p["lat"]),
                 lng=float(p["lng"]),
-                address=p.get("address") or "تهران",
+                address=address,
                 phone_raw=p.get("phone") or "",
                 website=p.get("website") or "",
                 hours=("", ""),
@@ -551,12 +706,17 @@ def main():
                 desc = f"«{r['name']}» — عرضه‌ی {'، '.join(cats[:4])} {where}."
         opens = k.get("opensAt") or r["hours"][0] or ""
         closes = k.get("closesAt") or r["hours"][1] or ""
+        # The shop's own Google Maps photo, if scripts/fetch_store_images.py
+        # collected one. Real storefronts first: 537 shops sharing 3 stock
+        # photos made two different clinics look like the same listing.
+        real = STORE_PHOTOS.get(r["name"]) or []
+        real = [p for p in real if os.path.exists(os.path.join(HERE, "..", "public", p))]
         pool = [p for p in (STORE_POOLS.get(r["category"]) or STORE_POOLS["shop"])
                 if os.path.exists(os.path.join(HERE, "..", "public", p))]
         if not pool:  # هیچ تصویری نصب نشده — به استخر فروشگاه برگرد
             pool = [p for p in STORE_POOLS["shop"]
                     if os.path.exists(os.path.join(HERE, "..", "public", p))]
-        image = pool[zlib.crc32(r["name"].encode("utf-8")) % len(pool)] if pool else ""
+        stock = pool[zlib.crc32(r["name"].encode("utf-8")) % len(pool)] if pool else ""
         meta = {
             "phone": phone,
             "category": r["category"],
@@ -565,13 +725,17 @@ def main():
             "website": k.get("website") or r["website"],
             "categories": cats,
             "description": desc,
-            "image": image,
+            "image": real[0] if real else stock,
         }
+        # Second real photo gives the detail gallery something to page through;
+        # never pad it with a stock shot of a different business type.
+        if len(real) > 1:
+            meta["images"] = real
         # Google Maps ratings — real, so they are shown; never invented.
         if r.get("rating"):
             meta["rating"] = r["rating"]
             meta["reviewCount"] = r.get("reviews") or 0
-        if not image:
+        if not meta.get("image"):
             meta.pop("image", None)
         return {kk: vv for kk, vv in meta.items() if vv}
 
@@ -695,6 +859,8 @@ def main():
         "  categories?: string[]",
         "  description?: string",
         "  image?: string",
+        "  /** Extra real photos of this shop, for the detail gallery. */",
+        "  images?: string[]",
         "  /** Google Maps rating (only present when the source supplied one). */",
         "  rating?: number",
         "  reviewCount?: number",
@@ -712,6 +878,41 @@ def main():
     lines.append("}")
     with open(os.path.join(HERE, "..", "src", "data", "shops.ts"), "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
+
+    # ── TS product photos ──
+    # Every one of the ~1000 real marketplace products gets its own photo here.
+    # Before this the file held ~30 hand-written titles, so the other 970 fell
+    # back to a category stock shot: «غذای ماهی قرمز و گوپی» rendered the dog
+    # kibble-and-a-paw picture. A photo of a different product is a lie about
+    # what the shop sells, so it must not be substituted silently.
+    if PRODUCT_PHOTOS:
+        present = [p for p in PRODUCT_PHOTOS.values()
+                   if os.path.exists(os.path.join(HERE, "..", "public", p))]
+        plines = [
+            "import { asset } from '@/lib/utils'",
+            "",
+            "/**",
+            " * عکس واقعی هر محصول — کلید: نام دقیق محصول همان‌طور که در کاتالوگ",
+            " * (Digikala + ترب) ثبت شده است.",
+            " *",
+            " * منبع: عکس همان محصول در بازارگاه واقعی، دانلود و بررسی‌شده",
+            " * (scripts/download_product_images.py) و به‌صورت محلی سرو می‌شود.",
+            " * اولویت نمایش: ۱) تصویر رکورد ۲) این نقشه ۳) تصویر پیش‌فرض دسته‌بندی.",
+            " * تولید خودکار: scripts/seed_real_shops.py — دستی ویرایش نکنید.",
+            " */",
+            "export const PRODUCT_IMAGES: Record<string, string> = {",
+        ]
+        for pname, ppath in sorted(PRODUCT_PHOTOS.items()):
+            if ppath in present:
+                plines.append(f"  {json.dumps(pname, ensure_ascii=False)}: "
+                              f"asset({json.dumps(ppath)}),")
+        plines.append("}")
+        with open(os.path.join(HERE, "..", "src", "data", "products.ts"), "w",
+                  encoding="utf-8") as f:
+            f.write("\n".join(plines) + "\n")
+        print(f"products.ts: {len(present)} real product photos")
+    else:
+        print("products.ts: no product_images.json — keeping the curated defaults")
 
     # ── report ──
     by_cat = {}

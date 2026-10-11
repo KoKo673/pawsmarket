@@ -8,8 +8,20 @@ import { cn } from '@/lib/utils'
  * گالری تصاویر: صحنه‌ی بزرگ + نوار بندانگشتی.
  * کلیدهای چپ/راست حین فوکوس کار می‌کنند؛ شمارنده وضعیت را نشان می‌دهد.
  * در RTL دکمه‌ی «بعدی» سمت چپ می‌نشیند (آینه‌ی رفتار LTR).
+ *
+ * `fit="contain"` shows a marketplace pack shot whole: those are square, and
+ * a 16:10 crop sliced the product's own label in half — the one thing the
+ * shopper is matching the title against.
  */
-export function ImageGallery({ images, alt }: { images: string[]; alt: string }) {
+export function ImageGallery({
+  images,
+  alt,
+  fit = 'cover',
+}: {
+  images: string[]
+  alt: string
+  fit?: 'cover' | 'contain'
+}) {
   const [active, setActive] = useState(0)
   const count = images.length
   const go = (dir: -1 | 1) => setActive((i) => (i + dir + count) % count)
@@ -32,7 +44,10 @@ export function ImageGallery({ images, alt }: { images: string[]; alt: string })
           key={images[active]}
           src={images[active]}
           alt={`${alt} — عکس ${faDigits(active + 1)} از ${faDigits(count)}`}
-          className="size-full object-cover"
+          className={cn(
+            'size-full transition-opacity',
+            fit === 'contain' ? 'object-contain bg-muted/40 p-3' : 'object-cover',
+          )}
           onError={(e) => {
             e.currentTarget.style.opacity = '0.4'
           }}

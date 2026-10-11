@@ -28,7 +28,20 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "apify_places.json")
 
 ACTOR = "compass~crawler-google-places"
-TOKEN = os.environ.get("APIFY_TOKEN", "")
+# Comma-separated list; the first token with quota left is used. Apify's quota
+# is per account and a full district sweep exhausts one, so this rotates rather
+# than dying mid-sweep.
+TOKENS = [t.strip() for t in os.environ.get("APIFY_TOKEN", "").split(",") if t.strip()]
+QUOTA = re.compile(r"usage limit|hard limit|quota", re.I)
+_token_idx = 0
+
+
+def token():
+    return TOKENS[_token_idx % len(TOKENS)]
+
+
+class QuotaExhausted(Exception):
+    """Every configured Apify token has hit its monthly cap."""
 
 # Tehran districts (محله) — the map is queried per district so every part of
 # the city is covered, not just whatever ranks highest city-wide.
@@ -83,29 +96,39 @@ AREA_HINT = re.compile(
 
 
 def run_actor(input_payload, wait=600):
-    """Run the Apify actor synchronously and return the dataset id."""
-    url = (f"https://api.apify.com/v2/acts/{ACTOR}/runs"
-           f"?waitForFinish={wait}&token={TOKEN}")
+    """Run the Apify actor synchronously and return the run's data dict."""
+    global _token_idx
     body = json.dumps(input_payload)
-    r = subprocess.run(
-        ["curl", "-sS", "--max-time", str(wait + 90),
-         "-X", "POST", url,
-         "-H", "Content-Type: application/json",
-         "--data-binary", body],
-        capture_output=True)
-    try:
-        j = json.loads(r.stdout.decode("utf-8", "replace"))
-    except json.JSONDecodeError:
+    for _ in range(len(TOKENS)):
+        url = (f"https://api.apify.com/v2/acts/{ACTOR}/runs"
+               f"?waitForFinish={wait}&token={token()}")
+        r = subprocess.run(
+            ["curl", "-sS", "--max-time", str(wait + 90),
+             "-X", "POST", url,
+             "-H", "Content-Type: application/json",
+             "--data-binary", body],
+            capture_output=True)
+        try:
+            j = json.loads(r.stdout.decode("utf-8", "replace"))
+        except json.JSONDecodeError:
+            return None
+        if "error" not in j:
+            return j["data"]
+        msg = str(j["error"].get("message", ""))
+        if QUOTA.search(msg):
+            _token_idx += 1
+            if _token_idx % len(TOKENS) == 0:
+                raise QuotaExhausted(msg)
+            print(f"    (token exhausted, rotating: {msg[:60]})", flush=True)
+            continue
+        print("    API error:", msg[:140], flush=True)
         return None
-    if "error" in j:
-        print("    API error:", str(j["error"].get("message"))[:140], flush=True)
-        return None
-    return j["data"]
+    return None
 
 
 def fetch_dataset(dataset_id, limit=400):
     url = (f"https://api.apify.com/v2/datasets/{dataset_id}/items"
-           f"?limit={limit}&token={TOKEN}")
+           f"?limit={limit}&token={token()}")
     r = subprocess.run(["curl", "-sS", "--max-time", "90", url],
                        capture_output=True)
     try:
@@ -172,8 +195,8 @@ def load_existing():
 
 
 def main():
-    if not TOKEN:
-        raise SystemExit("set APIFY_TOKEN first")
+    if not TOKENS:
+        raise SystemExit("set APIFY_TOKEN (comma-separated list) first")
 
     # resume: a previous run may already have covered part of the sweep
     rows = load_existing()
@@ -194,13 +217,24 @@ def main():
             terms = TERMS[kind]
             payload = {
                 "searchStringsArray": terms,
-                "locationQuery": f"{district}, Iran",
+                # The district name alone. Appending ", Iran" silently geocodes
+                # a Persian district name to nothing and the run comes back
+                # SUCCEEDED with an empty dataset — which burned a full sweep
+                # returning +0 everywhere.
+                "locationQuery": district,
                 "maxCrawledPlacesPerSearch": 15,
                 "languageCode": "fa",
                 "countryCode": "ir",
             }
             print(f"[{d_i}/{len(districts)}] {district} · {kind} …", flush=True)
-            data = run_actor(payload)
+            try:
+                data = run_actor(payload)
+            except QuotaExhausted as e:
+                save(rows)
+                raise SystemExit(
+                    f"\nApify quota exhausted on every token ({e}).\n"
+                    f"{len(rows)} places collected so far — re-run later (or "
+                    f"with another APIFY_TOKEN) and it resumes where it stopped.")
             runs += 1
             if not data or not data.get("defaultDatasetId"):
                 save(rows)

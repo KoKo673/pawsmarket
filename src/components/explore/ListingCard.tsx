@@ -69,7 +69,14 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
           src={item.images[0]}
           alt={item.name}
           loading="lazy"
-          className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+          /* Pack shots ( Digikala/Torob are square) are shown whole on a soft
+             ground; object-cover would crop a bag of food down to its middle
+             band and lose the label the shopper is matching against.
+             Pets and storefronts are photographs meant to fill the frame. */
+          className={cn(
+            'size-full transition-transform duration-500 group-hover:scale-105',
+            item.kind === 'product' ? 'object-contain bg-muted/50 p-2' : 'object-cover',
+          )}
           onError={(e) => {
             // Graceful degradation: branded placeholder if an asset 404s.
             // NOTE: pass a RAW '#' — encodeURIComponent encodes it once;
@@ -114,7 +121,10 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
       {/* بدنه */}
       <div className="space-y-1.5 p-4">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="truncate font-bold leading-snug transition-colors group-hover:text-primary">
+          {/* Two lines, not one: a single-line truncate cut every long shop
+              name to a dangling «…» («فروشگاه ماهی‌های آکواریومی ما…»), which
+              hid the very word that tells the shopper what the shop sells. */}
+          <h3 className="line-clamp-2 min-w-0 font-bold leading-snug transition-colors group-hover:text-primary">
             {item.name}
           </h3>
           {priceLabel && (

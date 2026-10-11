@@ -1,45 +1,25 @@
 import { asset } from '@/lib/utils'
 
 /**
- * عکس اختصاصی هر محصول — کلید: «نام دقیق محصول» همان‌طور که در
- * PRODUCT_TEMPLATES (scripts/seed_real_shops.py) ساخته می‌شود.
+ * عکس واقعی هر محصول — کلید: نام دقیق محصول همان‌طور که در کاتالوگ
+ * (Digikala + ترب) ثبت شده است.
  *
- * منبع تصاویر: Wikimedia Commons / Openverse (دانلود و بازبینی بصری
- * شده‌اند — scripts/fetch_product_images.py). اولویت نمایش:
- *   ۱) تصویر خود رکورد (اگر بک‌اند ستون images داشت)
- *   ۲) این نقشه (عکس واقعی همان محصول)
- *   ۳) تصویر پیش‌فرض دسته‌بندی
+ * منبع: عکس همان محصول در بازارگاه واقعی، دانلود و بررسی‌شده
+ * (scripts/download_product_images.py) و به‌صورت محلی سرو می‌شود.
+ * اولویت نمایش: ۱) تصویر رکورد ۲) این نقشه ۳) تصویر پیش‌فرض دسته‌بندی.
+ * تولید خودکار: scripts/seed_real_shops.py — دستی ویرایش نکنید.
  */
 export const PRODUCT_IMAGES: Record<string, string> = {
-  'غذای خشک سگ بالغ — ۱۲ کیلوگرم': asset('images/products/dog-food.jpg'),
-  'غذای خشک گربه — ۲ کیلوگرم': asset('images/products/cat-food.jpg'),
-  'غذای خشک سگ توله — ۳ کیلوگرم': asset('images/products/dog-food.jpg'),
-  'کنسرو گوشت گربه — ۴۰۰ گرم': asset('images/products/cat-wet-food.jpg'),
-  'تشویقی جویدنی طبیعی': asset('images/products/dog-treat.jpg'),
-  'توپ جغجغه‌دار سگ': asset('images/products/dog-treat.jpg'),
-  // قلاده/باکس/خرگوش هنوز عکس اختصاصیِ تأییدشده ندارند — تا آماده‌شدنِ
-  // تصویر درست، نزدیک‌ترین عکسِ مرتبط و تأییدشده نشان داده می‌شود
-  // (تصویر نامربوط بهتر از تصویر شکسته نیست، ولی این مورد موقتی است).
-  'قلاده و بند چرمی سگ': asset('images/products/dog-treat.jpg'),
-  'باکس حمل حیوان — سایز متوسط': asset('images/products/dog-bed.jpg'),
-  'تخت طبی سگ — سایز متوسط': asset('images/products/dog-bed.jpg'),
-  'اسکرچر و جای خواب گربه': asset('images/products/cat-scratcher.jpg'),
-  'خاک بستر گربه — ۱۰ لیتر': asset('images/products/cat-litter.jpg'),
-  // دانه‌ی پرنده، قفس و شامپو هنوز عکس تأییدشده‌ی خودشان را ندارند؛
-  // فعلاً نزدیک‌ترین تصویر مرتبط نشان داده می‌شود تا عکس نامرتبط نباشد.
-  'غذای خرگوش — ۲ کیلوگرم': asset('images/products/cat-food.jpg'),
-  'دانه فنچ و قناری — ۹۰۰ گرم': asset('images/products/bird-toy.jpg'),
-  'دانه ملکه پرنده — ۱ کیلوگرم': asset('images/products/bird-toy.jpg'),
-  'قفس پرنده — سایز متوسط': asset('images/products/bird-toy.jpg'),
-  'اسباب‌بازی پرنده': asset('images/products/bird-toy.jpg'),
-  'آکواریوم سفره‌ای — ۶۰ سانتی': asset('images/products/aquarium.jpg'),
-  'شیر خشک توله سگ — ۳۰۰ گرم': asset('images/products/dog-food.jpg'),
-  'مکمل مفصل سگ — ۶۰ عدد': asset('images/products/dog-supplement.jpg'),
-  'قطره ضدانگل گربه — ۳ میلی‌لیتر': asset('images/products/pet-brush.jpg'),
-  'خمیر مکمل گربه — ۱۲۰ گرم': asset('images/products/cat-food.jpg'),
-  'غذای درمانی کلیه گربه — ۲ کیلوگرم': asset('images/products/cat-wet-food.jpg'),
-  'شامپوی دارویی ضدقارچ': asset('images/products/dog-bath.jpg'),
-  'شامپوی خشک سگ': asset('images/products/dog-bath.jpg'),
-  'برس ضد ریزش مو': asset('images/products/pet-brush.jpg'),
-  'حوله حمام پت': asset('images/products/dog-towel.jpg'),
+  "بستنی گربه پرسا مدل Creamy با طعم شیر وزن 20 گرم": asset("images/products/real/155cf5af906059d6.jpg"),
+  "تشویقی پرندگان مدل 001 وزن 60 گرم": asset("images/products/real/4451bfb02471710b.jpg"),
+  "غذای خشک پرنده الی مدل Golden Pelet وزن 165 گرم بسته 3 عددی": asset("images/products/real/10ed50a262c92ee5.jpg"),
+  "غذای عروس هلندی مدل پلت میوه ای وزن 200 گرم": asset("images/products/real/3ba67740dc979ef1.jpg"),
+  "غذای قناری و بلبل مدلM وزن 250 گرم": asset("images/products/real/2eb0a9c726f5d7db.jpg"),
+  "غذای قناری وبلبل مدل M وزن 500 گرم": asset("images/products/real/2eb0a9c726f5d7db.jpg"),
+  "غذای قناری کد A35 وزن 500 گرم": asset("images/products/real/904cefb2d4dc64d0.jpg"),
+  "غذای مخصوص قناری مدل SM وزن 250 گرم": asset("images/products/real/2eb0a9c726f5d7db.jpg"),
+  "غذای پرنده مدل ارزن خوشه ای بسته شش عددی": asset("images/products/real/7037907c3434fefa.jpg"),
+  "غذای پرنده مدل ارزن خوشه ای کد 20104 بسته 5 عددی": asset("images/products/real/227548668100c449.jpg"),
+  "غذای پرنده مدل کرم میلورم خشک کد 070 وزن 70 گرم": asset("images/products/real/a79fd3374c5cdf69.jpg"),
+  "قرص ضد انگل سگ و گربه اندوپت مدل B122 وزن 1 گرم": asset("images/products/real/3580810d4fe2ee6e.jpg"),
 }

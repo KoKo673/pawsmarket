@@ -1,5 +1,5 @@
 import { PRODUCT_IMAGES } from '@/data/products'
-import { SHOP_ENRICHMENT } from '@/data/shops'
+import { SHOP_ENRICHMENT, type ShopMeta } from '@/data/shops'
 import { applyFilters } from '@/lib/search'
 import { asset } from '@/lib/utils'
 import type {
@@ -110,6 +110,12 @@ const toPoint = (raw: RawRow): GeoPoint => ({
 
 const KNOWN_SPECIES: Species[] = ['dog', 'cat', 'rabbit', 'bird', 'fish', 'small', 'other']
 const KNOWN_MEDICAL: MedicalFlag[] = ['vaccinated', 'sterilized', 'microchipped', 'needs-care', 'checkup-due']
+const KNOWN_PRODUCT_CATEGORIES = new Set<string>([
+  'food', 'toy', 'health', 'accessories', 'grooming',
+])
+
+const isProductCategory = (v: unknown): v is ProductCategory =>
+  typeof v === 'string' && KNOWN_PRODUCT_CATEGORIES.has(v)
 
 /** Bundled fallback imagery — always present in /public/images/listings. */
 const PET_IMAGE: Record<Species, string> = {
@@ -122,14 +128,25 @@ const PET_IMAGE: Record<Species, string> = {
   other: asset('images/listings/dog-pug.jpg'),
 }
 
-const PRODUCT_IMAGE: Record<ProductCategory, string> = {
-  food: asset('images/listings/food.jpg'),
-  toy: asset('images/listings/supplies.jpg'),
-  health: asset('images/listings/fish.jpg'),
-  accessories: asset('images/listings/store2.jpg'),
-  grooming: asset('images/listings/grooming.jpg'),
-}
+/**
+ * Shown when a product has no photo of its own.
+ *
+ * These used to be per-category stock shots, which were worse than nothing:
+ * a fish for a dog vitamin and a shop interior for a pet bed, i.e. pictures of
+ * products this shop does not sell. Nearly every real product now carries its
+ * own downloaded photo (scripts/download_product_images.py), so this path is
+ * the thin remainder — and it says "no photo" instead of lying.
+ */
+const NO_PRODUCT_PHOTO = asset('images/products/no-photo.svg')
 
+/**
+ * Last-resort imagery for a shop with no photo of its own.
+ *
+ * Most shops now carry their own Google Maps photo (scripts/fetch_store_images.py
+ * → scripts/store_images.json). Boarding and cafés deliberately share the shop
+ * shots they always had: there is no distinct bundled photo for them, and
+ * reusing the shelter picture would be a worse claim than the generic shopfront.
+ */
 const STORE_IMAGE: Record<StoreCategory, string> = {
   shop: asset('images/stores/shop-1.jpg'),
   vet: asset('images/stores/vet-2.jpg'),
@@ -215,8 +232,8 @@ function toPetListing(raw: RawRow): PetListing {
  */
 function toProductListing(raw: RawRow, storeNames: Map<string, string>): ProductListing {
   const name = str(raw.name, 'محصول')
-  const category: ProductCategory = String(raw.category ?? '') in PRODUCT_IMAGE
-    ? (raw.category as ProductCategory)
+  const category: ProductCategory = isProductCategory(raw.category)
+    ? raw.category
     : inferProductCategory(name)
   const storeName =
     str(raw.storeName, '') ||
@@ -230,7 +247,7 @@ function toProductListing(raw: RawRow, storeNames: Map<string, string>): Product
     images:
       Array.isArray(raw.images) && raw.images.length > 0
         ? (raw.images as string[])
-        : [PRODUCT_IMAGES[name] ?? PRODUCT_IMAGE[category]],
+        : [PRODUCT_IMAGES[name] ?? NO_PRODUCT_PHOTO],
     location: toPoint(raw),
     address: str(raw.address, 'تهران'),
     createdAt: str(raw.created_at ?? raw.createdAt, new Date(0).toISOString()),
@@ -253,6 +270,17 @@ function toProductListing(raw: RawRow, storeNames: Map<string, string>): Product
  * No invented values: missing phone → '' (renders «—»), missing
  * rating → 0 (renders «ثبت‌شده»), never a fake number.
  */
+/**
+ * A shop's own Google Maps photos, or the category's stock shot when it has
+ * none. Real photos come first and in full, so the detail gallery has something
+ * to page through; the stock image is only ever a last resort rather than being
+ * interleaved, which would imply the shop is the thing in that picture.
+ */
+function storeImages(meta: ShopMeta | undefined, category: StoreCategory): string[] {
+  const real = [...(meta?.images ?? []), ...(meta?.image ? [meta.image] : [])]
+  return real.length > 0 ? real.map(asset) : [STORE_IMAGE[category]]
+}
+
 function toStoreListing(raw: RawRow): StoreListing {
   const name = str(raw.name, 'فروشگاه')
   const address = str(raw.address, 'تهران')
@@ -269,10 +297,7 @@ function toStoreListing(raw: RawRow): StoreListing {
       str(raw.description, '') ||
       meta?.description ||
       `«${name}» — توضیحات تکمیلی از سمت مجموعه ثبت نشده است.`,
-    images:
-      Array.isArray(raw.images) && raw.images.length > 0
-        ? (raw.images as string[])
-        : [meta?.image ? asset(meta.image) : STORE_IMAGE[category]],
+    images: storeImages(meta, category),
     location: toPoint(raw),
     address,
     createdAt: str(raw.created_at ?? raw.createdAt, new Date(0).toISOString()),

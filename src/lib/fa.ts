@@ -31,6 +31,24 @@ export function faPrice(value: number, freeLabel = 'رایگان'): string {
 }
 
 /**
+ * «۰۹:۰۰ تا ۲۱:۰۰» — opening hours the way Iranian shopfronts write them.
+ * 24h input (`opensAt`/`closesAt`), Persian digits, `تا` instead of a hyphen.
+ * A 00:00–23:59/24:00 span means the place never closes and is reported as
+ * «شبانه‌روزی» rather than the literal «۰۰:۰۰ تا ۲۴:۰۰», which reads as a bug.
+ */
+export function faTimeRange(from?: string, to?: string): string {
+  if (!from || !to) return 'ساعات ثبت نشده'
+  const wrapsMidnight = (t: string) => t === '00:00' || t === '24:00'
+  if (wrapsMidnight(from) && (wrapsMidnight(to) || to === '23:59')) return 'شبانه‌روزی'
+  return `${faDigits(from)} تا ${faDigits(to)}`
+}
+
+/** Phone numbers keep their separators but show Persian digits: 021-88105091 → «۰۲۱-۸۸۱۰۵۰۹۱» */
+export function faPhone(phone: string): string {
+  return faDigits(phone.trim())
+}
+
+/**
  * Compact price for tight spaces (map pins, chips):
  * 2150000 → «۲٫۲م» · 420000 → «۴۲۰ه» (میلیون / هزار)
  * Millions keep one decimal below 10M so 2.15M never rounds to «۲م».
