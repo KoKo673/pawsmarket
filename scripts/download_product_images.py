@@ -28,7 +28,12 @@ whenever the CDN rate-limits is not a product.
 
 Usage:
   PYTHONIOENCODING=utf-8 python scripts/download_product_images.py [--limit N]
+         PYTHONIOENCODING=utf-8 python scripts/download_product_images.py --rekey
 Writes: public/images/products/real/*.jpg, scripts/product_images.json
+
+--rekey re-derives the name→photo map from the existing files without
+downloading anything. Needed after merge_sources.py changes how titles render
+(e.g. Persian digits), which would otherwise orphan every collected photo.
 """
 import hashlib
 import json
@@ -102,6 +107,33 @@ def main():
 
     rows = json.load(open(CATALOG, encoding="utf-8"))
     rows = [r for r in rows if (r.get("image") or "").startswith("http")]
+
+    # Re-derive the map from files already on disk. Same result as a fresh run,
+    # minus 1000 downloads — used when only the title rendering changed.
+    if "--rekey" in sys.argv:
+        from merge_sources import fa_title
+        if not os.path.exists(MAP):
+            raise SystemExit("nothing to rekey: product_images.json is missing")
+        with open(MAP, encoding="utf-8") as f:
+            old = json.load(f)
+        catalog = {r["name"] for r in rows}
+        mapping, missing_file = {}, 0
+        for name, path in old.items():
+            if not os.path.exists(os.path.join(HERE, "..", "public", path)):
+                missing_file += 1
+                continue
+            key = fa_title(name)
+            # Keep the catalog's exact spelling when it has this product.
+            mapping[key if key in catalog else name] = path
+        tmp = MAP + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(mapping, f, ensure_ascii=False, indent=1)
+        os.replace(tmp, MAP)
+        matched = sum(1 for k in mapping if k in catalog)
+        print(f"rekeyed: {len(mapping)} products, {matched} match the catalog, "
+              f"{missing_file} referenced a missing file")
+        return
+
     limit = None
     if "--limit" in sys.argv:
         limit = int(sys.argv[sys.argv.index("--limit") + 1])
@@ -121,6 +153,12 @@ def main():
     mapping = {}
     stored = {}
     failed = 0
+    # Keys must match the catalog's titles exactly. merge_sources.py renders
+    # titles through fa_title(), so writing the raw marketplace name here left
+    # every key one transliteration away from its product and orphaned 812
+    # already-downloaded photos.
+    from merge_sources import fa_title
+
     for i, (url, names) in enumerate(by_url.items(), 1):
         data = download(url, i)
         if data is None:
@@ -135,7 +173,7 @@ def main():
         stored[digest] = len(data)
         rel = f"images/products/real/{fname}"
         for n in names:
-            mapping[n.strip()] = rel
+            mapping[fa_title(n.strip())] = rel
         if i % 25 == 0:
             print(f"  [{i}/{len(by_url)}] stored {len(stored)}  failed {failed}",
                   flush=True)

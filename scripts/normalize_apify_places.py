@@ -117,8 +117,10 @@ DROPPED = {
 # «Petshop dr Taghizadeh»). Those are legitimate businesses, but the site is
 # Persian-only, so a name the visitor cannot read is worse than omitting the
 # row: we have no Persian name to show. A name that is *mostly* Latin is
-# dropped; a Persian name that merely contains a Latin brand token is kept.
+# dropped; a Persian name that merely contains a Latin brand token is kept —
+# the Latin part is dropped and the Persian part is what we show.
 _LATIN_MAJORITY = 0.5
+_LATIN_TOKEN = re.compile(r"^[0-9A-Za-z][0-9A-Za-z\s.&'’!+®\-]*$")
 
 
 def latin_ratio(s):
@@ -130,6 +132,17 @@ def latin_ratio(s):
         return 1.0
     latin = sum(1 for c in letters if ord(c) < 0x0530)
     return latin / len(letters)
+
+
+def strip_latin(name):
+    """«luvetta petshop پت شاپ لاوِتا» → «پت شاپ لاوِتا».
+
+    Mixed names are real and common, and dropping them wholesale threw away
+    hundreds of genuine businesses — including ones we had already paid to
+    photograph. Only a name with no Persian left is really unusable.
+    """
+    kept = [t for t in name.split() if not _LATIN_TOKEN.match(t)]
+    return " ".join(kept).strip()
 
 
 def norm_text(s):
@@ -201,8 +214,18 @@ def main():
             DROPPED["wrong_category"] += 1
             continue
         if latin_ratio(name) > _LATIN_MAJORITY:
-            DROPPED["latin_name"] += 1
-            continue
+            # Mixed Persian/Latin: keep the Persian half rather than dropping a
+            # real business we may already have a photo for.
+            name = strip_latin(name)
+            if not name or latin_ratio(name) > _LATIN_MAJORITY:
+                DROPPED["latin_name"] += 1
+                continue
+        else:
+            # Even a mostly-Persian name can carry a Latin brand token
+            # («Elx پت شاپ پرشیا»). The seed strips those, so the row is stored
+            # in its stripped form — that is also the key its photo was fetched
+            # under, and keeping the Latin would orphan the photo.
+            name = strip_latin(name) or name
         if HUMAN_HAIRCUT.search(name):
             DROPPED["human_haircut"] += 1
             continue

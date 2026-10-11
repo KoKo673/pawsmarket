@@ -206,9 +206,34 @@ def build_address(street, house, suburb, city="تهران"):
         parts.append(f"محله {persian_text(suburb)}")
     parts.append(city)
     out = "، ".join(p for p in parts if p).translate(_FA_DIGITS)
+    # OSM volunteers transcribe the street in Latin and then repeat the Persian
+    # one («خیابان ۲۲بهمن، کلینیک پت مدیکال Ashrafi Esfahani Expy»), and
+    # addr:city is often just "Tehran". The Persian half is the readable one.
+    out = strip_latin_tokens(out)
+    out = re.sub(r"\bTehran\b\s*,?\s*", "", out, flags=re.I).strip(" ،,")
     if district and f"منطقه {district.group(1)}" not in out:
         out = f"منطقه {district.group(1)}، {out}"
-    return out
+    return out or "تهران"
+
+
+# A run of Latin words (with digits attached), e.g. "Ashrafi Esfahani Expy",
+# "Pasdar Gomnam Blvd", "Sadatmand". House numbers are bare digits and are NOT
+# matched here, so «پلاک ۶۱» and «پلاک 202» survive.
+_LATIN_RUN = re.compile(r"[A-Za-z][A-Za-z0-9.&'’+®\-]*(?:\s+[A-Za-z0-9.&'’+®\-]+)*")
+
+
+def strip_latin_tokens(s):
+    """Remove Latin words an OSM volunteer added to an address.
+
+    They transcribe the same street the Persian half already names
+    («خیابان ۲۲بهمن، کلینیک پت مدیکال Ashrafi Esfahani Expy»). Anything the
+    visitor cannot read in this UI goes; anything Persian, and every bare
+    number, stays.
+    """
+    if not s:
+        return s
+    out = _LATIN_RUN.sub("", s)
+    return re.sub(r"\s*،\s*،", "، ", re.sub(r"[،,]\s*(?=[،,])", "", out)).strip(" ،,")
 
 
 # Google's Open Location Code — «M9RQ+VFX». It is a location, not an address:
@@ -486,8 +511,14 @@ def _load_map(name):
         return {}
 
 
-# Shop name → its own Google Maps photos (scripts/fetch_store_images.py)
-STORE_PHOTOS = _load_map("store_images.json")
+# Shop name → its own Google Maps photos (scripts/fetch_store_images.py).
+# Re-keyed through the same normalisation the catalog rows go through: the map
+# was written under raw Google names («Elx پت شاپ پرشیا») while rows store the
+# stripped form («پت شاپ پرشیا»), and a name mismatch silently orphans a photo
+# we already paid to download.
+STORE_PHOTOS_RAW = _load_map("store_images.json")
+STORE_PHOTOS = {persian_text(keep_persian(persian_text(k))): v
+                for k, v in STORE_PHOTOS_RAW.items()}
 # Product name → its own marketplace photo (scripts/download_product_images.py)
 PRODUCT_PHOTOS = _load_map("product_images.json")
 
@@ -642,9 +673,10 @@ def main():
             cat = p.get("category") or "shop"
             if cat not in ("shop", "vet", "groomer", "boarding", "shelter", "cafe"):
                 cat = "shop"
-            address = clean_gmaps_address(p.get("address")) or "تهران"
+            address = strip_latin_tokens(clean_gmaps_address(p.get("address")) or "") or "تهران"
             rows.append(dict(
                 name=name,
+                name_raw=raw_name,
                 name_src="google-maps" if src == "name" else f"google-maps/{src}",
                 kind="vet" if cat == "vet" else "shop",
                 lat=float(p["lat"]),
@@ -709,7 +741,14 @@ def main():
         # The shop's own Google Maps photo, if scripts/fetch_store_images.py
         # collected one. Real storefronts first: 537 shops sharing 3 stock
         # photos made two different clinics look like the same listing.
-        real = STORE_PHOTOS.get(r["name"]) or []
+        #
+        # The photo map is keyed by the RAW Google name, while `r["name"]` has
+        # been folded to one Persian spelling (پانكي اسپا → پانکی اسپا), so both
+        # keys are tried — otherwise half the collected photos were orphaned and
+        # the shop fell back to a stock image it shares with 100 others.
+        real = (STORE_PHOTOS.get(r["name"])
+                or STORE_PHOTOS.get(r.get("name_raw") or "")
+                or [])
         real = [p for p in real if os.path.exists(os.path.join(HERE, "..", "public", p))]
         pool = [p for p in (STORE_POOLS.get(r["category"]) or STORE_POOLS["shop"])
                 if os.path.exists(os.path.join(HERE, "..", "public", p))]
