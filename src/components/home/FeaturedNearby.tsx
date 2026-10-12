@@ -27,7 +27,10 @@ export function FeaturedNearby() {
           <p className="mt-1.5 text-sm text-muted-foreground">مرتب‌شده بر اساس فاصله از نقطه‌ی جستجوی شما</p>
         </div>
         <Button asChild variant="outline" className="gap-2">
-          <Link to="/explore">
+          {/* ?view=map — the button says «نقشه», so it has to land on the map.
+              Without the hint Explore opens on the list and the button looks
+              broken even though the route is correct. */}
+          <Link to="/explore?view=map">
             <ArrowLeft className="size-4" />
             مشاهده‌ی نقشه
           </Link>

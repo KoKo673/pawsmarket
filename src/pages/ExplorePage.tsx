@@ -48,14 +48,6 @@ export function ExplorePage() {
   const favorites = useFavoritesStore((s) => s.ids)
   const [searchParams] = useSearchParams()
 
-  // لینک‌های عمیق (?preset=vets&favorites=1) فقط یک‌بار هنگام ورود اعمال می‌شوند
-  useEffect(() => {
-    const preset = searchParams.get('preset')
-    if (preset && URL_PRESETS[preset]) applyPreset(URL_PRESETS[preset])
-    if (searchParams.get('favorites') === '1') setFavoritesOnly(true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   // مشتق‌سازی: حالت «فقط ذخیره‌شده‌ها» روی نتایج زنده اعمال می‌شود
   const listings = favoritesOnly ? (data ?? []).filter((l) => favorites.includes(l.id)) : (data ?? [])
 
@@ -71,6 +63,20 @@ export function ExplorePage() {
   const setMobileView = useUiStore((s) => s.setMobileView)
   const setFilterDrawerOpen = useUiStore((s) => s.setFilterDrawerOpen)
   const openDetail = useUiStore((s) => s.openDetail)
+
+  // لینک‌های عمیق (?preset=vets&favorites=1&view=map) فقط یک‌بار هنگام ورود
+  // اعمال می‌شوند. این افکت پس از تعریف setMobileView می‌آید چون
+  // setMobileView یک const است و در زمان اجرای افکت قبلی هنوز مقدار
+  // نداشت (Temporal Dead Zone).
+  useEffect(() => {
+    const preset = searchParams.get('preset')
+    if (preset && URL_PRESETS[preset]) applyPreset(URL_PRESETS[preset])
+    if (searchParams.get('favorites') === '1') setFavoritesOnly(true)
+    // «مشاهده‌ی نقشه» روی صفحه‌ی خانه به /explore?view=map می‌رود. بدون این،
+    // موبایل با لیست باز می‌شد و دکمه اشتباه به‌نظر می‌رسید.
+    if (searchParams.get('view') === 'map') setMobileView('map')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="pt-16">

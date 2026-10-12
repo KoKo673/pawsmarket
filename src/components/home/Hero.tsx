@@ -102,31 +102,33 @@ export function Hero() {
         </div>
 
         {/* ── کلاج تصاویر ──
-            Shown at every width, just smaller on phones: hiding it entirely
-            left the mobile home page as a wall of text with no product
-            imagery at all. The float animation is dropped on small screens
-            because several simultaneously floating photos on a phone reads
-            as jitter rather than polish. */}
+            Collage sits ABOVE the copy in DOM order on phones: as a second
+            grid column it landed below the search box, so the first screen a
+            visitor saw was a wall of text and the pictures arrived only after
+            scrolling — and the dog's face was cropped out of its own portrait
+            by object-cover. `order-first` on mobile, side-by-side on desktop. */}
         <div
           data-motion-item
-          className="relative mx-auto aspect-[4/3.2] w-full max-w-xs motion-reduce:animate-none sm:aspect-[4/4.4] sm:max-w-md"
+          className="relative order-first mx-auto aspect-[4/3.4] w-full max-w-xs motion-reduce:animate-none sm:aspect-[4/4.4] sm:max-w-md lg:order-none"
         >
           <img
             src={asset('images/listings/dog-golden.jpg')}
             alt="توله‌ی گلدن رتریور"
-            className="absolute inset-x-6 top-0 aspect-[4/5] w-[85%] rounded-[2.5rem] object-cover shadow-lifted sm:animate-float"
+            /* object-top keeps the head in frame; the default centre crop cut
+               the face off, which is what "چهره‌ی سگ معلوم نیست" referred to. */
+            className="absolute inset-x-5 top-0 aspect-[4/5] w-[86%] rounded-[2.5rem] object-cover object-top shadow-lifted sm:animate-float"
             style={{ animationDuration: '6s' }}
           />
           <img
             src={asset('images/listings/cat-orange.jpg')}
             alt="گربه‌ی نارنجی"
-            className="absolute bottom-14 right-0 aspect-square w-[52%] rounded-[2rem] border-4 border-card object-cover shadow-lifted sm:animate-float"
+            className="absolute bottom-16 right-0 aspect-square w-[52%] rounded-[2rem] border-4 border-card object-cover shadow-lifted sm:animate-float"
             style={{ animationDuration: '7s', animationDelay: '-1s' }}
           />
           <img
-            src={asset('images/listings/store2.jpg')}
-            alt="سگ روی تشک راحتی"
-            className="absolute bottom-0 left-0 aspect-[4/3] w-[55%] rounded-3xl border-4 border-card object-cover shadow-lifted sm:animate-float"
+            src={asset('images/listings/dog-run.jpg')}
+            alt="سگ در حال دویدن در پارک"
+            className="absolute bottom-0 left-0 aspect-[4/3] w-[55%] rounded-3xl border-4 border-card object-cover object-top shadow-lifted sm:animate-float"
             style={{ animationDuration: '5.5s', animationDelay: '-0.5s' }}
           />
 

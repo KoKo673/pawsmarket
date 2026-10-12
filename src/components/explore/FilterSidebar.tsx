@@ -81,6 +81,8 @@ function Chip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
+        // Inline-flex with no max-width: a `truncate` here clipped chips to
+        // «خرگوش و ...», which names a category nobody can pick.
         'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-150 active:scale-95',
         active
           ? 'border-primary bg-primary text-primary-foreground shadow-glow'

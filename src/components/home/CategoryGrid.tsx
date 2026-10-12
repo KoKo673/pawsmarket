@@ -44,7 +44,11 @@ export function CategoryGrid() {
                       navigate('/explore')
                     }}
                     style={{ animationDelay: `${i * 60}ms` }}
-                    className="group flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-4 text-start shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lifted active:scale-[0.98]"
+                    /* Stacked on phones: a 2-up grid leaves ~7rem beside the 44px icon, and any
+   label longer than one line was either clipped or squeezed. Full-width rows
+   on a phone give the Persian names room to breathe; the icon moves above the
+   text so it stays a clear anchor rather than eating horizontal space. */
+className="group flex flex-col items-start gap-2.5 rounded-2xl border border-border/60 bg-card p-4 text-start shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lifted active:scale-[0.98] sm:flex-row sm:items-center sm:gap-3"
                   >
                     <span
                       className={cn(
@@ -55,8 +59,12 @@ export function CategoryGrid() {
                       <Icon className="size-5" />
                     </span>
                     <span className="min-w-0">
-                      <span className="block truncate text-sm font-bold">{label}</span>
-                      <span className="block text-xs font-medium text-muted-foreground">
+                      {/* No `truncate`: on the 2-up mobile grid it clipped
+                          every multi-word label to «خرگوش و ...» — the tile
+                          then named a category nobody could identify. Labels
+                          wrap to a second line instead. */}
+                      <span className="block text-sm font-bold leading-snug">{label}</span>
+                      <span className="mt-0.5 block text-xs font-medium leading-snug text-muted-foreground">
                         {count > 0 ? `${faDigits(count)} مورد در اطراف` : 'کاوش کنید'}
                       </span>
                     </span>

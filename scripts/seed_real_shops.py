@@ -662,12 +662,49 @@ def main():
     # address, phone and rating that OSM usually lacks.
     apify = load_apify_places()
     if apify:
+        # A Google name that differs from the OSM one only by decoration
+        # («مینگو پت شاپ []» vs «مینگو پت شاپ») is the SAME shop — and they sit
+        # ~35 m apart, so proximity settles it where the strings do not.
         existing = {r["name"] for r in rows}
-        added = 0
+        existing_near = [(r["name"], r["lat"], r["lng"]) for r in rows]
+        added = merged_dupes = 0
+
+        def same_shop(name, lat, lng):
+            base = name.strip(" []()")
+            for other, olat, olng in existing_near:
+                if other.strip(" []()") == base:
+                    return other
+                # ~60 m: Google and OSM place the same storefront tens of metres
+                # apart, which is normal; a name that is nearly identical plus a
+                # near-identical point is a duplicate, not a second branch.
+                if (other.strip(" []()") in base or base in other.strip(" []()")) \
+                        and hav((lat, lng), (olat, olng)) < 0.06:
+                    return other
+            return None
+
         for p in apify:
             raw_name = (p.get("name") or "").strip()
             name, src = fa_name(raw_name) or (None, "")
-            if not name or name in existing:
+            if not name:
+                continue
+            twin = same_shop(name, float(p["lat"]), float(p["lng"]))
+            if twin:
+                # Same shop, already in from OSM. Don't add a second row —
+                # but do borrow what only Google knows (photo, rating, phone),
+                # otherwise the merged shop falls back to a stock image and a
+                # 0-star card, which is how «مینگو پت شاپ» ended up duplicated.
+                merged_dupes += 1
+                row = next(r for r in rows if r["name"] == twin)
+                if p.get("rating") and not row.get("rating"):
+                    row["rating"] = p["rating"]
+                    row["reviews"] = p.get("reviews") or 0
+                if p.get("phone") and not row.get("phone_raw"):
+                    row["phone_raw"] = p["phone"]
+                if p.get("website") and not row.get("website"):
+                    row["website"] = p["website"]
+                row["name_raw"] = row.get("name_raw") or raw_name
+                continue
+            if name in existing:
                 continue
             existing.add(name)
             cat = p.get("category") or "shop"
@@ -692,7 +729,10 @@ def main():
                 reviews=p.get("reviews"),
             ))
             added += 1
-        print(f"  +{added} Google Maps places merged in")
+            existing_near.append((name, float(p["lat"]), float(p["lng"])))
+        print(f"  +{added} Google Maps places merged in"
+              + (f" ({merged_dupes} duplicates folded into their OSM twin)"
+                 if merged_dupes else ""))
 
     rows.sort(key=lambda r: (r["category"], r["dist"], r["name"]))
 
@@ -748,6 +788,7 @@ def main():
         # the shop fell back to a stock image it shares with 100 others.
         real = (STORE_PHOTOS.get(r["name"])
                 or STORE_PHOTOS.get(r.get("name_raw") or "")
+                or STORE_PHOTOS.get(r["name"].strip(" []()"))
                 or [])
         real = [p for p in real if os.path.exists(os.path.join(HERE, "..", "public", p))]
         pool = [p for p in (STORE_POOLS.get(r["category"]) or STORE_POOLS["shop"])
