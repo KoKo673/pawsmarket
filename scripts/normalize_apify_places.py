@@ -184,6 +184,31 @@ def classify(category):
     return None
 
 
+# What an Iranian rescue actually calls itself. Google's category is useless
+# here — a rescue that also sells food is tagged "Pet store", which is why the
+# sweep found 3 shelters in the whole metro area.
+_NAME_MAP = [
+    ("shelter", re.compile(
+        r"پناهگاه|پرورشگاه|باغ\s*حیوانات|باغ‌حیوانات|خانه\s*(?:ی|ی)?\s*حیوانات|"
+        r"دهکده\s*(?:ی)?\s*(?:مهربانی\s*)?حیوانات|توانبخشی\s*(?:حیوانات|سگ)|"
+        r"بی\s*سرپرست|بی‌سرپرست|نگهداری\s*حیوانات|سرپرستی|واگذاری\s*حیوانات|"
+        r"شیوک\s*حیوانات|انجمن\s*(?:حمایت|نگهداری)", re.I)),
+    ("boarding", re.compile(r"پانسیون|هتل\s*(?:حیوانات|پت)|پنومی", re.I)),
+    ("vet", re.compile(r"دامپزشک|کلینیک\s*دام|بیمارستان\s*دام", re.I)),
+    ("groomer", re.compile(r"آرایشگاه\s*(?:حیوانات|سگ|پت)|پت\s*استایل|استایل\s*پت", re.I)),
+]
+
+
+def classify_by_name(name):
+    """Category from the business's own name, when Google's tag is wrong."""
+    if not name:
+        return None
+    for kind, pattern in _NAME_MAP:
+        if pattern.search(name):
+            return kind
+    return None
+
+
 def clean_phone(raw):
     if not raw:
         return None
@@ -210,6 +235,13 @@ def main():
             continue
 
         kind = classify(r.get("category"))
+        # Google's own category lies for most Iranian rescues: they are
+        # registered as "Pet store" because that is what they sell, while the
+        # rescue is what they do. The name is the reliable signal here.
+        if kind in (None, "shop"):
+            by_name = classify_by_name(name)
+            if by_name:
+                kind = by_name
         if kind is None:
             DROPPED["wrong_category"] += 1
             continue

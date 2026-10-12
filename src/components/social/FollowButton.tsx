@@ -25,6 +25,10 @@ export function FollowButton({
 }) {
   const navigate = useNavigate()
   const status = useAuthStore((s) => s.status)
+  // Which of my pets is pressing the button. Without it the server acted as my
+  // lowest-id pet, so with two animals the follow was registered on the wrong
+  // one while the count shown belonged to the profile on screen.
+  const activePetId = useAuthStore((s) => s.activePetId)
   const [following, setFollowing] = useState(initialFollowing)
   const [count, setCount] = useState(initialCount)
   const [busy, setBusy] = useState(false)
@@ -39,7 +43,9 @@ export function FollowButton({
     setFollowing(!following)
     setCount((c) => c + (following ? -1 : 1))
     try {
-      const res = following ? await socialApi.unfollow(petId) : await socialApi.follow(petId)
+      const res = following
+        ? await socialApi.unfollow(petId, activePetId ?? undefined)
+        : await socialApi.follow(petId, activePetId ?? undefined)
       setFollowing(res.following)
       setCount(res.followers)
     } catch (err) {

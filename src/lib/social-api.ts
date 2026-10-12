@@ -214,10 +214,25 @@ export const authApi = {
 
 /* ── پروفایل و اجتماعی ──────────────────────────────────────── */
 
+/** `?as=<pet>` — which of the viewer's own pets is acting. Omitted when none. */
+const asParam = (asPet?: number | string) =>
+  asPet === undefined || asPet === null ? '' : `?as=${encodeURIComponent(String(asPet))}`
+
+const qs = (params: Record<string, string | number | undefined | null>) => {
+  const p = new URLSearchParams()
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== null && v !== '') p.set(k, String(v))
+  }
+  const s = p.toString()
+  return s ? `?${s}` : ''
+}
+
 export const socialApi = {
   createProfile: (data: { name: string; species: string; bio?: string; lat: number; lng: number }) =>
     request<PetProfile>('/api/pets/profile', { method: 'POST', body: JSON.stringify(data) }),
-  getProfile: (petId: number | string) => request<PetProfile>(`/api/pets/${petId}`),
+  /** `asPet` = the viewer's own pet id, so `is_following` is about that pet. */
+  getProfile: (petId: number | string, asPet?: number | string) =>
+    request<PetProfile>(`/api/pets/${petId}${asParam(asPet)}`),
   patchProfile: (
     petId: number | string,
     data: Partial<{
@@ -244,10 +259,16 @@ export const socialApi = {
       method: 'POST',
       body: JSON.stringify({ text, images, kind }),
     }),
-  follow: (petId: number | string) =>
-    request<{ following: boolean; followers: number }>(`/api/pets/${petId}/follow`, { method: 'POST' }),
-  unfollow: (petId: number | string) =>
-    request<{ following: boolean; followers: number }>(`/api/pets/${petId}/follow`, { method: 'DELETE' }),
+  /* ── دنبال کردن ──
+     `as` names WHICH of the viewer's own pets is acting. Without it the server
+     used the viewer's lowest-id pet, so a user with two animals followed and
+     unfollowed as their first one and saw its counts on the second's page. */
+  follow: (petId: number | string, asPet?: number | string) =>
+    request<{ following: boolean; followers: number }>(
+      `/api/pets/${petId}/follow${asParam(asPet)}`, { method: 'POST' }),
+  unfollow: (petId: number | string, asPet?: number | string) =>
+    request<{ following: boolean; followers: number }>(
+      `/api/pets/${petId}/follow${asParam(asPet)}`, { method: 'DELETE' }),
   followers: (petId: number | string) =>
     request<{ items: FollowListItem[]; next_before: string | null }>(
       `/api/pets/${petId}/followers`,
@@ -256,9 +277,14 @@ export const socialApi = {
     request<{ items: FollowListItem[]; next_before: string | null }>(
       `/api/pets/${petId}/following`,
     ),
-  feed: (before?: string) =>
+  feed: (before?: string, asPet?: number | string) =>
     request<{ items: Post[]; next_before: string | null }>(
-      `/api/feed${before ? `?before=${encodeURIComponent(before)}` : ''}`,
+      `/api/feed${qs({ before, as: asPet })}`,
+    ),
+  /** The caller's own pets — needed to say which one is acting on follow/feed. */
+  myPets: () =>
+    request<{ items: { id: number; name: string; species: string; avatar_url: string | null }[] }>(
+      '/api/me/pets',
     ),
   discover: (lat: number, lng: number, radius = 10000) =>
     request<{ items: DiscoverPet[] }>(`/api/discover/pets?lat=${lat}&lng=${lng}&radius=${radius}`),

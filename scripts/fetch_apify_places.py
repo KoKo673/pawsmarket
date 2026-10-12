@@ -79,12 +79,38 @@ DISTRICTS = [
 ]
 
 # Search terms per business line, combined with each district.
+#
+# The shelter list is deliberately long: Iranian rescues rarely register on
+# Google under the literal «پناهگاه حیوانات». They call themselves پرورشگاه,
+# دهکده, خانه‌ی حیوانات, باغ‌حیوانات, مرکز توانبخشی, اصلاح‌گر — and Google then
+# tags them "Pet store". Two generic terms found 10 shelters in the whole
+# metro area, most of them mislabelled pet shops; the vocabulary below is what
+# rescues actually use, so it finds the ones that exist.
 TERMS = {
     "pet_shop": ["پت شاپ", "فروشگاه حیوانات خانگی", "پت‌شاپ"],
     "vet": ["دامپزشکی", "کلینیک دامپزشکی", "بیمارستان دامپزشکی"],
     "groomer": ["آرایشگاه حیوانات خانگی", " grooming حیوانات", "پت استایل"],
-    "boarding": ["پانسیون حیوانات", "هتل حیوانات"],
-    "shelter": ["پناهگاه حیوانات", "نگهداری حیوانات"],
+    "boarding": ["پانسیون حیوانات", "هتل حیوانات", "پنومی پت", "هتل پت"],
+    "shelter": [
+        "پناهگاه حیوانات",
+        "پرورشگاه حیوانات",
+        "پرورشگاه سگ",
+        "خانه حیوانات",
+        "خانه‌ی حیوانات",
+        "دهکده حیوانات",
+        "باغ حیوانات",
+        "باغ‌حیوانات",
+        "نگهداری حیوانات",
+        "مرکز توانبخشی حیوانات",
+        "مرکز نگهداری حیوانات",
+        "حیوانات بی سرپرست",
+        "سرپرستی حیوانات",
+        "واگذاری حیوانات",
+        "شیوک حیوانات",
+        "پت شاپ حیوانات بی سرپرست",
+        "انجمن حمایت از حیوانات",
+        "حمایت از حیوانات",
+    ],
 }
 
 PET_HINT = re.compile(

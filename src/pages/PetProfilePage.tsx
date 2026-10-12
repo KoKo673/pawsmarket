@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { faDigits } from '@/lib/fa'
 import { mediaUrl, socialApi, type PetProfile, type Post } from '@/lib/social-api'
+import { useAuthStore } from '@/store/auth.store'
 
 const SPECIES_FA: Record<string, string> = {
   dog: 'سگ', cat: 'گربه', rabbit: 'خرگوش', bird: 'پرنده',
@@ -20,6 +21,8 @@ const SPECIES_FA: Record<string, string> = {
 /** پروفایل حیوان — هدر + گالری + لحظات (سبک شبکه‌های اجتماعی). */
 export function PetProfilePage() {
   const { id } = useParams<{ id: string }>()
+  // Which of my own pets the follow button acts as.
+  const activePetId = useAuthStore((s) => s.activePetId)
 
   const [profile, setProfile] = useState<PetProfile | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
@@ -35,7 +38,9 @@ export function PetProfilePage() {
     setError(null)
     try {
       const [p, feed] = await Promise.all([
-        socialApi.getProfile(id),
+        // `as` = which of my pets I'm browsing as, so `is_following` and the
+        // counts belong to the profile on screen rather than to my first pet.
+        socialApi.getProfile(id, activePetId ?? undefined),
         socialApi.petPosts(id),
       ])
       setProfile(p)
@@ -45,7 +50,7 @@ export function PetProfilePage() {
     } finally {
       setLoading(false)
     }
-  }, [id])
+  }, [id, activePetId])
 
   useEffect(() => {
     void load()

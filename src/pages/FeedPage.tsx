@@ -5,6 +5,7 @@ import { EmptyFeed, MomentCard } from '@/components/social/MomentsFeed'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { socialApi, type Post } from '@/lib/social-api'
+import { useAuthStore } from '@/store/auth.store'
 
 /** فید لحظه‌ها — پست‌های حیوانات دنبال‌شده + خودم. */
 export function FeedPage() {
@@ -13,12 +14,14 @@ export function FeedPage() {
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // فید هر حیوان جداست؛ بدون این همیشه فید اولین حیوان نشان داده می‌شد.
+  const activePetId = useAuthStore((s) => s.activePetId)
 
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const data = await socialApi.feed()
+      const data = await socialApi.feed(undefined, activePetId ?? undefined)
       setItems(data.items)
       setNextBefore(data.next_before)
     } catch (err) {
@@ -26,7 +29,7 @@ export function FeedPage() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [activePetId])
 
   useEffect(() => {
     void load()
@@ -36,7 +39,7 @@ export function FeedPage() {
     if (!nextBefore) return
     setLoadingMore(true)
     try {
-      const data = await socialApi.feed(nextBefore)
+      const data = await socialApi.feed(nextBefore, activePetId ?? undefined)
       setItems((prev) => [...prev, ...data.items])
       setNextBefore(data.next_before)
     } finally {
