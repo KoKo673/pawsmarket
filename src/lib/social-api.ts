@@ -3,6 +3,7 @@
  * همه‌ی مسیرها نیازمند توکن Bearer هستند مگر خلافش ذکر شود.
  */
 import { ApiError } from '@/lib/api'
+import { faDigits } from '@/lib/fa'
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
 const TOKEN_KEY = 'pawsmarket-auth-token'
@@ -50,7 +51,7 @@ export function setToken(token: string | null): void {
 }
 
 /** خطای سرور را به پیام فارسی قابل‌نمایش تبدیل می‌کند. */
-function detailOf(status: number, body: unknown): string {
+function detailOf(status: number, body: unknown, retryAfter?: string | null): string {
   if (body && typeof body === 'object' && 'detail' in body) {
     const d = (body as { detail: unknown }).detail
     if (typeof d === 'string') return d
@@ -59,6 +60,17 @@ function detailOf(status: number, body: unknown): string {
   if (status === 401) return 'نشست شما منقضی شده؛ دوباره وارد شوید'
   if (status === 409) return 'این نام کاربری قبلاً گرفته شده'
   if (status === 403) return 'این عملیات فقط برای صاحب این پروفایل است'
+  if (status === 429) {
+    // The server sends Retry-After, so say exactly how long to wait rather
+    // than a bare refusal the visitor can only guess at.
+    const secs = Number(retryAfter ?? '')
+    if (Number.isFinite(secs) && secs > 0) {
+      return secs < 60
+        ? `تلاش‌های زیاد؛ ${faDigits(secs)} ثانیه دیگر دوباره امتحان کنید`
+        : `تلاش‌های زیاد؛ ${faDigits(Math.ceil(secs / 60))} دقیقه دیگر دوباره امتحان کنید`
+    }
+    return 'تلاش‌های زیاد؛ یک دقیقه دیگر دوباره امتحان کنید'
+  }
   return 'مشکلی پیش آمد؛ دوباره تلاش کنید'
 }
 
@@ -93,7 +105,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     } catch {
       /* بدنه‌ی غیر JSON */
     }
-    throw new ApiError(detailOf(res.status, body), res.status)
+    throw new ApiError(detailOf(res.status, body, res.headers.get('Retry-After')), res.status)
   }
   if (res.status === 204) return undefined as T
   return (await res.json()) as T
