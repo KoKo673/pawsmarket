@@ -1,6 +1,6 @@
 import { Crosshair, Loader2, ShieldAlert } from 'lucide-react'
 import L from 'leaflet'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
 // Leaflet's own stylesheet — tiles/markers/panes are position:absolute here;
 // without it everything falls into normal flow and the map shreds apart.
@@ -228,31 +228,56 @@ interface Cluster {
 }
 
 /**
- * Group listings that sit on the same point.
+ * Grid clustering sized to the current zoom.
  *
- * A shop's products are stored at the shop's coordinates, so a vet with three
- * products produced three pins stacked on one pixel — unreadable, and it made
- * one business look like three. Clicking a cluster offers the whole group
- * rather than opening an arbitrary one.
+ * A shop's products inherit its exact coordinates, so one supermarket's 299
+ * rows collapsed to a single point — good. The neighbouring shops, however,
+ * were 30–200 m apart and each drew its own full-size pin, and at city zoom
+ * 299 orange bubbles plus every shop pin buried the map under itself: the
+ * screenshot of «خوراک و خوراکی» was unreadable.
+ *
+ * The cell is therefore ~80 px on screen, computed from the current zoom, so
+ * whatever is visually adjacent merges and what is visually separate stays
+ * apart. Panning and zooming re-cluster, which is what makes the map legible
+ * at every scale instead of only when zoomed in.
  */
-function clusterListings(listings: ListingWithDistance[]): Cluster[] {
-  // 4 decimal places ≈ 11 m: products inherit their shop's exact coordinates,
-  // so this collapses a shop's rows while keeping neighbouring shops apart.
-  const byKey = new Map<string, Cluster>()
+function clusterListings(
+  listings: ListingWithDistance[],
+  zoom: number,
+): Cluster[] {
+  // degrees per pixel at this latitude and zoom (Web Mercator)
+  const CELL_PX = 80
+  const cellDeg = (156543.03392 * Math.cos((35.7 * Math.PI) / 180)) /
+    (2 ** zoom * CELL_PX)
+
+  // Zoomed out, the city has far more listings than pixels. A floor on the
+  // cell size keeps the number of bubbles bounded at every scale, so panning
+  // never turns the map into a solid sheet of orange.
+  const minDeg = 0.0102   // ~1.1 km — about what a 1000px viewport can show
+  const step = Math.max(cellDeg, minDeg)
+
+  const grid = new Map<string, Cluster>()
   for (const item of listings) {
-    const key = `${item.location.lat.toFixed(4)}|${item.location.lng.toFixed(4)}`
-    const at = byKey.get(key)
+    const key = `${Math.round(item.location.lat / step)}|${Math.round(
+      item.location.lng / step,
+    )}`
+    const at = grid.get(key)
     if (at) {
       at.items.push(item)
+      // keep the mean so a cell of shops sits at its centre, not at whichever
+      // member happened to be inserted first
+      const n = at.items.length
+      at.lat = (at.lat * (n - 1) + item.location.lat) / n
+      at.lng = (at.lng * (n - 1) + item.location.lng) / n
     } else {
-      byKey.set(key, {
+      grid.set(key, {
         lat: item.location.lat,
         lng: item.location.lng,
         items: [item],
       })
     }
   }
-  return [...byKey.values()]
+  return [...grid.values()]
 }
 
 /**
@@ -344,10 +369,27 @@ function ListingMarkers({
   const clusterRef = useRef(onCluster)
   clusterRef.current = onCluster
 
+  // Clusters are zoom-dependent, so the layer rebuilds on zoomend as well as
+  // when the result set changes. Debounced because Leaflet fires zoomend
+  // repeatedly during a pinch or a scroll-wheel run.
+  const [zoom, setZoom] = useState(() => map.getZoom())
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const onZoomEnd = () => {
+      clearTimeout(timer)
+      timer = setTimeout(() => setZoom(map.getZoom()), 160)
+    }
+    map.on('zoomend', onZoomEnd)
+    return () => {
+      clearTimeout(timer)
+      map.off('zoomend', onZoomEnd)
+    }
+  }, [map])
+
   useEffect(() => {
     const layer = L.layerGroup().addTo(map)
 
-    for (const cluster of clusterListings(listings)) {
+    for (const cluster of clusterListings(listings, zoom)) {
       const icon = cluster.items.length > 1
         ? clusterIcon(cluster.items.length)
         : markerIcon(cluster.items[0])
@@ -372,7 +414,7 @@ function ListingMarkers({
     return () => {
       layer.remove()
     }
-  }, [map, listings])
+  }, [map, listings, zoom])
 
   return null
 }

@@ -839,31 +839,20 @@ def main():
             f"ST_SetSRID(ST_MakePoint({r['lng']}, {r['lat']}), 4326), now());"
         )
 
-    product_count = 0
-    for i, r in enumerate(rows, start=1):
-        cat = r["category"]
-        if cat in ("shelter", "boarding", "cafe"):
-            continue  # کالای جعلی برای پناهگاه/پانسیون نسازیم
-        if cat == "vet":
-            picks = stable_pick(r["name"], PRODUCT_POOL["vet"], 3)
-        elif cat == "groomer":
-            picks = list(PRODUCT_POOL["groomer"])
-        elif re.search(r"قناری|پرنده|فینچ|لوتینو", r["name"]):
-            picks = list(PRODUCT_POOL["bird"])
-        else:
-            picks = stable_pick(r["name"], PRODUCT_POOL["shop"], 5)
-        for pname, price in picks:
-            p = jitter_price(r["name"] + pname, price)
-            sql.append(
-                "INSERT INTO products (name, price, store_id, location, created_at) VALUES ("
-                f"'{esc(pname)}', {p}, {i}, "
-                f"ST_SetSRID(ST_MakePoint({r['lng']}, {r['lat']}), 4326), now());"
-            )
-            product_count += 1
-    # ── real marketplace inventory, attached to the shops it fits ──
+    # ── inventory ──
     #
-    # The hand-written pools above are generic. Digikala and Torob give real
-    # Tehran product names, real Toman prices and real photos.
+    # Only REAL marketplace products are listed. An earlier version also seeded
+    # every shop from a hand-written pool of generic items («قطره ضدانگل گربه —
+    # ۳ میلی‌لیتر», «تخت طبی سگ»), which produced 3 148 invented rows across
+    # 249 distinct names — the same dewormer repeated 181 times on different
+    # clinics, each with no photo of its own. On top of the real catalogue
+    # that doubled the shelf and gave the visitor fabricated listings to read.
+    # Inventing inventory for a real business is exactly what this app must not
+    # do, so the pools are gone rather than merely capped.
+    product_count = 0
+    # ── real marketplace inventory, attached to the shops it fits ──
+    # Digikala and Torob give real Tehran product names, real Toman prices and
+    # real photos.
     #
     # Products are NOT spread round-robin: that put a dog toy on a veterinary
     # clinic's page, which is simply wrong. A product only goes to a shop that

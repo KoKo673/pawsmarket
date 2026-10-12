@@ -16175,5 +16175,1083 @@
   "rating": 5,
   "reviews": 1,
   "place_id": "ChIJrakqQQADjj8R27RaCXDiKcY"
+ },
+ {
+  "name": "animalkadeh",
+  "kind_hint": "shelter",
+  "district_query": "منطقه 5 تهران",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "Tehran Province, Tehran، شاهگل، P8JF+QWM, Iran",
+  "neighborhood": null,
+  "phone": "+982144078270",
+  "website": "https://www.google.com/maps/search/?api=1&query=animalkadeh&query_place_id=ChIJG2Ufh479jT8RJCpfV4hEr3g",
+  "lat": 35.7319585,
+  "lng": 51.3248032,
+  "rating": 5,
+  "reviews": 5,
+  "place_id": "ChIJG2Ufh479jT8RJCpfV4hEr3g"
+ },
+ {
+  "name": "Persian Petshop",
+  "kind_hint": "pet_shop",
+  "district_query": "یوسف‌آباد تهران",
+  "category": null,
+  "categories": [],
+  "address": "PFQ5+HG4, Tehran, Tehran Province, Iran",
+  "neighborhood": null,
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=Persian%20Petshop&query_place_id=ChIJ41sBOAADjj8RgEUpwzyEsUI",
+  "lat": 35.7388916,
+  "lng": 51.458836,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJ41sBOAADjj8RgEUpwzyEsUI"
+ },
+ {
+  "name": "pet navaz",
+  "kind_hint": "pet_shop",
+  "district_query": "یوسف‌آباد تهران",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "Tehran Province, Tehran, Khorramshahr St, PCPQ+7H3, Iran",
+  "neighborhood": null,
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=pet%20navaz&query_place_id=ChIJ8XH1BAADjj8R9WwzvBHTUQc",
+  "lat": 35.7356477,
+  "lng": 51.4389136,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJ8XH1BAADjj8R9WwzvBHTUQc"
+ },
+ {
+  "name": "Digipet",
+  "kind_hint": "pet_shop",
+  "district_query": "یوسف‌آباد تهران",
+  "category": "Pet supply store",
+  "categories": [
+   "Pet supply store"
+  ],
+  "address": "خیابان ولیعصر، بعد از خیابان شهید بهشتی، کوچه, Pardis, No. پلاک ۱۲, Iran",
+  "neighborhood": null,
+  "phone": "+982191030683",
+  "website": "https://www.google.com/maps/search/?api=1&query=Digipet&query_place_id=ChIJj4bLo5MBjj8RkxlejBYJnyo",
+  "lat": 35.7285862,
+  "lng": 51.4143394,
+  "rating": 5,
+  "reviews": 3,
+  "place_id": "ChIJj4bLo5MBjj8RkxlejBYJnyo"
+ },
+ {
+  "name": "پت شاپ رستا",
+  "kind_hint": "pet_shop",
+  "district_query": "یوسف‌آباد تهران",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "Tehran Province, Tehran, Sanaee St, PC99+5JW, Iran",
+  "neighborhood": null,
+  "phone": "+982188831003",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%D8%B1%D8%B3%D8%AA%D8%A7&query_place_id=ChIJT4bbGqQBjj8Rd9wpDidOjWE",
+  "lat": 35.7179808,
+  "lng": 51.4190921,
+  "rating": 2.9,
+  "reviews": 62,
+  "place_id": "ChIJT4bbGqQBjj8Rd9wpDidOjWE"
+ },
+ {
+  "name": "پت شاپ شادو",
+  "kind_hint": "pet_shop",
+  "district_query": "یوسف‌آباد تهران",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "Tehran, Valiasr St, No. 2149, Iran",
+  "neighborhood": null,
+  "phone": "+982188704733",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%D8%B4%D8%A7%D8%AF%D9%88&query_place_id=ChIJNx_jMQABjj8Rb4DmorUPr0g",
+  "lat": 35.7319172,
+  "lng": 51.4116067,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJNx_jMQABjj8Rb4DmorUPr0g"
+ },
+ {
+  "name": "پت شاپ پلنگ صورتی",
+  "kind_hint": "pet_shop",
+  "district_query": "یوسف‌آباد تهران",
+  "category": "Pet boarding service",
+  "categories": [
+   "Pet boarding service"
+  ],
+  "address": "Tehran, Shariati St, PCCV+22R, Iran",
+  "neighborhood": null,
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%D9%BE%D9%84%D9%86%DA%AF%20%D8%B5%D9%88%D8%B1%D8%AA%DB%8C&query_place_id=ChIJYaa5UAADjj8RPdgpgkG2qFM",
+  "lat": 35.7201019,
+  "lng": 51.4425251,
+  "rating": 5,
+  "reviews": 1,
+  "place_id": "ChIJYaa5UAADjj8RPdgpgkG2qFM"
+ },
+ {
+  "name": "پت شاپ هوم",
+  "kind_hint": "pet_shop",
+  "district_query": "یوسف‌آباد تهران",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "P9RV+8CV District 6, Tehran, Tehran Province, Iran",
+  "neighborhood": "District 6",
+  "phone": "+989127269387",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%D9%87%D9%88%D9%85&query_place_id=ChIJaRf9UQAHjj8R4pENfckN3Ks",
+  "lat": 35.7408568,
+  "lng": 51.3935588,
+  "rating": 5,
+  "reviews": 6,
+  "place_id": "ChIJaRf9UQAHjj8R4pENfckN3Ks"
+ },
+ {
+  "name": "پت گوگولی",
+  "kind_hint": "pet_shop",
+  "district_query": "یوسف‌آباد تهران",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "Tehran Province, Tehran, District 6, Valiasr St, No. 2045, Iran",
+  "neighborhood": "District 6",
+  "phone": "+989194287090",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%AA%20%DA%AF%D9%88%DA%AF%D9%88%D9%84%DB%8C&query_place_id=ChIJmeQcPgABjj8RZmAA65LSr5c",
+  "lat": 35.7254838,
+  "lng": 51.4125371,
+  "rating": 5,
+  "reviews": 18,
+  "place_id": "ChIJmeQcPgABjj8RZmAA65LSr5c"
+ },
+ {
+  "name": "Behin Tash Co. (Pet Food specialist)",
+  "kind_hint": "pet_shop",
+  "district_query": "یوسف‌آباد تهران",
+  "category": "Home goods store",
+  "categories": [
+   "Home goods store"
+  ],
+  "address": "Tehran Province, Tehran, District 6, Vozara St, PCM6+5W8, Iran",
+  "neighborhood": "District 6",
+  "phone": "+982188108259",
+  "website": "https://www.google.com/maps/search/?api=1&query=Behin%20Tash%20Co.%20(Pet%20Food%20specialist)&query_place_id=ChIJU3BUbMwGjj8RGgP5xz2gUB4",
+  "lat": 35.7329241,
+  "lng": 51.4123234,
+  "rating": 4.1,
+  "reviews": 9,
+  "place_id": "ChIJU3BUbMwGjj8RGgP5xz2gUB4"
+ },
+ {
+  "name": "قناری کده آراز",
+  "kind_hint": "pet_shop",
+  "district_query": "یوسف‌آباد تهران",
+  "category": "Bird shop",
+  "categories": [
+   "Bird shop"
+  ],
+  "address": "Tehran Province, Tehran, District 10, Navvab Safavi Expy, M9RH+JFP, Iran",
+  "neighborhood": "District 10",
+  "phone": "+989122961518",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%82%D9%86%D8%A7%D8%B1%DB%8C%20%DA%A9%D8%AF%D9%87%20%D8%A2%D8%B1%D8%A7%D8%B2&query_place_id=ChIJm53Az_kAjj8Rqnoa4A_XLSA",
+  "lat": 35.6915773,
+  "lng": 51.3787147,
+  "rating": 3.5,
+  "reviews": 15,
+  "place_id": "ChIJm53Az_kAjj8Rqnoa4A_XLSA"
+ },
+ {
+  "name": "evaa aqua",
+  "kind_hint": "pet_shop",
+  "district_query": "یوسف‌آباد تهران",
+  "category": "Aquarium shop",
+  "categories": [
+   "Aquarium shop"
+  ],
+  "address": "Tehran Province, Tehran, Navvab Safavi Expy, M9RH+JFG, Iran",
+  "neighborhood": null,
+  "phone": "+982166353216",
+  "website": "https://www.google.com/maps/search/?api=1&query=evaa%20aqua&query_place_id=ChIJYzlKd_oAjj8R6oC_62qVZHQ",
+  "lat": 35.6915739,
+  "lng": 51.3787175,
+  "rating": 5,
+  "reviews": 1,
+  "place_id": "ChIJYzlKd_oAjj8R6oC_62qVZHQ"
+ },
+ {
+  "name": "دامپزشکی سیار دکتر رضایی",
+  "kind_hint": "vet",
+  "district_query": "یوسف‌آباد تهران",
+  "category": "Veterinarian",
+  "categories": [
+   "Veterinarian"
+  ],
+  "address": "Tehran Province, Tehran, Asad Abadi St, PCH4+9X6, Iran",
+  "neighborhood": null,
+  "phone": "+989384019748",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%DA%A9%DB%8C%20%D8%B3%DB%8C%D8%A7%D8%B1%20%D8%AF%DA%A9%D8%AA%D8%B1%20%D8%B1%D8%B6%D8%A7%DB%8C%DB%8C&query_place_id=ChIJL2aKQgABjj8RyCZxNsyuRCU",
+  "lat": 35.7284209,
+  "lng": 51.4073749,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJL2aKQgABjj8RyCZxNsyuRCU"
+ },
+ {
+  "name": "کلینیک فیزیوتراپی حیوانات دکتر ذاکریان",
+  "kind_hint": "vet",
+  "district_query": "پاسداران تهران",
+  "category": "Veterans center",
+  "categories": [
+   "Veterans center"
+  ],
+  "address": "QFHC+74G District 4, Tehran, Tehran Province, Iran",
+  "neighborhood": "District 4",
+  "phone": "+982122570700",
+  "website": "https://www.google.com/maps/search/?api=1&query=%DA%A9%D9%84%DB%8C%D9%86%DB%8C%DA%A9%20%D9%81%DB%8C%D8%B2%DB%8C%D9%88%D8%AA%D8%B1%D8%A7%D9%BE%DB%8C%20%D8%AD%DB%8C%D9%88%D8%A7%D9%86%D8%A7%D8%AA%20%D8%AF%DA%A9%D8%AA%D8%B1%20%D8%B0%D8%A7%DA%A9%D8%B1%DB%8C%D8%A7%D9%86&query_place_id=ChIJQ92YEQAFjj8RhdLm9nVsn8Y",
+  "lat": 35.7781874,
+  "lng": 51.470343,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJQ92YEQAFjj8RhdLm9nVsn8Y"
+ },
+ {
+  "name": "پت شاپ محسن",
+  "kind_hint": "pet_shop",
+  "district_query": "پیروزی تهران",
+  "category": "Pet supply store",
+  "categories": [
+   "Pet supply store"
+  ],
+  "address": "Tehran Province, Tehran, District 7, Shariati St, PC8R+R32, Iran",
+  "neighborhood": "District 7",
+  "phone": "+989120894377",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%D9%85%D8%AD%D8%B3%D9%86&query_place_id=ChIJ9zYrcAADjj8RmePvp2tWhSU",
+  "lat": 35.7169584,
+  "lng": 51.4400969,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJ9zYrcAADjj8RmePvp2tWhSU"
+ },
+ {
+  "name": "CutePet",
+  "kind_hint": "pet_shop",
+  "district_query": "پیروزی تهران",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "PC7C+7Q9 District 6, Tehran, Tehran Province, Iran",
+  "neighborhood": "District 6",
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=CutePet&query_place_id=ChIJX2_bLgYBjj8RIlYHiCy5iMw",
+  "lat": 35.7131719,
+  "lng": 51.421985,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJX2_bLgYBjj8RIlYHiCy5iMw"
+ },
+ {
+  "name": "پت شاپ چارلی",
+  "kind_hint": "pet_shop",
+  "district_query": "پیروزی تهران",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "Tehran Province, Tehran, Nirumand St, Parsi Shopping Center, Iran",
+  "neighborhood": null,
+  "phone": "+982177538124",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%DA%86%D8%A7%D8%B1%D9%84%DB%8C&query_place_id=ChIJYTl9tjwDjj8RHapmiRvkelU",
+  "lat": 35.7121968,
+  "lng": 51.4334438,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJYTl9tjwDjj8RHapmiRvkelU"
+ },
+ {
+  "name": "پت شاپ بامی پت",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "Tehran - Islamshahr - Vavan town - Hasht Behesht Street, saba st, Bami Pet Pet Shop, Iran",
+  "neighborhood": null,
+  "phone": "+989351810221",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%D8%A8%D8%A7%D9%85%DB%8C%20%D9%BE%D8%AA&query_place_id=ChIJUy0f-r8Fkj8Ro8it1icJGBM",
+  "lat": 35.4927897,
+  "lng": 51.2185921,
+  "rating": 4.5,
+  "reviews": 76,
+  "place_id": "ChIJUy0f-r8Fkj8Ro8it1icJGBM"
+ },
+ {
+  "name": "پت شاپ نوین",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "Tehran Province, Eslamshahr, Vavan، Imam Khomeini Blvd، پلاک 2، طبقه بالا واحد112، پاساژ اکباتان, Iran",
+  "neighborhood": "Vavan",
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%D9%86%D9%88%DB%8C%D9%86&query_place_id=ChIJAcRUbgAFkj8RW2_brV26zu4",
+  "lat": 35.5035472,
+  "lng": 51.2185245,
+  "rating": 4,
+  "reviews": 2,
+  "place_id": "ChIJAcRUbgAFkj8RW2_brV26zu4"
+ },
+ {
+  "name": "کلینیک دامپزشکی و پت شاپ راستین اسلامشهر",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Veterinarian",
+  "categories": [
+   "Veterinarian"
+  ],
+  "address": "Tehran Province, Eslamshahr, Vavan, Town, Imam Khomeini Boulevard, Service Lane, Rastin Pet, Iran",
+  "neighborhood": "Vavan",
+  "phone": "+989122040583",
+  "website": "https://www.google.com/maps/search/?api=1&query=%DA%A9%D9%84%DB%8C%D9%86%DB%8C%DA%A9%20%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%DA%A9%DB%8C%20%D9%88%20%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%D8%B1%D8%A7%D8%B3%D8%AA%DB%8C%D9%86%20%D8%A7%D8%B3%D9%84%D8%A7%D9%85%D8%B4%D9%87%D8%B1&query_place_id=ChIJFWiD50EHkj8RtKfr14fw0Bw",
+  "lat": 35.513519,
+  "lng": 51.2189437,
+  "rating": 4.8,
+  "reviews": 128,
+  "place_id": "ChIJFWiD50EHkj8RtKfr14fw0Bw"
+ },
+ {
+  "name": "Pet shop pelangton",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Animal feed store",
+  "categories": [
+   "Animal feed store"
+  ],
+  "address": "H62W+WPF, Eslamshahr, Tehran Province, Iran",
+  "neighborhood": null,
+  "phone": "+989126544759",
+  "website": "https://www.google.com/maps/search/?api=1&query=Pet%20shop%20pelangton&query_place_id=ChIJV79WdyYHkj8RCsHWY6QRPzk",
+  "lat": 35.5523414,
+  "lng": 51.2469716,
+  "rating": 4.3,
+  "reviews": 6,
+  "place_id": "ChIJV79WdyYHkj8RCsHWY6QRPzk"
+ },
+ {
+  "name": "پت شاپ بانی لند",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "Eslamshahr, اسلامشهر، امام حسن عسگری،, H64M+72W, Iran",
+  "neighborhood": null,
+  "phone": "+989192285041",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%D8%A8%D8%A7%D9%86%DB%8C%20%D9%84%D9%86%D8%AF&query_place_id=ChIJlRdyO_0Hkj8Ruz0YqNMin6w",
+  "lat": 35.5557421,
+  "lng": 51.2325674,
+  "rating": 3.7,
+  "reviews": 3,
+  "place_id": "ChIJlRdyO_0Hkj8Ruz0YqNMin6w"
+ },
+ {
+  "name": "پت شاپ ژیوا",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "Tehran Province, Eslamshahr, خیابان, Zarafshan, H63W+Q4X کوچه شماخی, Iran",
+  "neighborhood": "خیابان",
+  "phone": "+989114555927",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%DA%98%DB%8C%D9%88%D8%A7&query_place_id=ChIJQdMtDwAHkj8RaQj-Lu9tWDw",
+  "lat": 35.5544949,
+  "lng": 51.2453655,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJQdMtDwAHkj8RaQj-Lu9tWDw"
+ },
+ {
+  "name": "پت شاپ و آکواریوم پتینو",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Pet supply store",
+  "categories": [
+   "Pet supply store"
+  ],
+  "address": "Tehran Province, Eslamshahr، خیابان، کوچه ۲۸, Zarafshan, Iran",
+  "neighborhood": "خیابان",
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%D9%88%20%D8%A2%DA%A9%D9%88%D8%A7%D8%B1%DB%8C%D9%88%D9%85%20%D9%BE%D8%AA%DB%8C%D9%86%D9%88&query_place_id=ChIJZ8j4cAAHkj8RhEOinkbTl7g",
+  "lat": 35.5496655,
+  "lng": 51.2487793,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJZ8j4cAAHkj8RhEOinkbTl7g"
+ },
+ {
+  "name": "Aquarium Plankton",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Aquarium shop",
+  "categories": [
+   "Aquarium shop"
+  ],
+  "address": "H62W+WPF, Eslamshahr, Tehran Province, Iran",
+  "neighborhood": null,
+  "phone": "+989126799226",
+  "website": "https://www.google.com/maps/search/?api=1&query=Aquarium%20Plankton&query_place_id=ChIJE9bUrsQGkj8R8YE-J0L_v5c",
+  "lat": 35.5523136,
+  "lng": 51.2468122,
+  "rating": 4,
+  "reviews": 27,
+  "place_id": "ChIJE9bUrsQGkj8R8YE-J0L_v5c"
+ },
+ {
+  "name": "کلینیک دامپزشکی و پت شاپ دکتر سنایی راد اسلامشهر",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Veterinarian",
+  "categories": [
+   "Veterinarian"
+  ],
+  "address": "Tehran Province, Eslamshahr، خ، کوچه ۴۱، پلاک ۲۱۷, Zarafshan, No. نبش, Iran",
+  "neighborhood": "خ",
+  "phone": "+982156698589",
+  "website": "https://www.google.com/maps/search/?api=1&query=%DA%A9%D9%84%DB%8C%D9%86%DB%8C%DA%A9%20%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%DA%A9%DB%8C%20%D9%88%20%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%D8%AF%DA%A9%D8%AA%D8%B1%20%D8%B3%D9%86%D8%A7%DB%8C%DB%8C%20%D8%B1%D8%A7%D8%AF%20%D8%A7%D8%B3%D9%84%D8%A7%D9%85%D8%B4%D9%87%D8%B1&query_place_id=ChIJozaqm3MHkj8R9xjn4KzghBU",
+  "lat": 35.5491645,
+  "lng": 51.249263,
+  "rating": 3.9,
+  "reviews": 83,
+  "place_id": "ChIJozaqm3MHkj8R9xjn4KzghBU"
+ },
+ {
+  "name": "برفی پاروت",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "Tehran Province, Eslamshahr، سروستان 20، G6JF+WC7, Iran",
+  "neighborhood": null,
+  "phone": "+989365723925",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D8%A8%D8%B1%D9%81%DB%8C%20%D9%BE%D8%A7%D8%B1%D9%88%D8%AA&query_place_id=ChIJZ3rBrQIHkj8RpR3WWHB2Z9Y",
+  "lat": 35.5322969,
+  "lng": 51.2235339,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJZ3rBrQIHkj8RpR3WWHB2Z9Y"
+ },
+ {
+  "name": "پرنده سرای زینتی",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Bird shop",
+  "categories": [
+   "Bird shop"
+  ],
+  "address": "G6MF+3X4, Eslamshahr, Tehran Province, Iran",
+  "neighborhood": null,
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%B1%D9%86%D8%AF%D9%87%20%D8%B3%D8%B1%D8%A7%DB%8C%20%D8%B2%DB%8C%D9%86%D8%AA%DB%8C&query_place_id=ChIJico5ZAAHkj8RgUGAN7XAM9g",
+  "lat": 35.532644,
+  "lng": 51.2250675,
+  "rating": 5,
+  "reviews": 1,
+  "place_id": "ChIJico5ZAAHkj8RgUGAN7XAM9g"
+ },
+ {
+  "name": "دنیای پرندگان زینتی",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "Tehran Province, Eslamshahr, Valiasr, G6VQ+R48, Iran",
+  "neighborhood": null,
+  "phone": "+989367679554",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D8%AF%D9%86%DB%8C%D8%A7%DB%8C%20%D9%BE%D8%B1%D9%86%D8%AF%DA%AF%D8%A7%D9%86%20%D8%B2%DB%8C%D9%86%D8%AA%DB%8C&query_place_id=ChIJz-SnaF4Hkj8RQFUOIBnfug4",
+  "lat": 35.5445466,
+  "lng": 51.237831,
+  "rating": 3,
+  "reviews": 2,
+  "place_id": "ChIJz-SnaF4Hkj8RQFUOIBnfug4"
+ },
+ {
+  "name": "تولیدی قفس",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "H62J+F5P, Eslamshahr, Tehran Province, Iran",
+  "neighborhood": null,
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%D8%AA%D9%88%D9%84%DB%8C%D8%AF%DB%8C%20%D9%82%D9%81%D8%B3&query_place_id=ChIJYxmGZzsHkj8RdE1M1w0qrdw",
+  "lat": 35.5512022,
+  "lng": 51.2304547,
+  "rating": 5,
+  "reviews": 1,
+  "place_id": "ChIJYxmGZzsHkj8RdE1M1w0qrdw"
+ },
+ {
+  "name": "ایران سهره جوادی",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Bird shop",
+  "categories": [
+   "Bird shop"
+  ],
+  "address": "اسلامشهر،، استان تهران،، Iran",
+  "neighborhood": null,
+  "phone": "+989128899014",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D8%A7%DB%8C%D8%B1%D8%A7%D9%86%20%D8%B3%D9%87%D8%B1%D9%87%20%D8%AC%D9%88%D8%A7%D8%AF%DB%8C&query_place_id=ChIJha7wrPkFkj8RXPMlhCsSlNQ",
+  "lat": 35.4994946,
+  "lng": 51.2119273,
+  "rating": 4.5,
+  "reviews": 2,
+  "place_id": "ChIJha7wrPkFkj8RXPMlhCsSlNQ"
+ },
+ {
+  "name": "داروخانه دامپزشکی سینا",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Veterinary pharmacy",
+  "categories": [
+   "Veterinary pharmacy"
+  ],
+  "address": "H62M+X4Q, Eslamshahr, Tehran Province, Iran",
+  "neighborhood": null,
+  "phone": "+982156123147",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D8%AF%D8%A7%D8%B1%D9%88%D8%AE%D8%A7%D9%86%D9%87%20%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%DA%A9%DB%8C%20%D8%B3%DB%8C%D9%86%D8%A7&query_place_id=ChIJRTHMvaEHkj8RQkN8W88jce0",
+  "lat": 35.5524589,
+  "lng": 51.232849,
+  "rating": 3.8,
+  "reviews": 9,
+  "place_id": "ChIJRTHMvaEHkj8RQkN8W88jce0"
+ },
+ {
+  "name": "شاپدونه",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Pet supply store",
+  "categories": [
+   "Pet supply store"
+  ],
+  "address": "Tehran Province, Eslamshahr, Takhti, H62P+MQW, Iran",
+  "neighborhood": null,
+  "phone": "+989202242172",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D8%B4%D8%A7%D9%BE%D8%AF%D9%88%D9%86%D9%87&query_place_id=ChIJZ3WqNwAHkj8RdrcrKkcag_c",
+  "lat": 35.5517415,
+  "lng": 51.2369597,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJZ3WqNwAHkj8RdrcrKkcag_c"
+ },
+ {
+  "name": "پرنده سرای ونوس",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Bird shop",
+  "categories": [
+   "Bird shop"
+  ],
+  "address": "H65R+236, Eslamshahr, Tehran Province, Iran",
+  "neighborhood": null,
+  "phone": "+982156374712",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%B1%D9%86%D8%AF%D9%87%20%D8%B3%D8%B1%D8%A7%DB%8C%20%D9%88%D9%86%D9%88%D8%B3&query_place_id=ChIJsfz1iogHkj8RG2g-qKdW_Ic",
+  "lat": 35.5575258,
+  "lng": 51.2401506,
+  "rating": 2.8,
+  "reviews": 5,
+  "place_id": "ChIJsfz1iogHkj8RG2g-qKdW_Ic"
+ },
+ {
+  "name": "آکواریوم برکه",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Aquarium shop",
+  "categories": [
+   "Aquarium shop"
+  ],
+  "address": "استان تهران، اسلام شهر، محمدیه، کوچه ۳۲، پلاک نبش, Iran",
+  "neighborhood": null,
+  "phone": "+989216690979",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D8%A2%DA%A9%D9%88%D8%A7%D8%B1%DB%8C%D9%88%D9%85%20%D8%A8%D8%B1%DA%A9%D9%87&query_place_id=ChIJjQpxPxwHkj8R0eK6ILmh3DI",
+  "lat": 35.5413039,
+  "lng": 51.2266457,
+  "rating": 5,
+  "reviews": 3,
+  "place_id": "ChIJjQpxPxwHkj8R0eK6ILmh3DI"
+ },
+ {
+  "name": "پرنده سرای دارابی",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Bird shop",
+  "categories": [
+   "Bird shop"
+  ],
+  "address": "Tehran Province, Tehran، اسلامشهر، H67P+72R, Iran",
+  "neighborhood": null,
+  "phone": "+989303332309",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%B1%D9%86%D8%AF%D9%87%20%D8%B3%D8%B1%D8%A7%DB%8C%20%D8%AF%D8%A7%D8%B1%D8%A7%D8%A8%DB%8C&query_place_id=ChIJ70JYNocHkj8RORdSH2hlwO4",
+  "lat": 35.5632465,
+  "lng": 51.2350071,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJ70JYNocHkj8RORdSH2hlwO4"
+ },
+ {
+  "name": "پرنده سرای بهرامی",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Bird shop",
+  "categories": [
+   "Bird shop"
+  ],
+  "address": "Tehran Province, Eslamshahr, Shohada St, H66J+PXP, Iran",
+  "neighborhood": null,
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%B1%D9%86%D8%AF%D9%87%20%D8%B3%D8%B1%D8%A7%DB%8C%20%D8%A8%D9%87%D8%B1%D8%A7%D9%85%DB%8C&query_place_id=ChIJDYIwOwAHkj8RVuFezy03JoQ",
+  "lat": 35.5618847,
+  "lng": 51.2324151,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJDYIwOwAHkj8RVuFezy03JoQ"
+ },
+ {
+  "name": "فروشگاه پرندگان زینتی جیستا",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "اسلامشهر, حصارک پایین, کوچه یاس 11 ، شبنم 9, خیابان باهنر، Iran",
+  "neighborhood": "حصارک پایین",
+  "phone": "+982156388006",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%81%D8%B1%D9%88%D8%B4%DA%AF%D8%A7%D9%87%20%D9%BE%D8%B1%D9%86%D8%AF%DA%AF%D8%A7%D9%86%20%D8%B2%DB%8C%D9%86%D8%AA%DB%8C%20%D8%AC%DB%8C%D8%B3%D8%AA%D8%A7&query_place_id=ChIJjdblVwAHkj8R5c2-4X6jSLU",
+  "lat": 35.5422341,
+  "lng": 51.1925754,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJjdblVwAHkj8R5c2-4X6jSLU"
+ },
+ {
+  "name": "پرنده فروشی",
+  "kind_hint": "pet_shop",
+  "district_query": "اسلامشهر",
+  "category": "Bird shop",
+  "categories": [
+   "Bird shop"
+  ],
+  "address": "Tehran Province, Eslamshahr، خیابان المهدی، H68X+3VR کافه گیم لالیک, Iran",
+  "neighborhood": null,
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%B1%D9%86%D8%AF%D9%87%20%D9%81%D8%B1%D9%88%D8%B4%DB%8C&query_place_id=ChIJvUJUKJUHkj8RVXaRbHgeDeo",
+  "lat": 35.5652412,
+  "lng": 51.2496446,
+  "rating": 5,
+  "reviews": 2,
+  "place_id": "ChIJvUJUKJUHkj8RVXaRbHgeDeo"
+ },
+ {
+  "name": "کلینیک دامپزشکی نوازش",
+  "kind_hint": "vet",
+  "district_query": "اسلامشهر",
+  "category": "Veterinarian",
+  "categories": [
+   "Veterinarian"
+  ],
+  "address": "Tehran Province, Tehran, District 5, Emam Hosein, H62X+QX9, Iran",
+  "neighborhood": "District 5",
+  "phone": "+982156692201",
+  "website": "https://www.google.com/maps/search/?api=1&query=%DA%A9%D9%84%DB%8C%D9%86%DB%8C%DA%A9%20%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%DA%A9%DB%8C%20%D9%86%D9%88%D8%A7%D8%B2%D8%B4&query_place_id=ChIJea7IRAAHkj8Ri_StLrct-uU",
+  "lat": 35.5519064,
+  "lng": 51.2499726,
+  "rating": 5,
+  "reviews": 13,
+  "place_id": "ChIJea7IRAAHkj8Ri_StLrct-uU"
+ },
+ {
+  "name": "مرکز واکسیناسیون دامپزشکی",
+  "kind_hint": "vet",
+  "district_query": "اسلامشهر",
+  "category": "Veterinarian",
+  "categories": [
+   "Veterinarian"
+  ],
+  "address": "سعيديه، Unnamed Road،Tehran Province، G6R7+JVQ, Iran",
+  "neighborhood": null,
+  "phone": "+989121382340",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%85%D8%B1%DA%A9%D8%B2%20%D9%88%D8%A7%DA%A9%D8%B3%DB%8C%D9%86%D8%A7%D8%B3%DB%8C%D9%88%D9%86%20%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%DA%A9%DB%8C&query_place_id=ChIJHWHx2mgHkj8RovNwqWZYz6o",
+  "lat": 35.5415961,
+  "lng": 51.2147416,
+  "rating": 4.7,
+  "reviews": 10,
+  "place_id": "ChIJHWHx2mgHkj8RovNwqWZYz6o"
+ },
+ {
+  "name": "Veterinary Office Branch",
+  "kind_hint": "vet",
+  "district_query": "اسلامشهر",
+  "category": "Government office",
+  "categories": [
+   "Government office"
+  ],
+  "address": "G6P7+MG6, Eslamshahr, Tehran Province, Iran",
+  "neighborhood": null,
+  "phone": "+982156467282",
+  "website": "https://www.google.com/maps/search/?api=1&query=Veterinary%20Office%20Branch&query_place_id=ChIJj1eUVFoGkj8R0oPTcRPvyAY",
+  "lat": 35.5366508,
+  "lng": 51.2137569,
+  "rating": 3,
+  "reviews": 5,
+  "place_id": "ChIJj1eUVFoGkj8R0oPTcRPvyAY"
+ },
+ {
+  "name": "مرکز دامپزشکی سعیدیه",
+  "kind_hint": "vet",
+  "district_query": "اسلامشهر",
+  "category": "Veterinary pharmacy",
+  "categories": [
+   "Veterinary pharmacy"
+  ],
+  "address": "سعيديه، سعيديه، Eslamshahr, تهران،, G6R8+WM5, Iran",
+  "neighborhood": null,
+  "phone": "+989122859726",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%85%D8%B1%DA%A9%D8%B2%20%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%DA%A9%DB%8C%20%D8%B3%D8%B9%DB%8C%D8%AF%DB%8C%D9%87&query_place_id=ChIJzXAYoikHkj8R-hTbmeGbcZ8",
+  "lat": 35.5422581,
+  "lng": 51.2167463,
+  "rating": 5,
+  "reviews": 3,
+  "place_id": "ChIJzXAYoikHkj8R-hTbmeGbcZ8"
+ },
+ {
+  "name": "Eslamshahr Martyr Educators Clinic",
+  "kind_hint": "vet",
+  "district_query": "اسلامشهر",
+  "category": "Medical clinic",
+  "categories": [
+   "Medical clinic"
+  ],
+  "address": "Tehran Province, Eslamshahr, Zarafshan, H64V+RFF, Iran",
+  "neighborhood": null,
+  "phone": "+982156377536",
+  "website": "https://www.google.com/maps/search/?api=1&query=Eslamshahr%20Martyr%20Educators%20Clinic&query_place_id=ChIJgyVOSt4Gkj8RhAuokTdNdQs",
+  "lat": 35.5570534,
+  "lng": 51.2436837,
+  "rating": 2.7,
+  "reviews": 21,
+  "place_id": "ChIJgyVOSt4Gkj8RhAuokTdNdQs"
+ },
+ {
+  "name": "کشتارگاه",
+  "kind_hint": "vet",
+  "district_query": "اسلامشهر",
+  "category": "Animal hospital",
+  "categories": [
+   "Animal hospital"
+  ],
+  "address": "استان تهران،، اسلامشهر،، بلوار شهید سیفی،، G6PG+X7R, Iran",
+  "neighborhood": null,
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%DA%A9%D8%B4%D8%AA%D8%A7%D8%B1%DA%AF%D8%A7%D9%87&query_place_id=ChIJ84e98B0Hkj8R0xHSCrpDBWo",
+  "lat": 35.5374946,
+  "lng": 51.2256411,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJ84e98B0Hkj8R0xHSCrpDBWo"
+ },
+ {
+  "name": "کلینیک دامپزشکی و پت شاپ بل شهرقدس",
+  "kind_hint": "pet_shop",
+  "district_query": "شهر قدس",
+  "category": "Veterinarian",
+  "categories": [
+   "Veterinarian"
+  ],
+  "address": "P477+F5V, Qods, Tehran Province, Iran",
+  "neighborhood": null,
+  "phone": "+982146890921",
+  "website": "https://www.google.com/maps/search/?api=1&query=%DA%A9%D9%84%DB%8C%D9%86%DB%8C%DA%A9%20%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%DA%A9%DB%8C%20%D9%88%20%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%D8%A8%D9%84%20%D8%B4%D9%87%D8%B1%D9%82%D8%AF%D8%B3&query_place_id=ChIJ0_5bdQDvjT8RRB0ucOdudYc",
+  "lat": 35.7137356,
+  "lng": 51.1129189,
+  "rating": 4.8,
+  "reviews": 20,
+  "place_id": "ChIJ0_5bdQDvjT8RRB0ucOdudYc"
+ },
+ {
+  "name": "کلینیک دامپزشکی و پت شاپ حامی",
+  "kind_hint": "pet_shop",
+  "district_query": "شهر قدس",
+  "category": "Veterinarian",
+  "categories": [
+   "Veterinarian"
+  ],
+  "address": "P468+P25, Qods, Tehran Province, Iran",
+  "neighborhood": null,
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%DA%A9%D9%84%DB%8C%D9%86%DB%8C%DA%A9%20%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%DA%A9%DB%8C%20%D9%88%20%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%D8%AD%D8%A7%D9%85%DB%8C&query_place_id=ChIJqRinewDvjT8Rpe_uQPPq34w",
+  "lat": 35.7117509,
+  "lng": 51.1152294,
+  "rating": 5,
+  "reviews": 6,
+  "place_id": "ChIJqRinewDvjT8Rpe_uQPPq34w"
+ },
+ {
+  "name": "پت شاپ پرنده فروشی باغ پرندگان",
+  "kind_hint": "pet_shop",
+  "district_query": "شهر قدس",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "P44F+WCG, Qods, Tehran Province, Iran",
+  "neighborhood": null,
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%D9%BE%D8%B1%D9%86%D8%AF%D9%87%20%D9%81%D8%B1%D9%88%D8%B4%DB%8C%20%D8%A8%D8%A7%D8%BA%20%D9%BE%D8%B1%D9%86%D8%AF%DA%AF%D8%A7%D9%86&query_place_id=ChIJQXA6HADvjT8RM_MJ8fs7af0",
+  "lat": 35.7074067,
+  "lng": 51.1234945,
+  "rating": 5,
+  "reviews": 1,
+  "place_id": "ChIJQXA6HADvjT8RM_MJ8fs7af0"
+ },
+ {
+  "name": "کلینیک دامپزشکی پت لند",
+  "kind_hint": "pet_shop",
+  "district_query": "شهر قدس",
+  "category": "Veterinarian",
+  "categories": [
+   "Veterinarian"
+  ],
+  "address": "P469+R8X, Qods, Tehran Province, Iran",
+  "neighborhood": null,
+  "phone": "+989120160740",
+  "website": "https://www.google.com/maps/search/?api=1&query=%DA%A9%D9%84%DB%8C%D9%86%DB%8C%DA%A9%20%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%DA%A9%DB%8C%20%D9%BE%D8%AA%20%D9%84%D9%86%D8%AF&query_place_id=ChIJ0zJqDwDvjT8RDZV4RJ3JrOs",
+  "lat": 35.7121078,
+  "lng": 51.1183565,
+  "rating": 3.7,
+  "reviews": 9,
+  "place_id": "ChIJ0zJqDwDvjT8RDZV4RJ3JrOs"
+ },
+ {
+  "name": "کلینیک دامپزشکی و پت شاپ نیکی",
+  "kind_hint": "pet_shop",
+  "district_query": "شهر قدس",
+  "category": "Emergency veterinarian service",
+  "categories": [
+   "Emergency veterinarian service"
+  ],
+  "address": "Tehran Province, Qods، کوچه شهید محمدی، P47C+P52, Iran",
+  "neighborhood": null,
+  "phone": "+982146817030",
+  "website": "https://www.google.com/maps/search/?api=1&query=%DA%A9%D9%84%DB%8C%D9%86%DB%8C%DA%A9%20%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%DA%A9%DB%8C%20%D9%88%20%D9%BE%D8%AA%20%D8%B4%D8%A7%D9%BE%20%D9%86%DB%8C%DA%A9%DB%8C&query_place_id=ChIJb6ZBp4zvjT8RVw5UXSNrYwc",
+  "lat": 35.7142534,
+  "lng": 51.1203791,
+  "rating": 4.2,
+  "reviews": 5,
+  "place_id": "ChIJb6ZBp4zvjT8RVw5UXSNrYwc"
+ },
+ {
+  "name": "فروشگاه حیوانات خانگی آریو",
+  "kind_hint": "pet_shop",
+  "district_query": "شهر قدس",
+  "category": "Pet supply store",
+  "categories": [
+   "Pet supply store"
+  ],
+  "address": "Qods، قدس، استان تهران،، P44G+VFM, Iran",
+  "neighborhood": null,
+  "phone": "+982146832513",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%81%D8%B1%D9%88%D8%B4%DA%AF%D8%A7%D9%87%20%D8%AD%DB%8C%D9%88%D8%A7%D9%86%D8%A7%D8%AA%20%D8%AE%D8%A7%D9%86%DA%AF%DB%8C%20%D8%A2%D8%B1%DB%8C%D9%88&query_place_id=ChIJO3MLqDzvjT8RWdlY1Pa5wUM",
+  "lat": 35.7072217,
+  "lng": 51.1261573,
+  "rating": 1,
+  "reviews": 1,
+  "place_id": "ChIJO3MLqDzvjT8RWdlY1Pa5wUM"
+ },
+ {
+  "name": "فروش حیوانات",
+  "kind_hint": "pet_shop",
+  "district_query": "شهر قدس",
+  "category": "Pet store",
+  "categories": [
+   "Pet store"
+  ],
+  "address": "P4F2+3C7, Qods, Tehran Province, Iran",
+  "neighborhood": null,
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%81%D8%B1%D9%88%D8%B4%20%D8%AD%DB%8C%D9%88%D8%A7%D9%86%D8%A7%D8%AA&query_place_id=ChIJUxTDeQDvjT8RipUw2tOpkXQ",
+  "lat": 35.7226081,
+  "lng": 51.1008413,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJUxTDeQDvjT8RipUw2tOpkXQ"
+ },
+ {
+  "name": "آکواریوم برکه",
+  "kind_hint": "pet_shop",
+  "district_query": "شهر قدس",
+  "category": "Aquarium shop",
+  "categories": [
+   "Aquarium shop"
+  ],
+  "address": "استان تهران، قدس،, Imamzadeh Blvd, Iran",
+  "neighborhood": null,
+  "phone": "+989364156390",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D8%A2%DA%A9%D9%88%D8%A7%D8%B1%DB%8C%D9%88%D9%85%20%D8%A8%D8%B1%DA%A9%D9%87&query_place_id=ChIJ1TioHdPvjT8RK5hRraLQvDw",
+  "lat": 35.7062701,
+  "lng": 51.12479,
+  "rating": 5,
+  "reviews": 2,
+  "place_id": "ChIJ1TioHdPvjT8RK5hRraLQvDw"
+ },
+ {
+  "name": "فروشگاه حلقه پرنده مردی",
+  "kind_hint": "pet_shop",
+  "district_query": "شهر قدس",
+  "category": "Pet supply store",
+  "categories": [
+   "Pet supply store"
+  ],
+  "address": "P488+65F, Qods, Tehran Province, Iran",
+  "neighborhood": null,
+  "phone": "+989125018653",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%81%D8%B1%D9%88%D8%B4%DA%AF%D8%A7%D9%87%20%D8%AD%D9%84%D9%82%D9%87%20%D9%BE%D8%B1%D9%86%D8%AF%D9%87%20%D9%85%D8%B1%D8%AF%DB%8C&query_place_id=ChIJTyIpHwDvjT8R5aT9xfIFRnY",
+  "lat": 35.7155502,
+  "lng": 51.1154138,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJTyIpHwDvjT8R5aT9xfIFRnY"
+ },
+ {
+  "name": "پرنده فروشی مهاجر",
+  "kind_hint": "pet_shop",
+  "district_query": "شهر قدس",
+  "category": "Bird shop",
+  "categories": [
+   "Bird shop"
+  ],
+  "address": "P453+HXW, Qods, Tehran Province, Iran",
+  "neighborhood": null,
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%B1%D9%86%D8%AF%D9%87%20%D9%81%D8%B1%D9%88%D8%B4%DB%8C%20%D9%85%D9%87%D8%A7%D8%AC%D8%B1&query_place_id=ChIJkxB8BwDvjT8Rsr5MJbJl0Jw",
+  "lat": 35.7089878,
+  "lng": 51.1050864,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJkxB8BwDvjT8Rsr5MJbJl0Jw"
+ },
+ {
+  "name": "پرنده سرای کیوان",
+  "kind_hint": "pet_shop",
+  "district_query": "شهر قدس",
+  "category": "Bird shop",
+  "categories": [
+   "Bird shop"
+  ],
+  "address": "Tehran Province, Qods, 5, Azadegan، Iran",
+  "neighborhood": null,
+  "phone": "+989368694496",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%B1%D9%86%D8%AF%D9%87%20%D8%B3%D8%B1%D8%A7%DB%8C%20%DA%A9%DB%8C%D9%88%D8%A7%D9%86&query_place_id=ChIJM9AnPADvjT8R_F-UL1uSq_o",
+  "lat": 35.7261393,
+  "lng": 51.1077769,
+  "rating": 5,
+  "reviews": 1,
+  "place_id": "ChIJM9AnPADvjT8R_F-UL1uSq_o"
+ },
+ {
+  "name": "چلچله",
+  "kind_hint": "pet_shop",
+  "district_query": "شهر قدس",
+  "category": "Bird shop",
+  "categories": [
+   "Bird shop"
+  ],
+  "address": "تهران، استان تهران، تهران، سی متری شورای شمالی ، نبش چهارراه سردار جنگل پلاک ۷۴۰، سی متری جی،, Iran",
+  "neighborhood": null,
+  "phone": "+989354515021",
+  "website": "https://www.google.com/maps/search/?api=1&query=%DA%86%D9%84%DA%86%D9%84%D9%87&query_place_id=ChIJFViMErLtjT8RSLEsCLYfX3k",
+  "lat": 35.7258712,
+  "lng": 51.0939916,
+  "rating": 1,
+  "reviews": 1,
+  "place_id": "ChIJFViMErLtjT8RSLEsCLYfX3k"
+ },
+ {
+  "name": "@nemo_aquaa آکواریوم نمو",
+  "kind_hint": "pet_shop",
+  "district_query": "شهر قدس",
+  "category": "Aquarium shop",
+  "categories": [
+   "Aquarium shop"
+  ],
+  "address": "P477+VGR, Qods, Tehran Province, Iran",
+  "neighborhood": null,
+  "phone": "+989127660672",
+  "website": "https://www.google.com/maps/search/?api=1&query=%40nemo_aquaa%20%D8%A2%DA%A9%D9%88%D8%A7%D8%B1%DB%8C%D9%88%D9%85%20%D9%86%D9%85%D9%88&query_place_id=ChIJDU5aaMLvjT8RFXHHHL3mPIo",
+  "lat": 35.7147603,
+  "lng": 51.1147399,
+  "rating": 1,
+  "reviews": 1,
+  "place_id": "ChIJDU5aaMLvjT8RFXHHHL3mPIo"
+ },
+ {
+  "name": "پرنده سرا",
+  "kind_hint": "pet_shop",
+  "district_query": "شهر قدس",
+  "category": "Bird shop",
+  "categories": [
+   "Bird shop"
+  ],
+  "address": "Qods، قدس، استان تهران،، P477+QH4, Iran",
+  "neighborhood": null,
+  "phone": "+989378240093",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%B1%D9%86%D8%AF%D9%87%20%D8%B3%D8%B1%D8%A7&query_place_id=ChIJm124t6DvjT8Rh2toO4w6Sbo",
+  "lat": 35.7143996,
+  "lng": 51.1139618,
+  "rating": 3,
+  "reviews": 2,
+  "place_id": "ChIJm124t6DvjT8Rh2toO4w6Sbo"
+ },
+ {
+  "name": "آکواریوم ماهیگیر",
+  "kind_hint": "pet_shop",
+  "district_query": "شهر قدس",
+  "category": "Aquarium shop",
+  "categories": [
+   "Aquarium shop"
+  ],
+  "address": "استان تهران، قدس،، خیابان پاسداران, Iran",
+  "neighborhood": null,
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%D8%A2%DA%A9%D9%88%D8%A7%D8%B1%DB%8C%D9%88%D9%85%20%D9%85%D8%A7%D9%87%DB%8C%DA%AF%DB%8C%D8%B1&query_place_id=ChIJz3lhJ2DvjT8R_aWKc8yd5xw",
+  "lat": 35.714933,
+  "lng": 51.1136855,
+  "rating": 5,
+  "reviews": 1,
+  "place_id": "ChIJz3lhJ2DvjT8R_aWKc8yd5xw"
  }
 ]

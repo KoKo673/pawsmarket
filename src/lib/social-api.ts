@@ -60,6 +60,8 @@ function detailOf(status: number, body: unknown, retryAfter?: string | null): st
   if (status === 401) return 'نشست شما منقضی شده؛ دوباره وارد شوید'
   if (status === 409) return 'این نام کاربری قبلاً گرفته شده'
   if (status === 403) return 'این عملیات فقط برای صاحب این پروفایل است'
+  if (status === 503)
+    return 'در حال حاضر به سرور وصل نیستیم؛ لطفاً چند لحظه دیگر تلاش کنید'
   if (status === 429) {
     // The server sends Retry-After, so say exactly how long to wait rather
     // than a bare refusal the visitor can only guess at.

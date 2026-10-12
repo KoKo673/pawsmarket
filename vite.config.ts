@@ -1,7 +1,30 @@
 import basicSsl from '@vitejs/plugin-basic-ssl'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
+
+import { buildSpaFallback } from './scripts/spaFallback.js'
+
+/**
+ * Publish index.html again as 404.html after the build.
+ *
+ * GitHub Pages serves files from disk and answers its own 404 for any path it
+ * cannot find, so /explore, /pet/12 and /explore?preset=vets all showed
+ * "File not found" on a direct load, refresh or shared link. 404.html is the
+ * documented fallback: Pages serves it, and the client router takes over on
+ * the original URL.
+ */
+function spaFallback(base: string): Plugin {
+  return {
+    name: 'pawsmarket-spa-fallback',
+    apply: 'build',
+    closeBundle() {
+      const written = buildSpaFallback(
+        fileURLToPath(new URL('./dist', import.meta.url)), base)
+      this.info?.(`SPA fallback written: ${written}`)
+    },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -18,14 +41,18 @@ export default defineConfig(({ mode }) => {
   // the LAN (browsers require a secure context for navigator.geolocation).
   const httpsDev = env.HTTPS_DEV === '1' || env.HTTPS_DEV === 'true'
 
+  // Base path for the deployment target (e.g. "/pawsmarket/" on
+  // GitHub Pages project sites). Defaults to "/" for local dev.
+  // Read from loadEnv too — Git Bash mangles inline `VITE_BASE=/…`
+  // env assignments for native Windows processes (MSYS path conversion),
+  // so the value lives in .env.production instead.
+  const base = process.env.VITE_BASE || env.VITE_BASE || '/'
+
   return {
-    plugins: [react(), ...(httpsDev ? [basicSsl()] : [])],
     // Base path for the deployment target (e.g. "/pawsmarket/" on
     // GitHub Pages project sites). Defaults to "/" for local dev.
-    // Read from loadEnv too — Git Bash mangles inline `VITE_BASE=/…`
-    // env assignments for native Windows processes (MSYS path conversion),
-    // so the value lives in .env.production instead.
-    base: process.env.VITE_BASE || env.VITE_BASE || '/',
+    base,
+    plugins: [react(), spaFallback(base), ...(httpsDev ? [basicSsl()] : [])],
     resolve: {
       alias: {
         // Allows absolute imports: `import { Button } from '@/components/ui/button'`

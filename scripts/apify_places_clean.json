@@ -816,8 +816,24 @@
   "source": "google-maps-via-apify"
  },
  {
+  "name": "پانسیون سگ کوکولند",
+  "category": "boarding",
+  "google_category": "Pet trainer",
+  "address": "منطقه 2",
+  "address_is_plus_code": true,
+  "neighborhood": "District 2",
+  "phone": "+989129464156",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%A7%D9%86%D8%B3%DB%8C%D9%88%D9%86%20%D8%B3%DA%AF%20%DA%A9%D9%88%DA%A9%D9%88%D9%84%D9%86%D8%AF&query_place_id=ChIJzfhSHQAHjj8RLDup6dmL_qY",
+  "lat": 35.789405,
+  "lng": 51.375913,
+  "rating": 5,
+  "reviews": 2,
+  "place_id": "ChIJzfhSHQAHjj8RLDup6dmL_qY",
+  "source": "google-maps-via-apify"
+ },
+ {
   "name": "پانسیون آریا",
-  "category": "shop",
+  "category": "boarding",
   "google_category": "Pet store",
   "address": "منطقه 1",
   "address_is_plus_code": true,
@@ -1408,6 +1424,22 @@
   "source": "google-maps-via-apify"
  },
  {
+  "name": "بیمارستان دامپزشکی اکسیژن",
+  "category": "vet",
+  "google_category": "Veterans hospital",
+  "address": "منطقه 7",
+  "address_is_plus_code": true,
+  "neighborhood": "District 7",
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%D8%A8%DB%8C%D9%85%D8%A7%D8%B1%D8%B3%D8%AA%D8%A7%D9%86%20%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%DA%A9%DB%8C%20%D8%A7%DA%A9%D8%B3%DB%8C%DA%98%D9%86&query_place_id=ChIJ3W3yAQADjj8RugVk8fF8TYk",
+  "lat": 35.743017,
+  "lng": 51.443734,
+  "rating": 3.5,
+  "reviews": 24,
+  "place_id": "ChIJ3W3yAQADjj8RugVk8fF8TYk",
+  "source": "google-maps-via-apify"
+ },
+ {
   "name": "دامپزشکی یونیک پت",
   "category": "vet",
   "google_category": "Veterinarian",
@@ -1504,6 +1536,22 @@
   "source": "google-maps-via-apify"
  },
  {
+  "name": "نظام دامپزشکی استان تهران ،",
+  "category": "vet",
+  "google_category": "Non-governmental organization",
+  "address": "منطقه 6",
+  "address_is_plus_code": true,
+  "neighborhood": "District 6",
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%86%D8%B8%D8%A7%D9%85%20%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%D9%83%D9%8A%20%D8%A7%D8%B3%D8%AA%D8%A7%D9%86%20%D8%AA%D9%87%D8%B1%D8%A7%D9%86%20%D8%8C%20Tehran%20Veterinary%20Council&query_place_id=ChIJk7ZCZ_0Bjj8Rw8FdLwGWQc8",
+  "lat": 35.70266,
+  "lng": 51.402491,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJk7ZCZ_0Bjj8Rw8FdLwGWQc8",
+  "source": "google-maps-via-apify"
+ },
+ {
   "name": "پت شاپ اینترنتی پتی مون",
   "category": "shop",
   "google_category": "Pet supply store",
@@ -1568,6 +1616,22 @@
   "source": "google-maps-via-apify"
  },
  {
+  "name": "کلینیک دامپزشکی نبض",
+  "category": "vet",
+  "google_category": "Veterans center",
+  "address": null,
+  "address_is_plus_code": true,
+  "neighborhood": null,
+  "phone": "+989128064276",
+  "website": "https://www.google.com/maps/search/?api=1&query=%DA%A9%D9%84%DB%8C%D9%86%DB%8C%DA%A9%20%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%DA%A9%DB%8C%20%D9%86%D8%A8%D8%B6%20Nabz%20Veterinary%20Clinic&query_place_id=ChIJb6zdh34Hjj8RA3XuxaJ5gKo",
+  "lat": 35.724842,
+  "lng": 51.381653,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJb6zdh34Hjj8RA3XuxaJ5gKo",
+  "source": "google-maps-via-apify"
+ },
+ {
   "name": "کلینیک دامپزشکی و پت شاپ میلانوپت",
   "category": "vet",
   "google_category": "Veterinarian",
@@ -1613,6 +1677,22 @@
   "rating": 3.5,
   "reviews": 11,
   "place_id": "ChIJ9URyDwADjj8RMGTJa3_y7t4",
+  "source": "google-maps-via-apify"
+ },
+ {
+  "name": "کلینیک دامپزشکی پاسداران",
+  "category": "vet",
+  "google_category": "Veterans hospital",
+  "address": null,
+  "address_is_plus_code": false,
+  "neighborhood": null,
+  "phone": "+982122526423",
+  "website": "https://www.google.com/maps/search/?api=1&query=%DA%A9%D9%84%DB%8C%D9%86%DB%8C%DA%A9%20%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%DA%A9%DB%8C%20%D9%BE%D8%A7%D8%B3%D8%AF%D8%A7%D8%B1%D8%A7%D9%86&query_place_id=ChIJJdIicWkFjj8Rc_jrW08KKgE",
+  "lat": 35.761777,
+  "lng": 51.463177,
+  "rating": 3.4,
+  "reviews": 9,
+  "place_id": "ChIJJdIicWkFjj8Rc_jrW08KKgE",
   "source": "google-maps-via-apify"
  },
  {
@@ -1885,6 +1965,22 @@
   "rating": null,
   "reviews": null,
   "place_id": "ChIJC_qGD6kHjj8R2bXu7OoqTEY",
+  "source": "google-maps-via-apify"
+ },
+ {
+  "name": "پانسیون گربه شریعتی",
+  "category": "boarding",
+  "google_category": "Pet sitter",
+  "address": null,
+  "address_is_plus_code": true,
+  "neighborhood": null,
+  "phone": "+982122854740",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%A7%D9%86%D8%B3%DB%8C%D9%88%D9%86%20%DA%AF%D8%B1%D8%A8%D9%87%20%D8%B4%D8%B1%DB%8C%D8%B9%D8%AA%DB%8C&query_place_id=ChIJ85xCNQAFjj8R0jbwivSyua8",
+  "lat": 35.7503,
+  "lng": 51.448052,
+  "rating": 4.9,
+  "reviews": 77,
+  "place_id": "ChIJ85xCNQAFjj8R0jbwivSyua8",
   "source": "google-maps-via-apify"
  },
  {
@@ -2273,7 +2369,7 @@
  },
  {
   "name": "کلینیک دامپزشکی دکتر قصرفخری",
-  "category": "shop",
+  "category": "vet",
   "google_category": "Pet store",
   "address": "منطقه 4",
   "address_is_plus_code": true,
@@ -2656,6 +2752,22 @@
   "source": "google-maps-via-apify"
  },
  {
+  "name": "پانسیون گربه هتل میو",
+  "category": "boarding",
+  "google_category": "Pet sitter",
+  "address": null,
+  "address_is_plus_code": false,
+  "neighborhood": null,
+  "phone": "+982177249566",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%A7%D9%86%D8%B3%DB%8C%D9%88%D9%86%20%DA%AF%D8%B1%D8%A8%D9%87%20%D9%87%D8%AA%D9%84%20%D9%85%DB%8C%D9%88&query_place_id=ChIJ66u1muADjj8RcvFrAH9R6VU",
+  "lat": 35.75292,
+  "lng": 51.504009,
+  "rating": 4.3,
+  "reviews": 103,
+  "place_id": "ChIJ66u1muADjj8RcvFrAH9R6VU",
+  "source": "google-maps-via-apify"
+ },
+ {
   "name": "پانسیون حیوانات کلبه سبز",
   "category": "boarding",
   "google_category": "Pet boarding service",
@@ -2929,7 +3041,7 @@
  },
  {
   "name": "لوازم دامپزشکی و غذای حیوانات آریا",
-  "category": "shop",
+  "category": "vet",
   "google_category": "Pet supply store",
   "address": null,
   "address_is_plus_code": false,
@@ -3520,6 +3632,22 @@
   "source": "google-maps-via-apify"
  },
  {
+  "name": "پانسیون خانگی مریم",
+  "category": "boarding",
+  "google_category": "Dog day care center",
+  "address": "منطقه 2",
+  "address_is_plus_code": true,
+  "neighborhood": "District 2",
+  "phone": "+989981037916",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%A7%D9%86%D8%B3%DB%8C%D9%88%D9%86%20%D8%AE%D8%A7%D9%86%DA%AF%DB%8C%20%D9%85%D8%B1%DB%8C%D9%85&query_place_id=ChIJ9diKHQABjj8RvhAoNyze7fw",
+  "lat": 35.712866,
+  "lng": 51.371005,
+  "rating": 5,
+  "reviews": 1,
+  "place_id": "ChIJ9diKHQABjj8RvhAoNyze7fw",
+  "source": "google-maps-via-apify"
+ },
+ {
   "name": "ایران دیسکس",
   "category": "shop",
   "google_category": "Aquarium shop",
@@ -3952,6 +4080,22 @@
   "source": "google-maps-via-apify"
  },
  {
+  "name": "پانسیون پرندگان نیلوفر",
+  "category": "boarding",
+  "google_category": "Pet trainer",
+  "address": "منطقه 4",
+  "address_is_plus_code": true,
+  "neighborhood": "District 4",
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%A7%D9%86%D8%B3%DB%8C%D9%88%D9%86%20%D9%BE%D8%B1%D9%86%D8%AF%DA%AF%D8%A7%D9%86%20%D9%86%DB%8C%D9%84%D9%88%D9%81%D8%B1&query_place_id=ChIJNUtsbAAdjj8RsRKcnw3dlI4",
+  "lat": 35.730994,
+  "lng": 51.543551,
+  "rating": 5,
+  "reviews": 2,
+  "place_id": "ChIJNUtsbAAdjj8RsRKcnw3dlI4",
+  "source": "google-maps-via-apify"
+ },
+ {
   "name": "پت شاپ پشمالوها",
   "category": "shop",
   "google_category": "Pet supply store",
@@ -4017,7 +4161,7 @@
  },
  {
   "name": "پت شاپ استارپت (داروخانه دامپزشکی)",
-  "category": "shop",
+  "category": "vet",
   "google_category": "Pet store",
   "address": null,
   "address_is_plus_code": true,
@@ -4033,7 +4177,7 @@
  },
  {
   "name": "آرایشگاه حیوانات خانگی اصلاح حیوانات",
-  "category": "shop",
+  "category": "groomer",
   "google_category": "Pet store",
   "address": null,
   "address_is_plus_code": true,
@@ -5649,7 +5793,7 @@
  },
  {
   "name": "بیمارستان دامپزشکی زی",
-  "category": "shop",
+  "category": "vet",
   "google_category": "Pet store",
   "address": "منطقه 2",
   "address_is_plus_code": true,
@@ -5665,7 +5809,7 @@
  },
  {
   "name": "پانسیون گربه نکو",
-  "category": "shop",
+  "category": "boarding",
   "google_category": "Pet supply store",
   "address": null,
   "address_is_plus_code": true,
@@ -6129,7 +6273,7 @@
  },
  {
   "name": "دامپزشکی سپن",
-  "category": "shop",
+  "category": "vet",
   "google_category": "Pet supply store",
   "address": null,
   "address_is_plus_code": true,
@@ -6221,6 +6365,22 @@
   "rating": 4.7,
   "reviews": 32,
   "place_id": "ChIJHxAt2PIHjj8RFg7IjxGzYR4",
+  "source": "google-maps-via-apify"
+ },
+ {
+  "name": "آرایشگاه حیوانات رسول فرجی",
+  "category": "groomer",
+  "google_category": "Animal control service",
+  "address": null,
+  "address_is_plus_code": true,
+  "neighborhood": null,
+  "phone": "+989128838351",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D8%A2%D8%B1%D8%A7%DB%8C%D8%B4%DA%AF%D8%A7%D9%87%20%D8%AD%DB%8C%D9%88%D8%A7%D9%86%D8%A7%D8%AA%20%D8%B1%D8%B3%D9%88%D9%84%20%D9%81%D8%B1%D8%AC%DB%8C&query_place_id=ChIJlUJRTo0Hjj8Rg99LRd7fhUw",
+  "lat": 35.772869,
+  "lng": 51.376063,
+  "rating": 4,
+  "reviews": 1,
+  "place_id": "ChIJlUJRTo0Hjj8Rg99LRd7fhUw",
   "source": "google-maps-via-apify"
  },
  {
@@ -6977,7 +7137,7 @@
  },
  {
   "name": "دامپزشکی نیایش",
-  "category": "shop",
+  "category": "vet",
   "google_category": "Pet supply store",
   "address": null,
   "address_is_plus_code": false,
@@ -7037,6 +7197,22 @@
   "rating": null,
   "reviews": null,
   "place_id": "ChIJyVxzKgD9jT8Rdp4Q3FVCl_c",
+  "source": "google-maps-via-apify"
+ },
+ {
+  "name": "پت اسکایلوس خشایار هداوندی فرد (پناهگاه نیستیم)",
+  "category": "shelter",
+  "google_category": "Dog day care center",
+  "address": null,
+  "address_is_plus_code": true,
+  "neighborhood": null,
+  "phone": "+989203225835",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%AA%20%D8%A7%D8%B3%DA%A9%D8%A7%DB%8C%D9%84%D9%88%D8%B3%20%D8%AE%D8%B4%D8%A7%DB%8C%D8%A7%D8%B1%20%D9%87%D8%AF%D8%A7%D9%88%D9%86%D8%AF%DB%8C%20%D9%81%D8%B1%D8%AF%20(%D9%BE%D9%86%D8%A7%D9%87%DA%AF%D8%A7%D9%87%20%D9%86%DB%8C%D8%B3%D8%AA%DB%8C%D9%85)&query_place_id=ChIJURA2nr_9jT8RRLIHsr4Cub8",
+  "lat": 35.760909,
+  "lng": 51.308545,
+  "rating": 4.2,
+  "reviews": 11,
+  "place_id": "ChIJURA2nr_9jT8RRLIHsr4Cub8",
   "source": "google-maps-via-apify"
  },
  {
@@ -7217,7 +7393,7 @@
  },
  {
   "name": "پتشاپ دهکده حیوانات",
-  "category": "shop",
+  "category": "shelter",
   "google_category": "Pet store",
   "address": null,
   "address_is_plus_code": true,
@@ -7233,7 +7409,7 @@
  },
  {
   "name": "پت شاپ دهکده حیوانات",
-  "category": "shop",
+  "category": "shelter",
   "google_category": "Pet store",
   "address": null,
   "address_is_plus_code": true,
@@ -7249,7 +7425,7 @@
  },
  {
   "name": "کلینیک دامپزشکی و پت شاپ فراپت",
-  "category": "shop",
+  "category": "vet",
   "google_category": "Pet supply store",
   "address": null,
   "address_is_plus_code": true,
@@ -8001,7 +8177,7 @@
  },
  {
   "name": "پت شاپ خانه حیوانات",
-  "category": "shop",
+  "category": "shelter",
   "google_category": "Animal feed store",
   "address": null,
   "address_is_plus_code": true,
@@ -8221,6 +8397,22 @@
   "rating": null,
   "reviews": null,
   "place_id": "ChIJlfT8MjH9kT8Rtg5htD1eJXE",
+  "source": "google-maps-via-apify"
+ },
+ {
+  "name": "کلینیک دامپزشکی ماهور افسریه",
+  "category": "vet",
+  "google_category": "Veterans center",
+  "address": null,
+  "address_is_plus_code": true,
+  "neighborhood": null,
+  "phone": null,
+  "website": "https://www.google.com/maps/search/?api=1&query=%DA%A9%D9%84%DB%8C%D9%86%DB%8C%DA%A9%20%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%DA%A9%DB%8C%20%D9%85%D8%A7%D9%87%D9%88%D8%B1%20%D8%A7%D9%81%D8%B3%D8%B1%DB%8C%D9%87&query_place_id=ChIJ5_h2UQD9kT8R9YNwg3d1r_o",
+  "lat": 35.654992,
+  "lng": 51.499859,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJ5_h2UQD9kT8R9YNwg3d1r_o",
   "source": "google-maps-via-apify"
  },
  {
@@ -8721,7 +8913,7 @@
  },
  {
   "name": "کلینیک دامپزشکی دامون",
-  "category": "shop",
+  "category": "vet",
   "google_category": "Pet store",
   "address": "منطقه 3",
   "address_is_plus_code": false,
@@ -8781,6 +8973,22 @@
   "rating": 5,
   "reviews": 6,
   "place_id": "ChIJs0k-HAAHjj8RuYE7kn1hIAk",
+  "source": "google-maps-via-apify"
+ },
+ {
+  "name": "پانسیون سگ مرتضی شکری",
+  "category": "boarding",
+  "google_category": "Dog trainer",
+  "address": null,
+  "address_is_plus_code": true,
+  "neighborhood": null,
+  "phone": "+989109860587",
+  "website": "https://www.google.com/maps/search/?api=1&query=%D9%BE%D8%A7%D9%86%D8%B3%DB%8C%D9%88%D9%86%20%D8%B3%DA%AF%20%D9%85%D8%B1%D8%AA%D8%B6%DB%8C%20%D8%B4%DA%A9%D8%B1%DB%8C&query_place_id=ChIJ5d7JJADjjT8RaQ2I0XxE19k",
+  "lat": 35.784625,
+  "lng": 51.324754,
+  "rating": 4.7,
+  "reviews": 13,
+  "place_id": "ChIJ5d7JJADjjT8RaQ2I0XxE19k",
   "source": "google-maps-via-apify"
  },
  {
@@ -8957,6 +9165,22 @@
   "rating": 5,
   "reviews": 2,
   "place_id": "ChIJNUsQlMAFjj8RSCyZWnRyUW4",
+  "source": "google-maps-via-apify"
+ },
+ {
+  "name": "کلینیک دامپزشکی پارسه",
+  "category": "vet",
+  "google_category": "Animals",
+  "address": null,
+  "address_is_plus_code": true,
+  "neighborhood": null,
+  "phone": "+982122555700",
+  "website": "https://www.google.com/maps/search/?api=1&query=%DA%A9%D9%84%DB%8C%D9%86%DB%8C%DA%A9%20%D8%AF%D8%A7%D9%85%D9%BE%D8%B2%D8%B4%DA%A9%DB%8C%20%D9%BE%D8%A7%D8%B1%D8%B3%D9%87&query_place_id=ChIJjRogtlIEjj8Rf2aRuGaHmBM",
+  "lat": 35.791817,
+  "lng": 51.464012,
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJjRogtlIEjj8Rf2aRuGaHmBM",
   "source": "google-maps-via-apify"
  },
  {

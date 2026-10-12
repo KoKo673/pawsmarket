@@ -73,10 +73,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     })
   } catch {
     // Network-level failure (server down, DNS, proxy target offline)
-    throw new ApiError(`Network error requesting ${path}`, 0)
+    throw new ApiError('در حال حاضر به سرور وصل نیستیم؛ لطفاً چند لحظه دیگر تلاش کنید', 0)
   }
   if (!res.ok) {
-    throw new ApiError(`API ${path} responded ${res.status}`, res.status)
+    // 503 is the API's own answer when its database is unreachable. Passing the
+    // status through lets the explore view distinguish "come back later" from
+    // a genuine bug, instead of showing the same blank error for both.
+    if (res.status === 503) {
+      throw new ApiError('در حال حاضر به سرور وصل نیستیم؛ لطفاً چند لحظه دیگر تلاش کنید', 503)
+    }
+    throw new ApiError(`دریافت اطلاعات ناموفق بود (${res.status})`, res.status)
   }
   return (await res.json()) as T
 }
@@ -391,6 +397,12 @@ export async function fetchNearbyListings(
     if (failures.length > 0) {
       const reasons = failures.map((f) => String(f.reason instanceof Error ? f.reason.message : f.reason))
       const status = failures[0]?.reason instanceof ApiError ? failures[0].reason.status : 0
+      // Keep the first failure's own Persian message — it is written for the
+      // visitor, whereas a joined list of three English reasons is not.
+      const first = failures[0]?.reason
+      if (first instanceof ApiError && first.message) {
+        throw new ApiError(first.message, status)
+      }
       throw new ApiError(`Nearby query incomplete: ${reasons.join(' | ')}`, status)
     }
 
