@@ -64,16 +64,31 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Every request is bounded in time.
+ *
+ * Measured downstream throughput from Tehran to the deployment was ~200 B/s,
+ * where a 15 KB answer needs over a minute. Without a deadline a fetch simply
+ * hangs and the visitor watches a loading state forever, with no error and no
+ * retry. A slow response is now a normal failure they can act on.
+ */
+const REQUEST_TIMEOUT_MS = 20_000
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
   try {
     res = await fetch(`${API_BASE}${path}`, {
       headers: { 'Content-Type': 'application/json', ...init?.headers },
+      signal: init?.signal ?? controller.signal,
       ...init,
     })
   } catch {
-    // Network-level failure (server down, DNS, proxy target offline)
+    // Network-level failure, or the deadline above.
     throw new ApiError('در حال حاضر به سرور وصل نیستیم؛ لطفاً چند لحظه دیگر تلاش کنید', 0)
+  } finally {
+    clearTimeout(timer)
   }
   if (!res.ok) {
     // 503 is the API's own answer when its database is unreachable. Passing the
@@ -369,46 +384,145 @@ async function getStoresRaw(origin: GeoPoint, filters: Filters): Promise<RawRow[
  * query (no silently-partial result sets). In publish (static) mode the
  * same contract applies to catalog.json.
  */
+/**
+ * The catalog snapshot published beside the app.
+ *
+ * The catalogue (stores, products, pets) is the same for every visitor and is
+ * ~400 KB. Serving it from GitHub Pages' CDN takes under a second; fetching it
+ * from the API measured ~200 B/s downstream to Tehran, so a single page took
+ * over a minute and usually lost the connection halfway. The snapshot is
+ * regenerated from the same database by scripts/export_catalog.py, so it is
+ * the same data — just delivered from somewhere close.
+ *
+ * The API stays for everything that is per-visitor or changes: auth, profiles,
+ * moments, follows, adoption.
+ */
+/**
+ * Union two row sets by id, preferring the second.
+ *
+ * Used to lay the live API's rows over the published snapshot: the snapshot
+ * has the bulk and the CDN, the live response has whatever changed since it
+ * was generated.
+ */
+/** Rows from a settled leg, or nothing when that leg failed. */
+function okRows(result: PromiseSettledResult<RawRow[]>): RawRow[] {
+  return result.status === 'fulfilled' ? result.value : []
+}
+
+/**
+ * Append the live rows the snapshot does not already contain.
+ *
+ * Never replaces an existing row: the snapshot's is the enriched one, and the
+ * filter depends on the fields enrichment adds.
+ */
+function appendNew(snapshot: RawRow[], live: RawRow[]): RawRow[] {
+  if (live.length === 0) return snapshot
+  const known = new Set(snapshot.map((r) => String(r.id)))
+  const extra = live.filter((r) => !known.has(String(r.id)))
+  return extra.length === 0 ? snapshot : [...snapshot, ...extra]
+}
+
+async function catalogSnapshot(): Promise<{
+  pets: RawRow[]; products: RawRow[]; stores: RawRow[]
+}> {
+  // Fetched with a bare fetch, NOT through request().
+  //
+  // request() prefixes API_BASE, so this was asking the Railway API for
+  // «/pawsmarket/catalog.json» — a path it does not serve — and getting a 404
+  // every time. The snapshot silently never loaded, the catalogue fell back to
+  // whatever the API returned, and because that response is now capped at 150
+  // stores the filter for «پناهگاه» had none to match: fifteen shelters sat in
+  // the published catalog while the UI showed «۰ نتیجه».
+  //
+  // The snapshot lives beside the app on the same CDN, which is the whole
+  // reason it exists — it must not be routed through the API's origin.
+  const path = `${import.meta.env.BASE_URL}catalog.json`
+  const res = await fetch(path, { headers: { Accept: 'application/json' } })
+  if (!res.ok) {
+    throw new ApiError(`catalog.json ${res.status}`, res.status)
+  }
+  const catalog = (await res.json()) as {
+    pets?: unknown; products?: unknown; stores?: unknown
+  }
+  if (!Array.isArray(catalog.pets) || !Array.isArray(catalog.products)
+      || !Array.isArray(catalog.stores)) {
+    throw new ApiError(
+      `Invalid catalog.json at ${path}: expected {pets,products,stores} arrays`,
+      200)
+  }
+  return {
+    pets: catalog.pets as RawRow[],
+    products: catalog.products as RawRow[],
+    stores: catalog.stores as RawRow[],
+  }
+}
+
 export async function fetchNearbyListings(
   origin: GeoPoint,
   filters: Filters,
 ): Promise<ListingWithDistance[]> {
-  let petRows: RawRow[]
-  let productRows: RawRow[]
-  let storeRows: RawRow[]
+  let petRows: RawRow[] = []
+  let productRows: RawRow[] = []
+  let storeRows: RawRow[] = []
 
   if (STATIC_MODE) {
-    const path = `${import.meta.env.BASE_URL}catalog.json`
-    const catalog = await request<{ pets?: unknown; products?: unknown; stores?: unknown }>(path)
-    if (!Array.isArray(catalog.pets) || !Array.isArray(catalog.products) || !Array.isArray(catalog.stores)) {
-      throw new ApiError(`Invalid catalog.json at ${path}: expected {pets,products,stores} arrays`, 200)
-    }
-    petRows = catalog.pets as RawRow[]
-    productRows = catalog.products as RawRow[]
-    storeRows = catalog.stores as RawRow[]
+    const snapshot = await catalogSnapshot()
+    ;[petRows, productRows, storeRows] =
+      [snapshot.pets, snapshot.products, snapshot.stores]
   } else {
-    const settled = await Promise.allSettled([
-      getPetsRaw(origin, filters),
-      getProductsRaw(origin, filters),
-      getStoresRaw(origin, filters),
+    // The snapshot is the primary source; the API fills in only what the
+    // snapshot cannot know. Both are attempted together so a cold CDN or a
+    // cold API never adds its latency to the other's.
+    const [snapshot, live] = await Promise.allSettled([
+      catalogSnapshot(),
+      Promise.allSettled([
+        getPetsRaw(origin, filters),
+        getProductsRaw(origin, filters),
+        getStoresRaw(origin, filters),
+      ]),
     ])
 
-    const failures = settled.filter((r): r is PromiseRejectedResult => r.status === 'rejected')
-    if (failures.length > 0) {
-      const reasons = failures.map((f) => String(f.reason instanceof Error ? f.reason.message : f.reason))
-      const status = failures[0]?.reason instanceof ApiError ? failures[0].reason.status : 0
-      // Keep the first failure's own Persian message — it is written for the
-      // visitor, whereas a joined list of three English reasons is not.
-      const first = failures[0]?.reason
-      if (first instanceof ApiError && first.message) {
-        throw new ApiError(first.message, status)
+    if (snapshot.status === 'fulfilled') {
+      ;[petRows, productRows, storeRows] =
+        [snapshot.value.pets, snapshot.value.products, snapshot.value.stores]
+    } else if (live.status === 'fulfilled') {
+      // No snapshot (a dev run, or the file missing): the API is the only
+      // source, so its failures become the user-facing error.
+      const settled = live.value
+      const failures = settled.filter(
+        (r): r is PromiseRejectedResult => r.status === 'rejected')
+      if (failures.length > 0) {
+        const first = failures[0]?.reason
+        const status = first instanceof ApiError ? first.status : 0
+        throw new ApiError(
+          first instanceof ApiError && first.message
+            ? first.message
+            : 'در حال حاضر به سرور وصل نیستیم؛ لطفاً چند لحظه دیگر تلاش کنید',
+          status)
       }
-      throw new ApiError(`Nearby query incomplete: ${reasons.join(' | ')}`, status)
+      ;[petRows, productRows, storeRows] = settled.map(
+        (r) => (r as PromiseFulfilledResult<RawRow[]>).value)
+    } else {
+      throw new ApiError(
+        'در حال حاضر به سرور وصل نیستیم؛ لطفاً چند لحظه دیگر تلاش کنید', 0)
     }
 
-    ;[petRows, productRows, storeRows] = settled.map(
-      (r) => (r as PromiseFulfilledResult<RawRow[]>).value,
-    )
+    // The live API contributes ONLY rows the snapshot does not have.
+    //
+    // It is tempting to let live rows win — they are newer — but the API's
+    // /stores/nearby returns a thin row (name, address, raw category) while
+    // the snapshot has been enriched (phone, hours, photos, categories,
+    // rating). Letting the live row replace the snapshot's dropped the
+    // enriched `category` the filter matches on, and «پناهگاه» then returned
+    // nothing at all while eleven shelters sat in the data.
+    //
+    // What legitimately comes from the API is therefore what is NEW: a pet
+    // whose profile was just created, a shop added since the last export.
+    if (live.status === 'fulfilled') {
+      petRows = appendNew(petRows, okRows(live.value[0]))
+      productRows = appendNew(productRows, okRows(live.value[1]))
+      storeRows = appendNew(storeRows, okRows(live.value[2]))
+    }
   }
 
   // store_id → name lookup so products show their real store title
