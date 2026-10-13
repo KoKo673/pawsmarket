@@ -102,27 +102,66 @@ export function Hero() {
         </div>
 
         {/* ── کلاج تصاویر ──
-            Collage sits ABOVE the copy in DOM order on phones: as a second
-            grid column it landed below the search box, so the first screen a
-            visitor saw was a wall of text and the pictures arrived only after
-            scrolling — and the dog's face was cropped out of its own portrait
-            by object-cover. `order-first` on mobile, side-by-side on desktop. */}
+            Two different layouts, not one scaled down.
+
+            The absolute-positioned collage only works at a fixed aspect ratio.
+            On a 390px phone every image is a percentage of a much narrower box,
+            so the 4/5 portrait grew taller than its container and the cat and
+            the running dog landed on top of the retriever's face — a mobile
+            screenshot showed three photos overlapping into a smear. Below sm
+            this is a plain 2×2 grid (the dog spanning the full width), which
+            cannot overlap at any width; the collage is kept from sm up, where
+            the container is wide enough for the percentages to hold. */}
         <div
           data-motion-item
-          className="relative order-first mx-auto aspect-[4/3.4] w-full max-w-xs motion-reduce:animate-none sm:aspect-[4/4.4] sm:max-w-md lg:order-none"
+          className="order-first mx-auto w-full max-w-xs sm:hidden"
+        >
+          <div className="grid grid-cols-2 gap-2.5">
+            <img
+              src={asset('images/listings/dog-golden.jpg')}
+              alt="توله‌ی گلدن رتریور"
+              className="col-span-2 aspect-[16/11] w-full rounded-[1.75rem] object-cover object-top shadow-lifted"
+            />
+            <img
+              src={asset('images/listings/cat-orange.jpg')}
+              alt="گربه‌ی نارنجی"
+              className="aspect-square w-full rounded-3xl border-2 border-card object-cover shadow-lifted"
+            />
+            <img
+              src={asset('images/listings/dog-run.jpg')}
+              alt="سگ در حال دویدن در پارک"
+              className="aspect-square w-full rounded-3xl border-2 border-card object-cover object-top shadow-lifted"
+            />
+          </div>
+          <div className="glass mt-2.5 flex items-center justify-center gap-2.5 rounded-2xl px-4 py-2.5">
+            <span className="grid size-8 place-items-center rounded-xl bg-accent/15 text-accent">
+              <PawPrint className="size-4" />
+            </span>
+            <p className="text-sm font-extrabold">
+              {realStores > 0
+                ? `${faDigits(realStores)} فروشگاه واقعی تهران`
+                : 'فروشگاه‌های واقعی تهران'}
+            </p>
+          </div>
+        </div>
+
+        {/* کلاج شناور — از sm به بالا که ظرف به‌قدر کافی عریض است */}
+        <div
+          data-motion-item
+          className="relative hidden aspect-[4/4.4] w-full max-w-md motion-reduce:animate-none sm:block sm:max-w-md lg:order-none"
         >
           <img
             src={asset('images/listings/dog-golden.jpg')}
             alt="توله‌ی گلدن رتریور"
             /* object-top keeps the head in frame; the default centre crop cut
                the face off, which is what "چهره‌ی سگ معلوم نیست" referred to. */
-            className="absolute inset-x-5 top-0 aspect-[4/5] w-[86%] rounded-[2.5rem] object-cover object-top shadow-lifted sm:animate-float"
+            className="absolute inset-x-6 top-0 aspect-[4/5] w-[85%] rounded-[2.5rem] object-cover object-top shadow-lifted sm:animate-float"
             style={{ animationDuration: '6s' }}
           />
           <img
             src={asset('images/listings/cat-orange.jpg')}
             alt="گربه‌ی نارنجی"
-            className="absolute bottom-16 right-0 aspect-square w-[52%] rounded-[2rem] border-4 border-card object-cover shadow-lifted sm:animate-float"
+            className="absolute bottom-14 right-0 aspect-square w-[52%] rounded-[2rem] border-4 border-card object-cover shadow-lifted sm:animate-float"
             style={{ animationDuration: '7s', animationDelay: '-1s' }}
           />
           <img

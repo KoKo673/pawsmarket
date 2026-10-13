@@ -1,26 +1,68 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, HashRouter, Route, Routes, useLocation } from 'react-router-dom'
 
-import { AuthCard } from '@/components/auth/AuthCard'
 import { RequireAuth } from '@/components/auth/RequireAuth'
 import { DetailModal } from '@/components/detail/DetailModal'
 import { Footer } from '@/components/layout/Footer'
 import { Navbar } from '@/components/layout/Navbar'
 import { useGeolocation } from '@/hooks/use-geolocation'
 import { initEntranceMotion, MOTION } from '@/lib/motion'
-import { AddPage } from '@/pages/AddPage'
-import { AdoptionPage } from '@/pages/AdoptionPage'
-import { ExplorePage } from '@/pages/ExplorePage'
-import { FeedPage } from '@/pages/FeedPage'
-import { FollowListPage } from '@/pages/FollowListPage'
 import { HomePage } from '@/pages/HomePage'
-import { MyAccountPage } from '@/pages/MyAccountPage'
-import { NotFoundPage } from '@/pages/NotFoundPage'
-import { PetProfilePage } from '@/pages/PetProfilePage'
-import { PetsDiscoverPage } from '@/pages/PetsDiscoverPage'
 import { AppProviders } from '@/providers/AppProviders'
 import { useAuthStore } from '@/store/auth.store'
+
+/**
+ * Routes are split, and the home page is the only one in the initial bundle.
+ *
+ * Everything used to be imported eagerly, so a visitor who typed the URL and
+ * looked at one screen downloaded the map (Leaflet), the add-listing wizard
+ * and the account pages as well: 1.4 MB of JavaScript before anything
+ * rendered. The first screen now carries only what it draws.
+ *
+ * HomePage is deliberately NOT lazy — it is the landing route, and splitting
+ * it would add a round trip to the one page every visitor sees.
+ */
+const ExplorePage = lazy(() =>
+  import('@/pages/ExplorePage').then((m) => ({ default: m.ExplorePage })))
+const AddPage = lazy(() =>
+  import('@/pages/AddPage').then((m) => ({ default: m.AddPage })))
+const AdoptionPage = lazy(() =>
+  import('@/pages/AdoptionPage').then((m) => ({ default: m.AdoptionPage })))
+const FeedPage = lazy(() =>
+  import('@/pages/FeedPage').then((m) => ({ default: m.FeedPage })))
+const FollowListPage = lazy(() =>
+  import('@/pages/FollowListPage').then((m) => ({ default: m.FollowListPage })))
+const MyAccountPage = lazy(() =>
+  import('@/pages/MyAccountPage').then((m) => ({ default: m.MyAccountPage })))
+const PetProfilePage = lazy(() =>
+  import('@/pages/PetProfilePage').then((m) => ({ default: m.PetProfilePage })))
+const PetsDiscoverPage = lazy(() =>
+  import('@/pages/PetsDiscoverPage').then((m) => ({ default: m.PetsDiscoverPage })))
+const NotFoundPage = lazy(() =>
+  import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })))
+const AuthCard = lazy(() =>
+  import('@/components/auth/AuthCard').then((m) => ({ default: m.AuthCard })))
+const ForgotPasswordPage = lazy(() =>
+  import('@/pages/ForgotPasswordPage')
+    .then((m) => ({ default: m.ForgotPasswordPage })))
+
+/** Page-shaped skeleton while a split route arrives. */
+function RouteFallback() {
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-24">
+      <div className="h-8 w-48 animate-pulse rounded-xl bg-muted" />
+      <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }, (_, i) => (
+          <div key={i} className="rounded-2xl bg-card p-4 shadow-soft">
+            <div className="aspect-[4/3] w-full animate-pulse rounded-xl bg-muted" />
+            <div className="mt-3 h-4 w-2/3 animate-pulse rounded bg-muted" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 /**
  * Page transition wrapper — uses the SHARED entrance tokens
@@ -75,7 +117,8 @@ function AppRoutes() {
           whose content never swapped — content/URL sync beats staged exits.
         */}
         <AnimatePresence initial={false}>
-          <Routes location={location} key={location.pathname}>
+          <Suspense fallback={<RouteFallback />}>
+            <Routes location={location} key={location.pathname}>
             <Route
               path="/"
               element={
@@ -113,6 +156,14 @@ function AppRoutes() {
               element={
                 <AnimatedPage>
                   <AuthCard mode="login" />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/forgot"
+              element={
+                <AnimatedPage>
+                  <ForgotPasswordPage />
                 </AnimatedPage>
               }
             />
@@ -177,6 +228,7 @@ function AppRoutes() {
               }
             />
           </Routes>
+          </Suspense>
         </AnimatePresence>
       </main>
 

@@ -57,6 +57,7 @@ export function StoryBar({
               <img
                 src={mediaUrl(avatarUrl) || '/images/listings/dog-pug.jpg'}
                 alt=""
+                loading="lazy"
                 className="size-full rounded-full object-cover opacity-70"
               />
               <span className="absolute -bottom-0.5 grid size-6 place-items-center rounded-full bg-primary text-white shadow-glow">
@@ -89,6 +90,7 @@ export function StoryBar({
                   <img
                     src={mediaUrl(story.images[0]) || mediaUrl(avatarUrl) || '/images/listings/dog-pug.jpg'}
                     alt=""
+                    loading="lazy"
                     className="size-full rounded-full object-cover"
                   />
                 </span>
@@ -147,7 +149,7 @@ export function StoryBar({
 
           <figure className="relative aspect-[9/16] w-[min(92vw,26rem)] overflow-hidden rounded-3xl bg-card shadow-lifted">
             {active.images[0] ? (
-              <img src={mediaUrl(active.images[0])} alt="" className="size-full object-cover" />
+              <img src={mediaUrl(active.images[0])} alt="" loading="lazy" className="size-full object-cover" />
             ) : (
               <div className="grid size-full place-items-center bg-muted/40 p-8">
                 <p className="text-center text-lg leading-relaxed">{active.text}</p>

@@ -143,7 +143,7 @@ export function AdoptionPage() {
               >
                 <Link to={`/pet/${r.pet_id}`} className="flex min-w-0 items-center gap-3">
                   {r.pet_avatar ? (
-                    <img src={mediaUrl(r.pet_avatar)} alt="" className="size-12 rounded-2xl object-cover" />
+                    <img src={mediaUrl(r.pet_avatar)} alt="" loading="lazy" className="size-12 rounded-2xl object-cover" />
                   ) : (
                     <span className="grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary">
                       <PawPrint className="size-5" />

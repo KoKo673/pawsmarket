@@ -22,7 +22,8 @@ interface AuthState {
   /** یک‌بار در App صدا زده می‌شود: توکن ذخیره‌شده را با /me راستی‌آزمایی می‌کند */
   hydrate: () => Promise<void>
   login: (username: string, password: string) => Promise<void>
-  register: (username: string, password: string, displayName?: string) => Promise<void>
+  register: (username: string, password: string, displayName?: string,
+             email?: string) => Promise<void>
   logout: () => Promise<void>
 }
 
@@ -80,8 +81,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ status: 'authed', user, myPets, activePetId: myPets[0]?.id ?? null })
   },
 
-  register: async (username, password, displayName) => {
-    const { token, user } = await authApi.register(username, password, displayName)
+  register: async (username, password, displayName, email) => {
+    const { token, user } = await authApi.register(username, password,
+                                                   displayName, email)
     setToken(token)
     const myPets = await loadMyPets()
     set({ status: 'authed', user, myPets, activePetId: myPets[0]?.id ?? null })

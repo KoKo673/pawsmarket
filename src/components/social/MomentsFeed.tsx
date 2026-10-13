@@ -29,6 +29,7 @@ export function MomentCard({ post }: { post: Post }) {
             <img
               src={mediaUrl(post.pet_avatar)}
               alt={post.pet_name ?? ''}
+              loading="lazy"
               className="size-11 rounded-full border-2 border-primary/30 object-cover"
             />
           ) : (

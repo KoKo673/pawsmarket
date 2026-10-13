@@ -208,13 +208,15 @@ export interface FollowListItem {
 /* ── احراز هویت ─────────────────────────────────────────────── */
 
 export const authApi = {
-  register: (username: string, password: string, displayName?: string) =>
+  register: (username: string, password: string, displayName?: string,
+             email?: string) =>
     request<{ token: string; user: AuthUser }>('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify({
         username,
         password,
         ...(displayName ? { display_name: displayName } : {}),
+        ...(email ? { email } : {}),
       }),
     }),
   login: (username: string, password: string) =>
@@ -224,6 +226,20 @@ export const authApi = {
     }),
   logout: () => request<{ ok: boolean }>('/api/auth/logout', { method: 'POST' }),
   me: () => request<{ user: AuthUser }>('/api/auth/me'),
+  /** رمز موقت می‌گیرد. پاسخ برای حساب ناموجود هم یکسان است. */
+  recover: (username: string, email: string) =>
+    request<{ ok: boolean; username?: string; temp_password?: string;
+              expires_in_minutes?: number; message: string }>(
+      '/api/auth/recover', {
+        method: 'POST',
+        body: JSON.stringify({ username, email }),
+      }),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    request<{ ok: boolean; message: string }>('/api/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ current_password: currentPassword,
+                             new_password: newPassword }),
+    }),
 }
 
 /* ── پروفایل و اجتماعی ──────────────────────────────────────── */

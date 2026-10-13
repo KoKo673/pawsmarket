@@ -21,6 +21,9 @@ export function AuthCard({ mode }: { mode: 'login' | 'register' }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
+  // Optional, and only for account recovery — the hint under the field says so
+  // rather than leaving people to wonder what it will be used for.
+  const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -36,10 +39,15 @@ export function AuthCard({ mode }: { mode: 'login' | 'register' }) {
       setError('رمز عبور باید حداقل ۸ کاراکتر باشد')
       return
     }
+    if (mode === 'register' && email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      setError('ایمیل درست نیست')
+      return
+    }
     setBusy(true)
     try {
       if (mode === 'register') {
-        await register(username, password, displayName || undefined)
+        await register(username, password, displayName || undefined,
+                       email || undefined)
       } else {
         await login(username, password)
       }
@@ -95,8 +103,39 @@ export function AuthCard({ mode }: { mode: 'login' | 'register' }) {
             />
           </div>
 
+          {mode === 'register' && (
+            <div data-motion-item className="space-y-2">
+              <Label htmlFor="email">
+                ایمیل <span className="font-normal text-muted-foreground">(اختیاری)</span>
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="برای بازیابی رمز، اگر آن را فراموش کردید"
+                dir="ltr"
+                autoComplete="email"
+              />
+              <p className="text-[11px] leading-relaxed text-muted-foreground">
+                فقط برای بازیابی رمز استفاده می‌شود. اگر ندهید، برای بازیابی
+                باید با پشتیبانی تماس بگیرید.
+              </p>
+            </div>
+          )}
+
           <div data-motion-item className="space-y-2">
-            <Label htmlFor="password">رمز عبور</Label>
+            <div className="flex items-baseline justify-between">
+              <Label htmlFor="password">رمز عبور</Label>
+              {mode === 'login' && (
+                <Link
+                  to="/forgot"
+                  className="text-xs font-bold text-primary hover:underline"
+                >
+                  رمز را فراموش کرده‌اید؟
+                </Link>
+              )}
+            </div>
             <Input
               id="password"
               type="password"

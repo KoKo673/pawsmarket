@@ -1,5 +1,5 @@
-import { ChevronLeft, Loader2, ShoppingBasket } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { ChevronDown, ChevronLeft, Loader2, ShoppingBasket } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { ListingCard } from '@/components/explore/ListingCard'
@@ -9,21 +9,21 @@ import { useNearbyListings } from '@/hooks/use-listings'
 import { faDigits } from '@/lib/fa'
 
 /**
- * «پیشنهاد محصولات» — یک ریل افقی از کالاهای موجود در شعاع فعلی، با دکمه‌ی
- * «بیشتر» که دسته‌ی بعدی را به انتهای ریل اضافه می‌کند.
+ * «پیشنهاد محصولات» — شبکه‌ی معمولی محصولات با دکمه‌ی «بیشتر».
  *
- * چرا ریل و نه شبکه: کارت محصول در عرض ۲۱۰px جا می‌شود و در شبکه‌ی دو
- * ستونه جای زیادی خالی می‌ماند؛ ریل افقی هم با عادت آشنای اسکرول افقی
- * موبایل جور است و هم فروشگاه‌ها را بالای صفحه نشان می‌دهد.
- *
- * «بیشتر» به‌جای رفتن به صفحه‌ی جدا، همان‌جا لیست را بلندتر می‌کند — کاربر
- * وسط یک ویدئو یا اسکرول نیست و می‌خواهد همین‌جا ببیند چه چیز دیگری هست.
+ * The first version was a horizontal rail whose «بیشتر» appended another row
+ * of cards off the right edge, so pressing it produced no visible change at
+ * all: the new items were already outside the viewport and the page never
+ * moved. The button now grows the list DOWNWARD in the ordinary document flow
+ * and scrolls the first new row into view, so the press has a visible result.
  */
 const STEP = 8
 
 export function ProductRail() {
   const { data, isLoading, isError } = useNearbyListings()
   const [extra, setExtra] = useState(0)
+  const gridRef = useRef<HTMLUListElement | null>(null)
+  const prevCount = useRef(STEP)
 
   const products = useMemo(
     () => (data ?? []).filter((l) => l.kind === 'product'),
@@ -31,6 +31,18 @@ export function ProductRail() {
   )
   const shown = products.slice(0, STEP + extra)
   const remaining = products.length - shown.length
+
+  // Bring the first newly-added card into view, so pressing «بیشتر» reads as
+  // "here is the next row" rather than as a button that did nothing.
+  useEffect(() => {
+    if (shown.length > prevCount.current && gridRef.current) {
+      const next = gridRef.current.children[prevCount.current] as
+        | HTMLElement
+        | undefined
+      next?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+    prevCount.current = shown.length
+  }, [shown.length])
 
   if (isError || (!isLoading && products.length === 0)) return null
 
@@ -71,27 +83,30 @@ export function ProductRail() {
         </div>
       ) : (
         <>
-          {/* اسکرول افقی؛ در دسکتاپ همه‌ی کارت‌ها در یک ردیف جا می‌شوند */}
-          <ul className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3">
+          {/* شبکه‌ی عمودی: هر «بیشتر» یک ردیف واقعی به پایین اضافه می‌کند و
+              صفحه همان‌جا اسکرول می‌شود — برخلاف ریل افقی قبلی که آیتم‌های
+              تازه بیرون از دید می‌افتادند و دکمه بی‌اثر به‌نظر می‌رسید. */}
+          <ul
+            ref={gridRef}
+            className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
+          >
             {shown.map((item, i) => (
-              <li
-                key={item.id}
-                className="w-[240px] shrink-0 snap-start sm:w-[260px]"
-              >
+              <li key={item.id}>
                 <ListingCard item={item} index={i} />
               </li>
             ))}
           </ul>
 
           {remaining > 0 && (
-            <div className="mt-2 flex flex-col items-center gap-1">
+            <div className="mt-7 flex flex-col items-center gap-1.5">
               <Button
                 variant="outline"
-                className="gap-2 px-6"
+                className="gap-2 px-8"
                 onClick={() => setExtra((e) => e + STEP)}
               >
                 {isLoading ? <Loader2 className="size-4 animate-spin" /> : null}
                 بیشتر
+                <ChevronDown className="size-4" />
               </Button>
               <p className="text-xs text-muted-foreground">
                 {faDigits(remaining)} کالای دیگر در این دسته

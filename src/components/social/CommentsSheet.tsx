@@ -90,7 +90,7 @@ export function CommentsSheet({
             items.map((c) => (
               <div key={c.id} className="flex gap-3">
                 {c.avatar_url ? (
-                  <img src={mediaUrl(c.avatar_url)} alt="" className="size-9 shrink-0 rounded-full object-cover" />
+                  <img src={mediaUrl(c.avatar_url)} alt="" loading="lazy" className="size-9 shrink-0 rounded-full object-cover" />
                 ) : (
                   <span className="grid size-9 shrink-0 place-items-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
                     {(c.display_name || c.username).slice(0, 1)}
