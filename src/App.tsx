@@ -3,7 +3,6 @@ import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, HashRouter, Route, Routes, useLocation } from 'react-router-dom'
 
 import { RequireAuth } from '@/components/auth/RequireAuth'
-import { DetailModal } from '@/components/detail/DetailModal'
 import { Footer } from '@/components/layout/Footer'
 import { Navbar } from '@/components/layout/Navbar'
 import { useGeolocation } from '@/hooks/use-geolocation'
@@ -43,6 +42,8 @@ const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })))
 const AuthCard = lazy(() =>
   import('@/components/auth/AuthCard').then((m) => ({ default: m.AuthCard })))
+const DetailModal = lazy(() =>
+  import('@/components/detail/DetailModal').then((m) => ({ default: m.DetailModal })))
 const ForgotPasswordPage = lazy(() =>
   import('@/pages/ForgotPasswordPage')
     .then((m) => ({ default: m.ForgotPasswordPage })))
@@ -267,8 +268,14 @@ function AppRoutes() {
 
       {!isExplore && <Footer />}
 
-      {/* Global detail sheet — opened by cards, map pins, and rails */}
-      <DetailModal />
+      {/* Global detail sheet — opened by cards, map pins, and rails.
+          Lazy for the same reason the pages are: it is a modal that only
+          appears on a tap, and it is the one component pulling the full shop
+          enrichment map (phone, hours, description, website) into the bundle.
+          Every page was already split; this was the last eager piece. */}
+      <Suspense fallback={null}>
+        <DetailModal />
+      </Suspense>
     </div>
   )
 }
