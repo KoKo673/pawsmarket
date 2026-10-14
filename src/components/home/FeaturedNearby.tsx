@@ -23,8 +23,12 @@ export function FeaturedNearby() {
             <Radar className="size-3.5" />
             داخل شعاع جستجوی شما
           </span>
-          <h2 className="mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl">در همین حوالی</h2>
-          <p className="mt-1.5 text-sm text-muted-foreground">مرتب‌شده بر اساس فاصله از نقطه‌ی جستجوی شما</p>
+          <h2 className="mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl">
+            نزدیک‌ترین موارد به شما
+          </h2>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            فهرست‌شده بر اساس فاصله از موقعیت فعلی شما
+          </p>
         </div>
         <Button asChild variant="outline" className="gap-2">
           {/* ?view=map — the button says «نقشه», so it has to land on the map.

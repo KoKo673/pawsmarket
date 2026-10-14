@@ -56,23 +56,23 @@ export function Hero() {
             className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1.5 text-xs font-bold text-primary"
           >
             <Sparkles className="size-3.5" />
-            فاصله‌ی لحظه‌ای · جستجوی مکانی روی نقشه
+            فروشگاه، خدمات دامپزشکی و سرپرستی — یک‌جا
           </span>
 
           <h1
             data-motion-item
             className="mt-6 text-balance text-4xl font-extrabold leading-[1.25] tracking-tight sm:text-5xl lg:text-6xl"
           >
-            هر حیوان، هر محصول، هر فروشگاه —{' '}
-            <em className="font-display font-black not-italic text-primary">روی نقشه‌ی محله‌ات</em>
+            بازار تخصصی حیوانات خانگی{' '}
+            <em className="font-display font-black not-italic text-primary">در محدوده‌ی شما</em>
           </h1>
 
           <p
             data-motion-item
             className="mx-auto mt-5 max-w-xl text-balance text-base leading-relaxed text-muted-foreground sm:text-lg lg:mx-0"
           >
-            حیوانات در انتظار سرپرستی، دامپزشکان، آرایشگاه‌ها و لوازم مورد نیاز را در همان حوالی پیدا کنید — با
-            شعاع دلخواه و فاصله‌ی واقعی.
+            کالا و خوراک، کلینیک و آرایشگاه، و حیوانات در انتظار سرپرستی —
+            همراه با قیمت، فاصله و امتیاز هر مرکز، در یک نقشه.
           </p>
 
           <div data-motion-item className="mt-8 flex w-full min-w-0 flex-col items-center gap-4 lg:items-start">
@@ -87,16 +87,18 @@ export function Hero() {
           >
             <li className="inline-flex items-center gap-1.5">
               <MapPin className="size-4 text-primary" />
-              {realListings > 0 ? `${faDigits(realListings)} آگهی فعال همین حالا` : 'آگهی‌های زنده‌ی تهران'}
+              {realListings > 0
+                ? `${faDigits(realListings)} مورد ثبت‌شده در محدوده`
+                : 'اقلام ثبت‌شده در تهران'}
             </li>
             <li className="inline-flex items-center gap-1.5">
               <ShieldCheck className="size-4 text-accent" />
               {realStores > 0
-                ? `${faDigits(realStores)} فروشگاه و درمانگاه واقعی`
-                : 'فروشگاه‌ها و درمانگاه‌های واقعی'}
+                ? `${faDigits(realStores)} مرکز و فروشگاه فعال`
+                : 'فروشگاه‌ها و مراکز فعال'}
             </li>
             <li className="inline-flex items-center gap-1.5">
-              <PawPrint className="size-4 text-tide-500" /> فیلتر دقیق بر اساس فاصله
+              <PawPrint className="size-4 text-tide-500" /> فهرست‌شده بر اساس فاصله
             </li>
           </ul>
         </div>

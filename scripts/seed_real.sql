@@ -14,7 +14,7 @@ INSERT INTO stores (name, address, category, location, created_at) VALUES ('پا
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('مععععععجییییید', 'منطقه ۲', 'boarding', ST_SetSRID(ST_MakePoint(51.374473, 35.753306), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('آرایش حیوانات یاشار', 'خیابان ۲۲بهمن، کلینیک پت مدیکال', 'boarding', ST_SetSRID(ST_MakePoint(51.331312, 35.749813), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پانسیون گربه شریعتی', 'تهران', 'boarding', ST_SetSRID(ST_MakePoint(51.448052, 35.7503), 4326), now());
-INSERT INTO stores (name, address, category, location, created_at) VALUES ('پانسیون گربه', 'خیابان ایوان مدائن، پلاک ۶، تهران', 'boarding', ST_SetSRID(ST_MakePoint(51.458951, 35.744881), 4326), now());
+INSERT INTO stores (name, address, category, location, created_at) VALUES ('پانسیون گربه', 'خیابان ایوان مداین، پلاک ۶، تهران', 'boarding', ST_SetSRID(ST_MakePoint(51.458951, 35.744881), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پانسیون خانگی سگ و گربه لیموپت', 'تهران', 'boarding', ST_SetSRID(ST_MakePoint(51.39244, 35.776788), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پانسیون گربه نکو', 'تهران', 'boarding', ST_SetSRID(ST_MakePoint(51.364805, 35.777905), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پانسیون گربه سایمون کت', 'تهران', 'boarding', ST_SetSRID(ST_MakePoint(51.308897, 35.759222), 4326), now());
@@ -186,7 +186,7 @@ INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('نیترو پت شاپ', 'تهران', 'shop', ST_SetSRID(ST_MakePoint(51.45159, 35.713024), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ رویال پت', 'خیابان کلینی، شهر تهران', 'shop', ST_SetSRID(ST_MakePoint(51.458424, 35.691477), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ لوسی', 'تهران، خیابان میثاق', 'shop', ST_SetSRID(ST_MakePoint(51.385784, 35.632744), 4326), now());
-INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ لیو', 'خیابان سید جمال‌الدین اسدآبادی، تهران', 'shop', ST_SetSRID(ST_MakePoint(51.404993, 35.744344), 4326), now());
+INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ لیو', 'خیابان سید جمال الدین اسدآبادی، تهران', 'shop', ST_SetSRID(ST_MakePoint(51.404993, 35.744344), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پرشین دیسکس', 'تهران، منطقه ۱۴، خیابان عجب گل', 'shop', ST_SetSRID(ST_MakePoint(51.453133, 35.666814), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت پارس', 'منطقه ۲', 'shop', ST_SetSRID(ST_MakePoint(51.344637, 35.733652), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پرنده پرطلایی امیر', 'خیابان ناز، تهران', 'shop', ST_SetSRID(ST_MakePoint(51.4442, 35.724775), 4326), now());
@@ -195,7 +195,7 @@ INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ این برا کیه؟', 'تهران', 'shop', ST_SetSRID(ST_MakePoint(51.335422, 35.651585), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پرندگان زینتی شاکری', 'تهران', 'shop', ST_SetSRID(ST_MakePoint(51.45006, 35.657946), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ رایا', 'تهران', 'shop', ST_SetSRID(ST_MakePoint(51.442856, 35.729101), 4326), now());
-INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ پت مارکت حیوانات', '۱۷ شهريور، پلاک جنوبی، بعد از چهارراه منصور (رضایی) لاین جنوب به شمال پ۹۳ پت مارکت حیوانات', 'shop', ST_SetSRID(ST_MakePoint(51.444573, 35.650973), 4326), now());
+INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ پت مارکت حیوانات', '۱۷ شهریور، پلاک جنوبی، بعد از چهارراه منصور (رضایی) لاین جنوب به شمال پ۹۳ پت مارکت حیوانات', 'shop', ST_SetSRID(ST_MakePoint(51.444573, 35.650973), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ میلانو', 'خ عشقیار(نیلوفر)، بین کوچه ۱۰ و ۱۲ پلاک ۹۴', 'shop', ST_SetSRID(ST_MakePoint(51.434143, 35.73572), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('آریاآکادمی', 'تهران', 'shop', ST_SetSRID(ST_MakePoint(51.390688, 35.629615), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('آکوآ پت شاپ آریا', 'تهران', 'shop', ST_SetSRID(ST_MakePoint(51.390702, 35.629473), 4326), now());
@@ -231,7 +231,7 @@ INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ مسیح', 'منطقه ۸', 'shop', ST_SetSRID(ST_MakePoint(51.465211, 35.72957), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ شهرپت', 'منطقه ۱', 'shop', ST_SetSRID(ST_MakePoint(51.416483, 35.759772), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('فروشگاه تهران', 'بلوار پاسدار گمنام، بین قیام و نبرد، پلاک ۶۱', 'shop', ST_SetSRID(ST_MakePoint(51.478411, 35.672479), 4326), now());
-INSERT INTO stores (name, address, category, location, created_at) VALUES ('پرندگان طلایه شومالی', 'تهران، تهران، خیابان پیروزی، نبرد شمالی، پائینتر از چهار راه ائمه اطهار، نرسیده به بانک رفاه و ملی، خیابان پیروزی، پلاک ۱۹۶', 'shop', ST_SetSRID(ST_MakePoint(51.480211, 35.67866), 4326), now());
+INSERT INTO stores (name, address, category, location, created_at) VALUES ('پرندگان طلایه شومالی', 'تهران، تهران، خیابان پیروزی، نبرد شمالی، پایینتر از چهار راه ایمه اطهار، نرسیده به بانک رفاه و ملی، خیابان پیروزی، پلاک ۱۹۶', 'shop', ST_SetSRID(ST_MakePoint(51.480211, 35.67866), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('داروخانه و پت شاپ سانا', 'خیابان هشتم شرقی، پلاک ۳، تهران', 'shop', ST_SetSRID(ST_MakePoint(51.309512, 35.727406), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ میراندا', 'تهران', 'shop', ST_SetSRID(ST_MakePoint(51.481127, 35.698048), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ آنلاین پرواز', 'تهران', 'shop', ST_SetSRID(ST_MakePoint(51.48066, 35.674824), 4326), now());
@@ -286,7 +286,7 @@ INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پترینا', 'شهرک غرب، منطقه ۲، تهران', 'shop', ST_SetSRID(ST_MakePoint(51.373652, 35.775072), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ دارما', 'تهران', 'shop', ST_SetSRID(ST_MakePoint(51.455688, 35.757117), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ انیمال کالا', 'خیابان رسالت - طبقه اول - واحد ۱۲، پلاک ۱۲، تهران', 'shop', ST_SetSRID(ST_MakePoint(51.477694, 35.738877), 4326), now());
-INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ شریاز', 'رسالت شهيد كرد، مجتمع دنیای نور، طبقه منفی۲، پلاک ۵۲', 'shop', ST_SetSRID(ST_MakePoint(51.477792, 35.738767), 4326), now());
+INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت شاپ شریاز', 'رسالت شهید کرد، مجتمع دنیای نور، طبقه منفی۲، پلاک ۵۲', 'shop', ST_SetSRID(ST_MakePoint(51.477792, 35.738767), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت آباد', 'تهران', 'shop', ST_SetSRID(ST_MakePoint(51.465921, 35.750678), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('پت‌آباد', 'خیابان بنی هاشم، پلاک ۲۰۲', 'shop', ST_SetSRID(ST_MakePoint(51.465843, 35.750655), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('مجموعه خرگوش زیبا', 'خیابان ایثارگران، تهران', 'shop', ST_SetSRID(ST_MakePoint(51.303019, 35.742905), 4326), now());
@@ -509,7 +509,7 @@ INSERT INTO stores (name, address, category, location, created_at) VALUES ('کل
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('کلینیک دامپزشکی نبض', 'تهران', 'vet', ST_SetSRID(ST_MakePoint(51.381653, 35.724842), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('کلینیک دامپزشکی یوسف آباد', 'تهران', 'vet', ST_SetSRID(ST_MakePoint(51.405251, 35.723779), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('شرکت پارس پویش ویتامین', 'تهران', 'vet', ST_SetSRID(ST_MakePoint(51.378606, 35.726882), 4326), now());
-INSERT INTO stores (name, address, category, location, created_at) VALUES ('کلینیک دامپزشکی دکتر آلن', 'تهران، بزرگراه شیخ فضل‌الله نوری شمال بعد از پل ستارخان خیابان شهید شوریده، پلاک۲۰', 'vet', ST_SetSRID(ST_MakePoint(51.3593, 35.719989), 4326), now());
+INSERT INTO stores (name, address, category, location, created_at) VALUES ('کلینیک دامپزشکی دکتر آلن', 'تهران، بزرگراه شیخ فضل الله نوری شمال بعد از پل ستارخان خیابان شهید شوریده، پلاک۲۰', 'vet', ST_SetSRID(ST_MakePoint(51.3593, 35.719989), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('کلینیک دامپزشکی گاندو', 'تهران', 'vet', ST_SetSRID(ST_MakePoint(51.356982, 35.720507), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('کلینیک دامپزشکی رنیسا', 'تهران', 'vet', ST_SetSRID(ST_MakePoint(51.407227, 35.727614), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('کلینیک دامپزشکی میلوی', 'تهران', 'vet', ST_SetSRID(ST_MakePoint(51.428417, 35.719736), 4326), now());
@@ -679,7 +679,7 @@ INSERT INTO stores (name, address, category, location, created_at) VALUES ('دا
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('دامپزشکی لوتوس', 'مابین خیابان رشید و پلاک ۲۰۸', 'vet', ST_SetSRID(ST_MakePoint(51.519224, 35.732351), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('دامپزشکی تهرانسر', 'منطقه ۲۱', 'vet', ST_SetSRID(ST_MakePoint(51.247961, 35.693782), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('کلینیک دامپزشکی ایران پت', 'خیابان ساسان، پلاک ۱۳، تهران', 'vet', ST_SetSRID(ST_MakePoint(51.406119, 35.803084), 4326), now());
-INSERT INTO stores (name, address, category, location, created_at) VALUES ('کلینیک دامپزشکی سیرنگ', 'جنب بانک‌ ملت خیابان ۱۱۵ رشید ابتدای', 'vet', ST_SetSRID(ST_MakePoint(51.520837, 35.731927), 4326), now());
+INSERT INTO stores (name, address, category, location, created_at) VALUES ('کلینیک دامپزشکی سیرنگ', 'جنب بانک ملت خیابان ۱۱۵ رشید ابتدای', 'vet', ST_SetSRID(ST_MakePoint(51.520837, 35.731927), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('بیمارستان دامپزشکی گیوش', 'تهران', 'vet', ST_SetSRID(ST_MakePoint(51.440069, 35.797085), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('کلینیک حیوانات خانگی قیطریه', 'تهران', 'vet', ST_SetSRID(ST_MakePoint(51.452676, 35.792693), 4326), now());
 INSERT INTO stores (name, address, category, location, created_at) VALUES ('کلینیک دامپزشکی قیطریه', 'منطقه ۱', 'vet', ST_SetSRID(ST_MakePoint(51.452586, 35.792806), 4326), now());

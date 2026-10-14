@@ -165,6 +165,8 @@ const STATUS_HINT: Record<GeoStatus, string> = {
   insecure: 'مکان‌یابی فقط روی HTTPS کار می‌کند — با آدرس https باز کنید (راهنمای dev.cmd)',
   'out-of-region':
     'موقعیت برگشتی خارج از ایران است — VPN/پروکسی را خاموش کنید تا مکان واقعی‌تان پیدا شود',
+  approximate:
+    'موقعیت تقریبی بود (چند کیلومتر خطا) — برای دقت بیشتر GPS گوشی را روشن کنید یا محله را جستجو کنید',
 }
 
 /**
@@ -202,7 +204,9 @@ function MyLocationButton() {
           ? 'نیازمند HTTPS'
           : status === 'out-of-region'
             ? 'خارج از ایران (VPN؟)'
-            : 'مکان من'}
+            : status === 'approximate'
+              ? 'موقعیت تقریبی'
+              : 'مکان من'}
     </button>
   )
 }

@@ -52,21 +52,21 @@ export function ProductRail() {
         <div>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-tide-500/10 px-3 py-1 text-xs font-bold text-tide-600 dark:text-tide-400">
             <ShoppingBasket className="size-3.5" />
-            موجود در اطراف شما
+            خرید از فروشگاه‌های محدوده
           </span>
           <h2 className="mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl">
-            پیشنهاد محصولات
+            کالاهای موجود
           </h2>
           <p className="mt-1.5 text-sm text-muted-foreground">
             {isLoading
-              ? 'در حال پیدا کردن کالاها…'
-              : `${faDigits(products.length)} کالا با قیمت و موجودی واقعی`}
+              ? 'در حال بارگذاری کالاها…'
+              : `${faDigits(products.length)} کالا با قیمت روز و موجودی`}
           </p>
         </div>
         <Button asChild variant="outline" className="gap-2">
           <Link to="/explore?preset=food">
             <ChevronLeft className="size-4" />
-            همه‌ی محصولات
+            مشاهده‌ی همه‌ی کالاها
           </Link>
         </Button>
       </div>

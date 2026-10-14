@@ -12,6 +12,11 @@ export type GeoStatus =
   | 'insecure'
   /** موقعیت برگشتی خارج از ایران است (تقریباً همیشه: VPN روشن) */
   | 'out-of-region'
+  /**
+   * مختصات داخل ایران است ولی چند کیلومتر خطا دارد یا بیرون از محدوده‌ی
+   * سرویس (تهران و کرج) می‌افتد — تخمین شبکه‌ای، نه موقعیت واقعی.
+   */
+  | 'approximate'
 
 interface GeoState {
   /** Center of every nearby query + map flyTo. Starts at Tehran. */

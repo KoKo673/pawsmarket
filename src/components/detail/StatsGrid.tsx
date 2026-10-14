@@ -121,8 +121,11 @@ export function StatsGrid({ item }: { item: ListingWithDistance }) {
               label="امتیاز"
               value={
                 item.reviewCount > 0
-                  ? `${faDecimal(item.rating)} از ${faDigits(item.reviewCount)} نظر`
-                  : 'هنوز بدون امتیاز'
+                  // «۴٫۳ از ۵ · ۱۰ نظر» — the old «۴٫۳ از ۱۰ نظر» read as
+                  // "4.3 out of 10", i.e. a bad score, because «از» was
+                  // followed by the review count rather than the scale.
+                  ? `${faDecimal(item.rating)} از ۵ · ${faDigits(item.reviewCount)} نظر`
+                  : 'هنوز امتیازی ثبت نشده'
               }
             />
             <Stat

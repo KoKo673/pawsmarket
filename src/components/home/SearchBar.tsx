@@ -21,6 +21,8 @@ function locationPlaceholder(status: GeoStatus): string {
       return 'برای مکان‌یابی سایت را با https باز کنید'
     case 'out-of-region':
       return 'VPN روشن است — موقعیت واقعی پیدا نشد'
+    case 'approximate':
+      return 'موقعیت تقریبی بود — تهران نمایش داده می‌شود'
     default:
       return 'تهران'
   }

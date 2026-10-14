@@ -18,9 +18,12 @@ export function CategoryGrid() {
   return (
     <section data-motion-section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
       <div className="mb-8">
-        <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">دسته‌بندی‌ها</h2>
+        <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
+          دسته‌بندی‌ها
+        </h2>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          تعدادها بر اساس شعاع جستجوی شما زنده به‌روز می‌شود
+          سه گروه اصلی: حیوانات، محصولات و خدمات — تعدادها با جستجوی شما
+          به‌روز می‌شوند
         </p>
       </div>
 
@@ -65,7 +68,9 @@ className="group flex flex-col items-start gap-2.5 rounded-2xl border border-bor
                           wrap to a second line instead. */}
                       <span className="block text-sm font-bold leading-snug">{label}</span>
                       <span className="mt-0.5 block text-xs font-medium leading-snug text-muted-foreground">
-                        {count > 0 ? `${faDigits(count)} مورد در اطراف` : 'کاوش کنید'}
+                        {count > 0
+                          ? `${faDigits(count)} مورد در محدوده`
+                          : 'مشاهده‌ی موارد'}
                       </span>
                     </span>
                   </button>

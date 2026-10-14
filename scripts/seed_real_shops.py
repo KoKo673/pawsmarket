@@ -269,6 +269,10 @@ def clean_gmaps_address(addr):
     """
     if not addr:
         return ""
+    # Persian glyphs first: OSM contributors type on both keyboards, so
+    # «۱۷ شهريور» and «رسالت شهيد كرد» arrive with Arabic yeh/kaf and would
+    # otherwise reach the UI looking subtly wrong to a Persian reader.
+    addr = persian_text(addr)
     district = ""
     m = _DISTRICT.search(addr)
     if m:
@@ -517,8 +521,28 @@ def _load_map(name):
 # stripped form («پت شاپ پرشیا»), and a name mismatch silently orphans a photo
 # we already paid to download.
 STORE_PHOTOS_RAW = _load_map("store_images.json")
-STORE_PHOTOS = {persian_text(keep_persian(persian_text(k))): v
-                for k, v in STORE_PHOTOS_RAW.items()}
+
+
+def _rekey_photos(raw):
+    """Normalise the photo map's keys the way catalog rows are normalised.
+
+    A Latin-only shop name («Iran Aquarium») reduces to the empty string under
+    keep_persian, and an empty key matches EVERY row whose name came out empty
+    too — one shop's photo silently became the fallback for 177 others. Names
+    that normalise to nothing are dropped instead of keyed on ''.
+    """
+    out = {}
+    for k, v in raw.items():
+        key = persian_text(keep_persian(persian_text(k)))
+        if not key:
+            continue                     # never keep an empty key
+        out[key] = v
+    return out
+
+
+STORE_PHOTOS = _rekey_photos(STORE_PHOTOS_RAW)
+# Shop name → its generated placeholder card (scripts/make_placeholders.py).
+PLACEHOLDERS = _load_map("store_placeholders.json")
 # Product name → its own marketplace photo (scripts/download_product_images.py)
 PRODUCT_PHOTOS = _load_map("product_images.json")
 
@@ -791,12 +815,25 @@ def main():
                 or STORE_PHOTOS.get(r["name"].strip(" []()"))
                 or [])
         real = [p for p in real if os.path.exists(os.path.join(HERE, "..", "public", p))]
-        pool = [p for p in (STORE_POOLS.get(r["category"]) or STORE_POOLS["shop"])
-                if os.path.exists(os.path.join(HERE, "..", "public", p))]
-        if not pool:  # هیچ تصویری نصب نشده — به استخر فروشگاه برگرد
-            pool = [p for p in STORE_POOLS["shop"]
+
+        # A shop with no photo of its own gets a generated card, NOT the stock
+        # pool. Eight stock images were being shared across 461 businesses —
+        # «shop-2.jpg» appeared 119 times — so a list showed the same
+        # storefront on unrelated shops, which reads as fabrication and is the
+        # single fastest way to lose a visitor's trust in the catalogue.
+        # The generated card is unique, carries the shop's own name, and
+        # honestly presents itself as a placeholder rather than a photograph.
+        own = PLACEHOLDERS.get(r["name"], "")
+        if not real and own and os.path.exists(
+                os.path.join(HERE, "..", "public", own)):
+            real = [own]
+        elif not real:
+            # Last resort only — the generator did not cover this name.
+            pool = [p for p in (STORE_POOLS.get(r["category"]) or STORE_POOLS["shop"])
                     if os.path.exists(os.path.join(HERE, "..", "public", p))]
-        stock = pool[zlib.crc32(r["name"].encode("utf-8")) % len(pool)] if pool else ""
+            if pool:
+                real = [pool[zlib.crc32(r["name"].encode("utf-8")) % len(pool)]]
+
         meta = {
             "phone": phone,
             "category": r["category"],
@@ -805,7 +842,7 @@ def main():
             "website": k.get("website") or r["website"],
             "categories": cats,
             "description": desc,
-            "image": real[0] if real else stock,
+            "image": real[0] if real else "",
         }
         # Second real photo gives the detail gallery something to page through;
         # never pad it with a stock shot of a different business type.
