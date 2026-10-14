@@ -157,6 +157,34 @@ def check_rating_wording():
              + "; ".join(hits[:4]))
 
 
+def check_enrichment_coverage():
+    """Live marketplace figures must not silently fall off the catalogue.
+
+    PRODUCT_ENRICHMENT is keyed by the product's exact title, so a pipeline
+    re-run that changes one glyph in a name quietly drops that product's
+    rating and price history — the same class of failure that already orphaned
+    the photo map once. Nothing else would notice: the card simply shows less.
+    """
+    enrichment = load("product_enrichment.json") or {}
+    catalog = load("catalog_products.json") or []
+    if not enrichment or not catalog:
+        warn("enrichment or catalogue missing — coverage not checked")
+        return
+    coverage = len(enrichment) / len(catalog)
+    if coverage < 0.30:
+        fail(f"only {coverage:.0%} of the catalogue is enriched — "
+             f"the lookup probably lost its keys")
+    elif coverage < 0.45:
+        warn(f"{coverage:.0%} of the catalogue is enriched")
+    # A product with a price range but no comparison price cannot be shown
+    # honestly, because the badge needs both halves.
+    orphans = [n for n, v in enrichment.items()
+               if v.get("price_low_30d") and not v.get("digikala_price")]
+    if orphans:
+        fail(f"{len(orphans)} products have a 30-day range but no marketplace "
+             f"price to compare it against: {orphans[:2]}")
+
+
 def check_latin_and_encoding():
     """Catalogue text must be Persian: no stray Latin digits or Arabic yeh."""
     catalog = load("catalog_products.json") or []
@@ -210,6 +238,7 @@ def main():
     check_duplicate_images()
     check_product_images()
     check_photos_exist()
+    check_enrichment_coverage()
     check_rating_wording()
     check_latin_and_encoding()
     check_watermarks()

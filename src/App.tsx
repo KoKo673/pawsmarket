@@ -46,6 +46,13 @@ const AuthCard = lazy(() =>
 const ForgotPasswordPage = lazy(() =>
   import('@/pages/ForgotPasswordPage')
     .then((m) => ({ default: m.ForgotPasswordPage })))
+const BookingPage = lazy(() =>
+  import('@/pages/BookingPage').then((m) => ({ default: m.BookingPage })))
+const BookingManagePage = lazy(() =>
+  import('@/pages/BookingManagePage')
+    .then((m) => ({ default: m.BookingManagePage })))
+const MyBookingsPage = lazy(() =>
+  import('@/pages/MyBookingsPage').then((m) => ({ default: m.MyBookingsPage })))
 
 /** Page-shaped skeleton while a split route arrives. */
 function RouteFallback() {
@@ -156,6 +163,32 @@ function AppRoutes() {
               element={
                 <AnimatedPage>
                   <AuthCard mode="login" />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/booking/manage/:token"
+              element={
+                <AnimatedPage>
+                  <BookingManagePage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/booking/:storeId"
+              element={
+                <AnimatedPage>
+                  <BookingPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/bookings"
+              element={
+                <AnimatedPage>
+                  <RequireAuth>
+                    <MyBookingsPage />
+                  </RequireAuth>
                 </AnimatedPage>
               }
             />

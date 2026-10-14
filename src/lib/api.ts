@@ -1,4 +1,4 @@
-import { PRODUCT_IMAGES } from '@/data/products'
+import { PRODUCT_ENRICHMENT, PRODUCT_IMAGES } from '@/data/products'
 import { SHOP_ENRICHMENT, type ShopMeta } from '@/data/shops'
 import { applyFilters } from '@/lib/search'
 import { asset } from '@/lib/utils'
@@ -260,6 +260,11 @@ function toProductListing(raw: RawRow, storeNames: Map<string, string>): Product
     str(raw.storeName, '') ||
     (raw.store_id != null ? (storeNames.get(String(raw.store_id)) ?? `فروشگاه شماره ${raw.store_id}`) : 'پازمارکت')
 
+  // Live marketplace figures, when this exact product was matched to its
+  // listing (scripts/enrich_digikala.py). Absent for products with no match —
+  // the card simply shows less rather than a guessed number.
+  const live = PRODUCT_ENRICHMENT[name]
+
   return {
     id: wireId('product', raw),
     kind: 'product',
@@ -278,6 +283,20 @@ function toProductListing(raw: RawRow, storeNames: Map<string, string>): Product
     inStock: bool(raw.inStock, true),
     storeName,
     storeId: raw.store_id != null ? wireId('store', { id: raw.store_id }) : undefined,
+    ...(live
+      ? {
+          ...(live.rating !== undefined ? { rating: live.rating } : {}),
+          ...(live.ratingCount !== undefined
+            ? { ratingCount: live.ratingCount }
+            : {}),
+          ...(live.priceLow30d ? { priceLow30d: live.priceLow30d } : {}),
+          ...(live.priceHigh30d ? { priceHigh30d: live.priceHigh30d } : {}),
+          ...(live.digikalaPrice ? { digikalaPrice: live.digikalaPrice } : {}),
+          ...(live.discountPct ? { discountPct: live.discountPct } : {}),
+          ...(live.seller ? { seller: live.seller } : {}),
+          ...(live.url ? { productUrl: live.url } : {}),
+        }
+      : {}),
   }
 }
 

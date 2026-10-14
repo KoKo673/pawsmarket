@@ -16,7 +16,7 @@ import {
 import type { ReactNode } from 'react'
 
 import { Badge } from '@/components/ui/badge'
-import { faDecimal, faDigits, faPhone, faPrice, faTimeRange } from '@/lib/fa'
+import { faDecimal, faDigits, faPhone, faPrice, faPriceShort, faTimeRange } from '@/lib/fa'
 import { formatAge, formatDistance } from '@/lib/geo'
 import { cn } from '@/lib/utils'
 import type { ListingWithDistance, MedicalFlag } from '@/types'
@@ -106,11 +106,26 @@ export function StatsGrid({ item }: { item: ListingWithDistance }) {
         {item.kind === 'product' && (
           <>
             <Stat icon={<Tag className="size-3.5 text-primary" />} label="قیمت" value={faPrice(item.price)} />
+            {/* بازارگاه واقعی — فقط وقتی محصول با فهرست خودش تطبیق خورده باشد */}
+            {item.rating !== undefined && (item.ratingCount ?? 0) > 0 && (
+              <Stat
+                icon={<Star className="size-3.5 text-amber-500" />}
+                label="امتیاز خریداران"
+                value={`${faDecimal(item.rating)} از ۵ · ${faDigits(item.ratingCount!)} نظر`}
+              />
+            )}
+            {item.priceLow30d && item.priceHigh30d && (
+              <Stat
+                icon={<Activity className="size-3.5 text-accent" />}
+                label="بازه‌ی ۳۰ روز"
+                value={`${faPriceShort(item.priceLow30d)} تا ${faPriceShort(item.priceHigh30d)} تومان`}
+              />
+            )}
             <Stat icon={<Bone className="size-3.5 text-primary" />} label="برند" value={item.brand} />
             <Stat icon={<ShoppingBag className="size-3.5 text-primary" />} label="دسته" value={item.category === 'food' ? 'غذا' : item.category === 'toy' ? 'اسباب‌بازی' : item.category === 'health' ? 'سلامت' : item.category === 'accessories' ? 'لوازم' : 'آرایشی'} />
             <Stat icon={<Activity className="size-3.5 text-accent" />} label="موجودی" value={item.inStock ? 'موجود' : 'ناموجود'} />
             <Stat icon={<MapPin className="size-3.5 text-accent" />} label="فاصله" value={formatDistance(item.distanceKm)} />
-            <Stat icon={<Star className="size-3.5 text-accent" />} label="فروشنده" value={item.storeName} />
+            <Stat icon={<Star className="size-3.5 text-accent" />} label="فروشنده" value={item.seller ?? item.storeName} />
           </>
         )}
 

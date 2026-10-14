@@ -1,6 +1,6 @@
-import { Bone, MapPin, Navigation, PawPrint, Phone, ShieldCheck, Store } from 'lucide-react'
+import { Bone, CalendarDays, MapPin, Navigation, PawPrint, Phone, ShieldCheck, Store } from 'lucide-react'
 import { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 import { ImageGallery } from '@/components/detail/ImageGallery'
 import { StatsGrid } from '@/components/detail/StatsGrid'
@@ -19,6 +19,9 @@ const KIND_BADGE = {
   product: { label: 'محصول', icon: Bone },
   store: { label: 'فروشگاه', icon: Store },
 } as const
+
+/** دسته‌هایی که نوبت‌گیری برایشان معنا دارد — یک پت‌شاپ نوبت نمی‌گیرد. */
+const BOOKABLE = ['vet', 'groomer', 'boarding', 'shelter']
 
 /**
  * برگه‌ی جزئیات جهانی — با باز شدن هر کارت/پین باز می‌شود.
@@ -150,13 +153,23 @@ export function DetailModal() {
                     <Navigation className="size-4" />
                     مسیریابی
                   </Button>
-                  {item.phone && (
+                  {/* نوبت‌گیری فقط برای مراکز خدماتی — فروشگاه کالا نوبت نمی‌خواهد */}
+                  {BOOKABLE.includes(item.category) ? (
                     <Button asChild className="flex-1 gap-1.5 sm:flex-none">
-                      <a href={`tel:${item.phone.replace(/[^+\d]/g, '')}`}>
-                        <Phone className="size-4" />
-                        تماس
-                      </a>
+                      <Link to={`/booking/${item.id.replace('store:', '')}`}>
+                        <CalendarDays className="size-4" />
+                        درخواست نوبت
+                      </Link>
                     </Button>
+                  ) : (
+                    item.phone && (
+                      <Button asChild className="flex-1 gap-1.5 sm:flex-none">
+                        <a href={`tel:${item.phone.replace(/[^+\d]/g, '')}`}>
+                          <Phone className="size-4" />
+                          تماس
+                        </a>
+                      </Button>
+                    )
                   )}
                 </>
               ) : item.kind === 'product' ? (

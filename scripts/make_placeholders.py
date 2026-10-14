@@ -102,9 +102,6 @@ def card(name: str, category: str, area: str) -> str:
 
 def main():
     os.makedirs(OUTDIR, exist_ok=True)
-    import sys
-    sys.path.insert(0, HERE)
-    from seed_real_shops import load_apify_places  # noqa: E402
 
     sql = os.path.join(HERE, "seed_real.sql")
     if not os.path.isfile(sql):

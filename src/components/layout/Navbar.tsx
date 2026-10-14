@@ -18,6 +18,7 @@ const NAV_LINKS = [
   { to: '/explore', label: 'کاوش روی نقشه' },
   { to: '/pets', label: 'حیوانات' },
   { to: '/adoption', label: 'سرپرستی' },
+  { to: '/bookings', label: 'نوبت‌ها' },
 ]
 
 /**

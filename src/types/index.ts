@@ -66,6 +66,29 @@ export interface ProductListing extends BaseListing {
   storeName: string
   /** شناسه‌ی namespaced فروشگاه (store:3) برای پیمایش به جزئیات فروشگاه */
   storeId?: string
+  /**
+   * Live figures from the marketplace listing (scripts/enrich_digikala.py).
+   *
+   * `rating` is 0–5 with the review count beside it, which is what makes a
+   * rating evidence rather than a number. `priceLow30d` is the point of the
+   * whole enrichment: it lets the card say whether today's price is actually
+   * a good one, which no other pet marketplace in Iran shows.
+   * All optional — a product with no marketplace match simply omits them.
+   */
+  rating?: number
+  ratingCount?: number
+  priceLow30d?: number
+  priceHigh30d?: number
+  /**
+   * The marketplace's own current price for the listing the history belongs
+   * to. Needed because `price` is THIS shop's price: without this there is no
+   * way to tell whether the two are even the same offer, and a 30-day low
+   * belonging to a different seller would be reported as this shop's bargain.
+   */
+  digikalaPrice?: number
+  discountPct?: number
+  seller?: string
+  productUrl?: string
 }
 
 export interface StoreListing extends BaseListing {

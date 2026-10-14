@@ -46,6 +46,38 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
   const priceLabel =
     item.kind === 'store' ? null : item.price === 0 ? 'رایگان' : `${faPriceShort(item.price)} تومان`
 
+  /**
+   * «کمترین قیمت ۳۰ روز» — and only ever in the direction that is provable.
+   *
+   * The subtlety the first two versions missed: `item.price` is THIS shop's
+   * price, while the 30-day range belongs to the marketplace listing, which
+   * may be a different seller entirely. So the range can only ever support a
+   * claim in one direction:
+   *
+   *   • «this shop is cheaper than the marketplace has been all month» is
+   *     TRUE whenever this shop's price sits at or below that low — it is a
+   *     statement about this shop, and a genuinely useful one.
+   *
+   *   • «this shop is at its highest» is NOT supported. The history is not
+   *     this shop's history, so a shop priced a few percent above the
+   *     marketplace would be branded expensive on somebody else's evidence.
+   *     That badge fired on 147 products before it was removed, which is a
+   *     warning about a competitor's pricing, not about the shop on screen.
+   *
+   * Two further guards, each of which was a real defect:
+   *   · a flat range says nothing (141 products never moved, and a constant
+   *     is trivially «the lowest»), so a minimum spread is required;
+   *   · a range with no marketplace price to anchor it is unusable, because
+   *     there is then no way to know the two describe the same offer.
+   */
+  const priceHint = (() => {
+    if (item.kind !== 'product' || item.price <= 0) return null
+    const { priceLow30d: low, priceHigh30d: high, digikalaPrice } = item
+    if (!low || !high || !digikalaPrice || digikalaPrice <= 0) return null
+    if ((high - low) / Math.max(1, low) < 0.05) return null
+    return item.price <= low * 1.02 ? 'کمترین قیمت ۳۰ روز' : null
+  })()
+
   return (
     <article
       /* ورود پله‌ای از سیستم مشترک motion (fail-open: بدون JS هم نمایان) */
@@ -64,7 +96,16 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
       aria-label={`مشاهده‌ی جزئیات ${item.name}`}
     >
       {/* تصویر */}
-      <div className="relative aspect-[4/3] overflow-hidden">
+      {/* Products use a squarer frame: the marketplace photos are square, and
+          a 4:3 box left wide empty margins around each one on a phone, so a
+          single card filled most of the screen. Pets and shops stay 4:3 —
+          those photos are landscape and fill the frame. */}
+      <div
+        className={cn(
+          'relative overflow-hidden',
+          item.kind === 'product' ? 'aspect-[5/4]' : 'aspect-[4/3]',
+        )}
+      >
         <img
           src={item.images[0]}
           alt={item.name}
@@ -116,21 +157,32 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
           <MapPin className="size-3" />
           {formatDistance(item.distanceKm)}
         </span>
+
+        {/* نشان قیمت — همان چیزی که این پلتفرم را از یک فهرست ساده جدا می‌کند */}
+        {priceHint && (
+          <span className="absolute bottom-3 left-3 rounded-full bg-accent px-2.5 py-1 text-[11px] font-bold text-accent-foreground backdrop-blur-sm">
+            {priceHint}
+          </span>
+        )}
       </div>
 
       {/* بدنه */}
       <div className="space-y-1.5 p-4">
-        <div className="flex items-start justify-between gap-2">
-          {/* Two lines, not one: a single-line truncate cut every long shop
-              name to a dangling «…» («فروشگاه ماهی‌های آکواریومی ما…»), which
-              hid the very word that tells the shopper what the shop sells. */}
-          <h3 className="line-clamp-2 min-w-0 font-bold leading-snug transition-colors group-hover:text-primary">
-            {item.name}
-          </h3>
-          {priceLabel && (
-            <span className="shrink-0 text-sm font-extrabold text-primary">{priceLabel}</span>
-          )}
-        </div>
+        {/* Name above, price below — stacked rather than side by side.
+            Beside the name, a long product title («غذای پرنده تاپ فید مدل
+            Meal Worm وزن ۴۰ گرم») squeezed the price into a narrow column on
+            a phone, and the two fought for the same line. Stacking gives the
+            name the full width it needs to wrap, and the price its own row
+            where it reads as a price rather than a fragment. */}
+        {/* Two lines, not one: a single-line truncate cut every long shop
+            name to a dangling «…» («فروشگاه ماهی‌های آکواریومی ما…»), which
+            hid the very word that tells the shopper what the shop sells. */}
+        <h3 className="line-clamp-2 font-bold leading-snug transition-colors group-hover:text-primary">
+          {item.name}
+        </h3>
+        {priceLabel && (
+          <p className="text-sm font-extrabold text-primary">{priceLabel}</p>
+        )}
 
         {/* خط متادیتای نوع‌محور */}
         <p className="line-clamp-1 text-sm text-muted-foreground">
@@ -145,14 +197,28 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
                 .filter(Boolean)
                 .join(' · ')
             : item.kind === 'product'
-              ? `${item.brand} · ${status}`
+              ? // A product's own rating, with the review count behind it —
+                // «۳٫۸ ★ · ۲۶ نظر». Shown instead of the brand when present:
+                // how buyers rated it says more about a bag of food than the
+                // manufacturer's name does.
+                item.rating !== undefined && (item.ratingCount ?? 0) > 0
+                ? `${faDecimal(item.rating)} ★ · ${faDigits(item.ratingCount!)} نظر`
+                : `${item.brand} · ${status}`
               : status}
         </p>
 
-        <div className="flex items-center justify-between pt-0.5 text-xs font-medium text-muted-foreground">
+        {/* Footer row.
+            Products show the SELLER, not the address: every product inherits
+            its shop's coordinates and the address is «تهران» for nearly all
+            of them, so the line said nothing while costing vertical space a
+            phone does not have. The shop name is what a shopper actually
+            needs to decide. */}
+        <div className="flex items-center justify-between gap-2 pt-0.5 text-xs font-medium text-muted-foreground">
           <span className="inline-flex min-w-0 items-center gap-1">
             <Tag className={cn('size-3 shrink-0', meta.accent)} />
-            <span className="truncate">{item.address}</span>
+            <span className="truncate">
+              {item.kind === 'product' ? item.storeName : item.address}
+            </span>
           </span>
           {item.kind === 'store' && (
             <span className="inline-flex shrink-0 items-center gap-1 text-amber-500">

@@ -985,15 +985,23 @@ def main():
     with open(os.path.join(HERE, "..", "src", "data", "shops.ts"), "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
 
-    # ── TS product photos ──
+    # ── TS product photos + live marketplace figures ──
+    #
     # Every one of the ~1000 real marketplace products gets its own photo here.
     # Before this the file held ~30 hand-written titles, so the other 970 fell
     # back to a category stock shot: «غذای ماهی قرمز و گوپی» rendered the dog
     # kibble-and-a-paw picture. A photo of a different product is a lie about
     # what the shop sells, so it must not be substituted silently.
+    #
+    # PRODUCT_ENRICHMENT carries what the marketplace itself knows and this
+    # catalogue otherwise could not state: a rating with the review count
+    # behind it, the live price, and the 30-day low and high — the last of
+    # which is the only figure that tells a shopper whether today's price is
+    # actually a good one.
     if PRODUCT_PHOTOS:
         present = [p for p in PRODUCT_PHOTOS.values()
                    if os.path.exists(os.path.join(HERE, "..", "public", p))]
+        enrichment = _load_map("product_enrichment.json")
         plines = [
             "import { asset } from '@/lib/utils'",
             "",
@@ -1006,6 +1014,20 @@ def main():
             " * اولویت نمایش: ۱) تصویر رکورد ۲) این نقشه ۳) تصویر پیش‌فرض دسته‌بندی.",
             " * تولید خودکار: scripts/seed_real_shops.py — دستی ویرایش نکنید.",
             " */",
+            "export interface ProductMeta {",
+            "  /** امتیاز ۰ تا ۵ و تعداد نظر — از خود بازارگاه، نه تخمینی. */",
+            "  rating?: number",
+            "  ratingCount?: number",
+            "  /** بازه‌ی قیمت ۳۰ روز گذشته، برای سنجش «قیمت امروز خوب است؟» */",
+            "  priceLow30d?: number",
+            "  priceHigh30d?: number",
+            "  /** قیمت خودِ بازارگاه برای همان آگهی — مبنای مقایسه با قیمت این فروشگاه */",
+            "  digikalaPrice?: number",
+            "  discountPct?: number",
+            "  seller?: string",
+            "  url?: string",
+            "}",
+            "",
             "export const PRODUCT_IMAGES: Record<string, string> = {",
         ]
         for pname, ppath in sorted(PRODUCT_PHOTOS.items()):
@@ -1013,10 +1035,39 @@ def main():
                 plines.append(f"  {json.dumps(pname, ensure_ascii=False)}: "
                               f"asset({json.dumps(ppath)}),")
         plines.append("}")
+        plines.append("")
+        plines.append("/** اعداد زنده‌ی بازارگاه برای هر محصول (scripts/enrich_digikala.py). */")
+        plines.append("export const PRODUCT_ENRICHMENT: Record<string, ProductMeta> = {")
+        for pname in sorted(enrichment):
+            e = enrichment[pname]
+            fields = []
+            if e.get("rating") is not None:
+                fields.append(f"rating: {e['rating']}")
+                fields.append(f"ratingCount: {int(e.get('rating_count') or 0)}")
+            if e.get("price_low_30d"):
+                fields.append(f"priceLow30d: {int(e['price_low_30d'])}")
+            if e.get("price_high_30d"):
+                fields.append(f"priceHigh30d: {int(e['price_high_30d'])}")
+            # Required by the price badge: without it there is no way to know
+            # the history and this shop's price describe the same offer.
+            if e.get("digikala_price"):
+                fields.append(f"digikalaPrice: {int(e['digikala_price'])}")
+            if e.get("discount_pct"):
+                fields.append(f"discountPct: {int(e['discount_pct'])}")
+            if e.get("seller"):
+                fields.append(f"seller: {json.dumps(e['seller'], ensure_ascii=False)}")
+            if e.get("url"):
+                fields.append(f"url: {json.dumps(e['url'])}")
+            if not fields:
+                continue
+            plines.append(f"  {json.dumps(pname, ensure_ascii=False)}: "
+                          f"{{ {', '.join(fields)} }},")
+        plines.append("}")
         with open(os.path.join(HERE, "..", "src", "data", "products.ts"), "w",
                   encoding="utf-8") as f:
             f.write("\n".join(plines) + "\n")
-        print(f"products.ts: {len(present)} real product photos")
+        print(f"products.ts: {len(present)} real product photos, "
+              f"{len(enrichment)} enriched")
     else:
         print("products.ts: no product_images.json — keeping the curated defaults")
 
