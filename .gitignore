@@ -27,3 +27,6 @@ scripts/.overpass-cache/
 # Harvest scratch: resumable progress markers, not source
 scripts/.store_images_done.json
 scripts/*.tmp
+
+# stale build artefact committed by accident (b0c3b43)
+assets/
