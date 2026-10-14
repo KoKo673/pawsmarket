@@ -1,4 +1,4 @@
-import { Bone, Heart, MapPin, PawPrint, Star, Store, Tag } from 'lucide-react'
+import { BedDouble, Bone, Heart, HeartHandshake, MapPin, PawPrint, Scissors, Star, Stethoscope, Store, Tag } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { faDecimal, faDigits, faPriceShort } from '@/lib/fa'
@@ -15,6 +15,23 @@ const KIND_META = {
 } as const
 
 /**
+ * A store's badge names what it actually is.
+ *
+ * Every service business used to be labelled «فروشگاه», so a veterinary
+ * clinic, a grooming salon and an animal shelter all read as shops — the
+ * exact confusion the three-pillar taxonomy exists to remove. The badge is
+ * the first thing on the card, so it is the worst place to be vague.
+ */
+const STORE_BADGE: Record<string, { label: string; icon: typeof Store }> = {
+  vet: { label: 'دامپزشکی', icon: Stethoscope },
+  groomer: { label: 'آرایشگاه', icon: Scissors },
+  boarding: { label: 'پانسیون', icon: BedDouble },
+  shelter: { label: 'پناهگاه', icon: HeartHandshake },
+  shop: { label: 'فروشگاه', icon: Store },
+  cafe: { label: 'کافه', icon: Store },
+}
+
+/**
  * کارت نتیجه‌ی جهانی (لیست، نوار ویژه، گریدها).
  * چهار فیلد اصلی مشخصات: تصویر، نام، قیمت/وضعیت و «فاصله از شما».
  */
@@ -24,7 +41,12 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
   const liked = useFavoritesStore((s) => s.ids.includes(item.id))
   const toggleFavorite = useFavoritesStore((s) => s.toggle)
 
-  const meta = KIND_META[item.kind]
+  const base = KIND_META[item.kind]
+  // A store's badge names its own category so a clinic never reads as a shop.
+  const badge = item.kind === 'store'
+    ? STORE_BADGE[item.category] ?? STORE_BADGE.shop
+    : base
+  const meta = { ...base, ...badge }
   const Icon = meta.icon
 
   // خط وضعیت اصلی، بر اساس نوع آگهی — بدون اختراع امتیاز/نظر
