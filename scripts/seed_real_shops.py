@@ -963,7 +963,6 @@ def main():
         "  closesAt?: string",
         "  website?: string",
         "  categories?: string[]",
-        "  description?: string",
         "  image?: string",
         "  /** Extra real photos of this shop, for the detail gallery. */",
         "  images?: string[]",
@@ -974,16 +973,56 @@ def main():
         "",
         "export const SHOP_ENRICHMENT: Record<string, ShopMeta> = {",
     ]
+    # `description` and `website` are written to shops-detail.ts instead — see
+    # below. Together they were 47% of this file's bytes, and the list view
+    # never reads either: 460 shops carried ~183 bytes of generated prose each,
+    # downloaded so that one modal could show it one shop at a time.
+    DETAIL_KEYS = ("description", "website")
     for name, meta in enrichment.items():
         lines.append(f"  {json.dumps(name, ensure_ascii=False)}: {{")
         for k, v in meta.items():
-            if v == "" or v is None:
+            if v == "" or v is None or k in DETAIL_KEYS:
                 continue
             lines.append(f"    {k}: {ts_val(v)},")
         lines.append("  },")
     lines.append("}")
     with open(os.path.join(HERE, "..", "src", "data", "shops.ts"), "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
+
+    # ── TS shop detail fields ──
+    # Same generator, same source data, second file. Kept separate so the
+    # detail sheet can pull it on demand while the list stays light; because
+    # one script writes both, they cannot drift apart the way two hand-kept
+    # files would.
+    dlines = [
+        "/**",
+        " * فیلدهای سنگین فروشگاه — فقط برای برگه‌ی جزئیات.",
+        " *",
+        " * `description` و `website` اینجا هستند نه در shops.ts: لیست هیچ‌کدام را",
+        " * نمی‌خواند، و با هم ۴۷٪ حجم فایل اصلی بودند. جستجوی متنی هم دیگر به",
+        " * توضیحات تکیه نمی‌کند (برچسب دسته و حوزه‌ها جایش را گرفته‌اند).",
+        " * تولید خودکار: scripts/seed_real_shops.py — دستی ویرایش نکنید.",
+        " */",
+        "export interface ShopDetail {",
+        "  description?: string",
+        "  website?: string",
+        "}",
+        "",
+        "export const SHOP_DETAIL: Record<string, ShopDetail> = {",
+    ]
+    for name, meta in enrichment.items():
+        kept = {k: meta[k] for k in DETAIL_KEYS
+                if meta.get(k) not in ("", None)}
+        if not kept:
+            continue
+        dlines.append(f"  {json.dumps(name, ensure_ascii=False)}: {{")
+        for k, v in kept.items():
+            dlines.append(f"    {k}: {ts_val(v)},")
+        dlines.append("  },")
+    dlines.append("}")
+    with open(os.path.join(HERE, "..", "src", "data", "shops-detail.ts"),
+              "w", encoding="utf-8") as f:
+        f.write("\n".join(dlines) + "\n")
 
     # ── TS product photos + live marketplace figures ──
     #

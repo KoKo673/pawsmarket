@@ -102,9 +102,10 @@ export interface StoreListing extends BaseListing {
   closesAt: string
   /** Empty string = فروشگاه شماره‌ی تماس ثبت‌نشده دارد. */
   phone: string
-  /** فروشگاه‌های واقعی: سایت رسمی (اختیاری) */
-  website?: string
-  /** حوزه‌های فعالیت/کالاهای عرضه‌شده (از سایت یا OSM استخراج‌شده) */
+  /**
+   * حوزه‌های فعالیت/کالاهای عرضه‌شده (از سایت یا OSM استخراج‌شده).
+   * Also searched: a visitor types «واکسیناسیون», not the «vet» code.
+   */
   categories?: string[]
 }
 

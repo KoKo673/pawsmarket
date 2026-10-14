@@ -7,6 +7,7 @@ import { StatsGrid } from '@/components/detail/StatsGrid'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { SHOP_DETAIL } from '@/data/shops-detail'
 import { SHOP_ENRICHMENT } from '@/data/shops'
 import { faDecimal, faDigits, faPrice, faTimeRange } from '@/lib/fa'
 import { formatDistance } from '@/lib/geo'
@@ -93,10 +94,15 @@ export function DetailModal() {
           {/* آمار کلیدی */}
           <StatsGrid item={item} />
 
-          {/* توضیحات */}
+          {/* توضیحات — the full text for a shop comes from shops-detail, which
+              the list never loads; other kinds already carry their own. */}
           <div>
             <h4 className="text-sm font-extrabold">درباره</h4>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {item.kind === 'store'
+                ? SHOP_DETAIL[item.name]?.description || item.description
+                : item.description}
+            </p>
           </div>
 
           {/* نوار اعتماد */}

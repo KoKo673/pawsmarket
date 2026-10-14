@@ -1,4 +1,5 @@
 import { haversineKm } from '@/lib/geo'
+import { storeLabel } from '@/lib/store-labels'
 import type { Filters, GeoPoint, Listing, ListingWithDistance } from '@/types'
 
 /**
@@ -42,13 +43,23 @@ export function applyFilters(listings: Listing[], origin: GeoPoint, filters: Fil
     }
 
     // 5. Keyword match across the searchable surface of each kind
+    //
+    // The store branch is spelled out rather than interpolated inline, because
+    // it is the one that changed: `item.category` holds the CODE («vet»), so a
+    // visitor typing «دامپزشکی» could never match it — the word only existed
+    // in the generated `description`. The Persian label and the scope list
+    // (`categories`, which the API has always sent but nothing ever searched)
+    // replace that, and they are real structured data rather than template
+    // prose. Pets and products are untouched: their descriptions come from the
+    // API, not from the enrichment file this change is about.
     if (query) {
       const haystack =
         item.kind === 'pet'
           ? `${item.name} ${item.breed} ${item.species} ${item.description}`
           : item.kind === 'product'
             ? `${item.name} ${item.brand} ${item.category} ${item.storeName} ${item.description}`
-            : `${item.name} ${item.category} ${item.address} ${item.description}`
+            : `${item.name} ${storeLabel(item.category)} ${item.address} ` +
+              `${(item.categories ?? []).join(' ')}`
       if (!haystack.toLowerCase().includes(query)) return false
     }
 

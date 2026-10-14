@@ -1,4 +1,5 @@
 import { PRODUCT_ENRICHMENT, PRODUCT_IMAGES } from '@/data/products'
+import { storeLabel } from '@/lib/store-labels'
 import { SHOP_ENRICHMENT, type ShopMeta } from '@/data/shops'
 import { applyFilters } from '@/lib/search'
 import { asset } from '@/lib/utils'
@@ -333,10 +334,11 @@ function toStoreListing(raw: RawRow): StoreListing {
     id: wireId('store', raw),
     kind: 'store',
     name,
-    description:
-      str(raw.description, '') ||
-      meta?.description ||
-      `«${name}» — توضیحات تکمیلی از سمت مجموعه ثبت نشده است.`,
+    // A short line only. The real description lives in shops-detail.ts and is
+    // read by the sheet on open; carrying ~183 bytes of generated prose per
+    // shop here meant 460 copies of it in the initial bundle for a text only
+    // one modal ever shows.
+    description: `«${name}» — ${storeLabel(category) || 'فروشگاه'} در ${address}.`,
     images: storeImages(meta, category),
     location: toPoint(raw),
     address,
@@ -349,7 +351,9 @@ function toStoreListing(raw: RawRow): StoreListing {
     opensAt: meta?.opensAt ?? str(raw.opensAt ?? raw.opens_at, '09:00'),
     closesAt: meta?.closesAt ?? str(raw.closesAt ?? raw.closes_at, '21:00'),
     phone: meta?.phone ?? str(raw.phone, ''),
-    website: meta?.website,
+    // `website` is deliberately not carried: 569 of its 605 values were Google
+    // Maps search URLs of the shop's own name — not the shop's site — and
+    // nothing ever rendered the field. The 36 real ones live in shops-detail.
     categories: meta?.categories,
   }
 }

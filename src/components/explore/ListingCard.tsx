@@ -3,6 +3,7 @@ import { BedDouble, Bone, Heart, HeartHandshake, MapPin, PawPrint, Scissors, Sta
 import { Badge } from '@/components/ui/badge'
 import { faDecimal, faDigits, faPriceShort } from '@/lib/fa'
 import { formatAge, formatDistance } from '@/lib/geo'
+import { storeLabel } from '@/lib/store-labels'
 import { cn } from '@/lib/utils'
 import type { ListingWithDistance } from '@/types'
 import { useFavoritesStore } from '@/store/favorites.store'
@@ -21,14 +22,18 @@ const KIND_META = {
  * clinic, a grooming salon and an animal shelter all read as shops — the
  * exact confusion the three-pillar taxonomy exists to remove. The badge is
  * the first thing on the card, so it is the worst place to be vague.
+ *
+ * Only the ICON lives here. The label comes from lib/store-labels.ts, which
+ * search.ts needs too — keeping the wording in one place means the badge and
+ * the search box can never disagree about what a clinic is called.
  */
-const STORE_BADGE: Record<string, { label: string; icon: typeof Store }> = {
-  vet: { label: 'دامپزشکی', icon: Stethoscope },
-  groomer: { label: 'آرایشگاه', icon: Scissors },
-  boarding: { label: 'پانسیون', icon: BedDouble },
-  shelter: { label: 'پناهگاه', icon: HeartHandshake },
-  shop: { label: 'فروشگاه', icon: Store },
-  cafe: { label: 'کافه', icon: Store },
+const STORE_ICON: Record<string, typeof Store> = {
+  vet: Stethoscope,
+  groomer: Scissors,
+  boarding: BedDouble,
+  shelter: HeartHandshake,
+  shop: Store,
+  cafe: Store,
 }
 
 /**
@@ -43,10 +48,11 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
 
   const base = KIND_META[item.kind]
   // A store's badge names its own category so a clinic never reads as a shop.
-  const badge = item.kind === 'store'
-    ? STORE_BADGE[item.category] ?? STORE_BADGE.shop
+  // Icon from the local map, wording from the shared label list.
+  const meta = item.kind === 'store'
+    ? { ...base, icon: STORE_ICON[item.category] ?? Store,
+        label: storeLabel(item.category) || base.label }
     : base
-  const meta = { ...base, ...badge }
   const Icon = meta.icon
 
   // خط وضعیت اصلی، بر اساس نوع آگهی — بدون اختراع امتیاز/نظر
