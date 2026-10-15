@@ -13,6 +13,26 @@ subset used here).
 
 Usage:
   PYTHONIOENCODING=utf-8 python scripts/e2e_live.py [--url URL]
+  CDP_PORT=9777 PYTHONIOENCODING=utf-8 python scripts/e2e_live.py ...
+
+Traps worth knowing before you lose an hour to one:
+
+1. CDP port. The default 9222 and the 9000-range are inside Windows'
+   excluded-port ranges on this machine, so Chrome's devtools listener
+   silently fails to bind ("Cannot start http server for devtools") and the
+   WebSocket connect just hangs. Set CDP_PORT to something outside those
+   ranges — 9777 works.
+
+2. Reusing one Chrome across many runs. Every run leaves a tab behind;
+   after ~20 the browser stops answering Page.navigate and calls start
+   timing out. Restart Chrome with its own fresh --user-data-dir instead of
+   debugging the timeout.
+
+3. Cursor query params. `?before=<iso>` values contain a literal '+', which
+   in a query string decodes to a space and the API answers 422. URLSearchParams
+   in the app encodes it (%2B) so the browser is fine — hand-written curl
+   against a paginated endpoint must quote() the cursor or it looks like a
+   server bug.
 """
 import argparse
 import base64
