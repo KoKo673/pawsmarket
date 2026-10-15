@@ -55,7 +55,8 @@ def main():
 
     tree = git("write-tree", env=env)
     parent = old
-    msg = "Deploy: city-wide Tehran catalog (212 stores / 775 products), verified photos, Persian-only names"
+    msg = ("Deploy: 760 real Tehran stores / 4069 products, "
+           "392 shop photos + 812 product photos, Persian-only text")
     commit = git("commit-tree", tree, "-p", parent, "-m", msg, env=env)
 
     files = git("ls-tree", "-r", "--name-only", commit).splitlines()
