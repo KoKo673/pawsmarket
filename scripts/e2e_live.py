@@ -59,14 +59,11 @@ class WS:
         out, self.buf = self.buf[:n], self.buf[n:]
         return out
 
-    def send(self, method, params=None):
-        self.msg_id += 1
-        payload = json.dumps({"id": self.msg_id, "method": method,
-                              "params": params or {}}).encode()
+    def _send_frame(self, opcode, payload):
         mask = os.urandom(4)
         masked = bytes(b ^ mask[i % 4] for i, b in enumerate(payload))
         n = len(masked)
-        hdr = b"\x81"
+        hdr = bytes([0x80 | opcode])
         if n < 126:
             hdr += bytes([0x80 | n])
         elif n < 1 << 16:
@@ -74,11 +71,26 @@ class WS:
         else:
             hdr += bytes([0x80 | 127]) + struct.pack(">Q", n)
         self.sock.sendall(hdr + mask + masked)
+
+    def send(self, method, params=None):
+        self.msg_id += 1
+        self._send_frame(1, json.dumps(
+            {"id": self.msg_id, "method": method, "params": params or {}}).encode())
         return self.msg_id
 
     def recv(self):
+        """Return the next complete text message.
+
+        A CDP event big enough to be split arrives as a first frame with FIN
+        clear followed by continuation frames; reading only the first one
+        yields truncated JSON and the id-carrying reply is never matched, so
+        the call times out. Frames are reassembled here before parsing.
+        """
+        payload = b""
+        expecting_continuation = False
         while True:
             b1, b2 = self._recv_exact(2)
+            fin = b1 & 0x80
             opcode = b1 & 0x0F
             ln = b2 & 0x7F
             if ln == 126:
@@ -86,8 +98,22 @@ class WS:
             elif ln == 127:
                 ln = struct.unpack(">Q", self._recv_exact(8))[0]
             data = self._recv_exact(ln)
-            if opcode == 1:
-                return json.loads(data.decode("utf-8", "replace"))
+            if opcode == 8:          # close
+                raise ConnectionError("websocket closed by peer")
+            if opcode == 9:          # ping → pong
+                self._send_frame(0x0A, data)
+                continue
+            if opcode == 10:         # pong
+                continue
+            if opcode == 0:          # continuation
+                payload += data
+            else:
+                payload = data
+            expecting_continuation = not fin
+            if not expecting_continuation:
+                if opcode in (1, 0):
+                    return json.loads(payload.decode("utf-8", "replace"))
+                payload = b""
 
     def call(self, method, params=None, timeout=45):
         self.send(method, params)

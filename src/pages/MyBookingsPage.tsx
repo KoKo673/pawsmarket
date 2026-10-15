@@ -1,6 +1,7 @@
 import { CalendarDays, Clock, Loader2, X } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -25,35 +26,28 @@ const STATUS_META: Record<Booking['status'], { label: string; tone: string }> = 
 }
 
 export function MyBookingsPage() {
-  const [items, setItems] = useState<Booking[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<number | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const r = await bookingApi.mine()
-      setItems(r.items)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'بارگذاری انجام نشد')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const query = useQuery({
+    queryKey: ['my-bookings'],
+    queryFn: async () => (await bookingApi.mine()).items,
+  })
 
-  useEffect(() => {
-    void load()
-  }, [load])
+  const items = query.data ?? []
+  const error = actionError ?? (query.isError
+    ? (query.error instanceof Error ? query.error.message : 'بارگذاری انجام نشد')
+    : null)
 
   async function cancel(id: number) {
     setBusyId(id)
+    setActionError(null)
     try {
       await bookingApi.cancel(id)
-      await load()
+      await queryClient.invalidateQueries({ queryKey: ['my-bookings'] })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'لغو انجام نشد')
+      setActionError(err instanceof Error ? err.message : 'لغو انجام نشد')
     } finally {
       setBusyId(null)
     }
@@ -69,7 +63,7 @@ export function MyBookingsPage() {
         <h1 className="mt-3 text-2xl font-extrabold tracking-tight">نوبت‌های من</h1>
       </div>
 
-      {loading ? (
+      {query.isLoading ? (
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-32 w-full rounded-2xl" />
@@ -78,7 +72,14 @@ export function MyBookingsPage() {
       ) : error ? (
         <div className="rounded-2xl border border-destructive/25 bg-destructive/5 p-6 text-center">
           <p className="text-sm font-bold">{error}</p>
-          <Button className="mt-4" variant="outline" onClick={() => void load()}>
+          <Button
+            className="mt-4"
+            variant="outline"
+            onClick={() => {
+              setActionError(null)
+              void query.refetch()
+            }}
+          >
             تلاش دوباره
           </Button>
         </div>
