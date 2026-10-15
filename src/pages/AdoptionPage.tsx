@@ -196,9 +196,17 @@ export function AdoptionPage() {
               data-motion-item
               className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft transition-all hover:-translate-y-1 hover:shadow-lifted"
             >
-              <Link to={`/pet/${pet.id}`} className="block aspect-[4/3] overflow-hidden bg-muted">
+              {/* The photo carries the link, and a pet without one falls back
+                  to an icon — a link whose only content is an icon has no
+                  accessible name, which is what axe flagged here. alt="" so
+                  the image does not announce a second, identical name. */}
+              <Link
+                to={`/pet/${pet.id}`}
+                className="block aspect-[4/3] overflow-hidden bg-muted"
+                aria-label={`پروفایل ${pet.name}`}
+              >
                 {pet.avatar_url ? (
-                  <img src={mediaUrl(pet.avatar_url)} alt={pet.name} loading="lazy" className="size-full object-cover" />
+                  <img src={mediaUrl(pet.avatar_url)} alt="" loading="lazy" className="size-full object-cover" />
                 ) : (
                   <span className="grid size-full place-items-center text-primary/40">
                     <PawPrint className="size-14" />

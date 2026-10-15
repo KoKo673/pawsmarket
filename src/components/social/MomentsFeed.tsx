@@ -24,11 +24,20 @@ export function MomentCard({ post }: { post: Post }) {
       className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft"
     >
       <header className="flex items-center gap-3 p-4">
-        <Link to={`/pet/${post.pet_id}`} className="shrink-0">
+        {/* A profile with no avatar renders an icon, and a link whose only
+            content is an icon has no accessible name at all — axe reports it
+            on every card. The label carries the pet's name, which the image
+            alt cannot do once the image is missing. alt="" because the link
+            already names itself; a second name would be announced twice. */}
+        <Link
+          to={`/pet/${post.pet_id}`}
+          className="shrink-0"
+          aria-label={`پروفایل ${post.pet_name ?? 'حیوان'}`}
+        >
           {post.pet_avatar ? (
             <img
               src={mediaUrl(post.pet_avatar)}
-              alt={post.pet_name ?? ''}
+              alt=""
               loading="lazy"
               className="size-11 rounded-full border-2 border-primary/30 object-cover"
             />
