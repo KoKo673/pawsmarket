@@ -172,6 +172,20 @@ class Page:
 
 
 def start_chrome():
+    # A Chrome started outside this process (a terminal, an earlier run) may
+    # already hold the port. Launching a second one then fails with
+    # "Cannot start http server for devtools" and the wait loop below reports
+    # "Chrome did not expose CDP" — a message that points at Chrome when the
+    # real answer is "it is already there, use it".
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{PORT}/json/version",
+                                    timeout=2) as r:
+            json.load(r)
+            print(f"reusing Chrome already listening on {PORT}")
+            return
+    except Exception:
+        pass
+
     subprocess.Popen(
         [CHROME, f"--remote-debugging-port={PORT}", f"--user-data-dir={PROFILE}",
          "--headless=new", "--disable-gpu", "--no-first-run",
