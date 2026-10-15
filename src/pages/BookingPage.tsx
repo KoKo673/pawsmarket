@@ -1,5 +1,5 @@
 import { CalendarDays, Check, Clock, Loader2, PawPrint, Phone, User } from 'lucide-react'
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
@@ -61,21 +61,19 @@ export function BookingPage() {
   const [day, setDay] = useState(days[0]?.value ?? '')
   const [hour, setHour] = useState<number | null>(null)
   const [service, setService] = useState(params.get('service') ?? '')
-  const [name, setName] = useState('')
+  // Prefill from the signed-in account — nobody wants to retype their own
+  // name on a phone. `null` means "untouched", so the field follows the
+  // account name across renders while the session is still loading, and an
+  // empty string is a deliberate clear the visitor made and must not be
+  // refilled.
+  const [nameInput, setNameInput] = useState<string | null>(null)
+  const name = nameInput ?? user?.display_name ?? user?.username ?? ''
   const [phone, setPhone] = useState('')
   const [note, setNote] = useState('')
   const [petId, setPetId] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState<{ id: number; token?: string } | null>(null)
-
-  // Prefill from the signed-in account — nobody wants to retype their own
-  // name on a phone.
-  useEffect(() => {
-    if (user) {
-      setName((v) => v || user.display_name || user.username)
-    }
-  }, [user])
 
   const services = store && store.kind === 'store'
     ? SERVICES[store.category] ?? SERVICES.vet
@@ -297,7 +295,7 @@ export function BookingPage() {
             <Input
               id="bk-name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setNameInput(e.target.value)}
               placeholder="نام و نام خانوادگی"
               maxLength={60}
               required
