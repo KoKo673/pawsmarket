@@ -173,7 +173,7 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
             toggleFavorite(item.id)
           }}
           className={cn(
-            'absolute left-3 top-3 grid size-8 place-items-center rounded-full backdrop-blur transition-all active:scale-90',
+            'absolute left-2 top-2 grid size-11 place-items-center rounded-full backdrop-blur transition-all active:scale-90',
             liked ? 'bg-primary text-primary-foreground' : 'bg-black/30 text-white hover:bg-black/50',
           )}
         >

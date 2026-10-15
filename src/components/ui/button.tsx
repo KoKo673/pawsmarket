@@ -33,7 +33,7 @@ const buttonVariants = cva(
         sm: 'h-9 rounded-lg px-3.5 text-xs',
         default: 'h-11 px-5',
         lg: 'h-12 rounded-xl px-7 text-base',
-        icon: 'size-10',
+        icon: 'size-11',
         'icon-sm': 'size-8 rounded-lg',
       },
     },
