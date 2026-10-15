@@ -1,11 +1,12 @@
 import { CalendarDays, Check, Clock, Loader2, Phone, ShieldCheck, User, X } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { faDigits } from '@/lib/fa'
-import { bookingApi, type Booking } from '@/lib/booking-api'
+import { bookingApi } from '@/lib/booking-api'
 
 /**
  * صفحه‌ی مرکز — از لینکی که در پیام دریافت می‌کند باز می‌شود.
@@ -17,44 +18,37 @@ import { bookingApi, type Booking } from '@/lib/booking-api'
  */
 export function BookingManagePage() {
   const { token } = useParams<{ token: string }>()
-  const [booking, setBooking] = useState<Booking | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [note, setNote] = useState('')
+  const [actionError, setActionError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
-  const load = useCallback(async () => {
-    if (!token) return
-    setLoading(true)
-    setError(null)
-    try {
-      setBooking(await bookingApi.viewForBusiness(token))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'این لینک باز نشد')
-    } finally {
-      setLoading(false)
-    }
-  }, [token])
+  const query = useQuery({
+    queryKey: ['booking-manage', token],
+    queryFn: () => bookingApi.viewForBusiness(token!),
+    enabled: !!token,
+  })
 
-  useEffect(() => {
-    void load()
-  }, [load])
+  const booking = query.data ?? null
+  const error = actionError ?? (query.isError
+    ? (query.error instanceof Error ? query.error.message : 'این لینک باز نشد')
+    : null)
 
   async function decide(action: 'confirm' | 'decline') {
     if (!token) return
     setBusy(true)
-    setError(null)
+    setActionError(null)
     try {
       await bookingApi.decide(token, action, note.trim() || undefined)
-      await load()
+      await queryClient.invalidateQueries({ queryKey: ['booking-manage', token] })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'ثبت پاسخ انجام نشد')
+      setActionError(err instanceof Error ? err.message : 'ثبت پاسخ انجام نشد')
     } finally {
       setBusy(false)
     }
   }
 
-  if (loading) {
+  if (query.isLoading) {
     return (
       <div className="mx-auto max-w-lg space-y-4 px-4 pb-24 pt-28 sm:px-6">
         <Skeleton className="h-8 w-2/3 rounded-xl" />
