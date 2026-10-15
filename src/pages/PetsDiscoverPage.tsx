@@ -1,12 +1,12 @@
 import { MapPin, PawPrint, Radar } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { faDigits } from '@/lib/fa'
 import { formatDistance } from '@/lib/geo'
-import { mediaUrl, socialApi, type DiscoverPet } from '@/lib/social-api'
+import { mediaUrl, socialApi } from '@/lib/social-api'
 import { useGeoStore } from '@/store/geo.store'
 
 const SPECIES_FA: Record<string, string> = {
@@ -17,22 +17,16 @@ const SPECIES_FA: Record<string, string> = {
 /** کشف حیوانات نزدیک — کارت‌های پروفایل مرتب بر اساس فاصله واقعی. */
 export function PetsDiscoverPage() {
   const origin = useGeoStore((s) => s.origin)
-  const [items, setItems] = useState<DiscoverPet[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    let alive = true
-    setLoading(true)
-    socialApi
-      .discover(origin.lat, origin.lng, 30000)
-      .then((d) => alive && setItems(d.items))
-      .catch((e) => alive && setError(e instanceof Error ? e.message : 'بارگذاری نشد'))
-      .finally(() => alive && setLoading(false))
-    return () => {
-      alive = false
-    }
-  }, [origin.lat, origin.lng])
+  const query = useQuery({
+    queryKey: ['discover-pets', origin.lat, origin.lng],
+    queryFn: async () => (await socialApi.discover(origin.lat, origin.lng, 30000)).items,
+  })
+
+  const items = query.data ?? []
+  const error = query.isError
+    ? (query.error instanceof Error ? query.error.message : 'بارگذاری نشد')
+    : null
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-24 pt-28 sm:px-6">
@@ -49,7 +43,7 @@ export function PetsDiscoverPage() {
         </p>
       </header>
 
-      {loading ? (
+      {query.isLoading ? (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }, (_, i) => (
             <div key={i} className="space-y-3 rounded-2xl bg-card p-4 shadow-soft">
