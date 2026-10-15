@@ -1,6 +1,7 @@
 import { Cake, Heart, Loader2, MapPin, PawPrint, Plus, Share2 } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { FollowButton } from '@/components/social/FollowButton'
 import { CreateMomentDialog } from '@/components/social/CreateMomentDialog'
@@ -10,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { faDigits } from '@/lib/fa'
-import { mediaUrl, socialApi, type PetProfile, type Post } from '@/lib/social-api'
+import { mediaUrl, socialApi } from '@/lib/social-api'
 import { useAuthStore } from '@/store/auth.store'
 
 const SPECIES_FA: Record<string, string> = {
@@ -24,39 +25,34 @@ export function PetProfilePage() {
   // Which of my own pets the follow button acts as.
   const activePetId = useAuthStore((s) => s.activePetId)
 
-  const [profile, setProfile] = useState<PetProfile | null>(null)
-  const [posts, setPosts] = useState<Post[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [composeOpen, setComposeOpen] = useState(false)
   const [composeKind, setComposeKind] = useState<'post' | 'story'>('post')
   const [adoptionBusy, setAdoptionBusy] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
-  const load = useCallback(async () => {
-    if (!id) return
-    setLoading(true)
-    setError(null)
-    try {
-      const [p, feed] = await Promise.all([
-        // `as` = which of my pets I'm browsing as, so `is_following` and the
-        // counts belong to the profile on screen rather than to my first pet.
-        socialApi.getProfile(id, activePetId ?? undefined),
-        socialApi.petPosts(id),
-      ])
-      setProfile(p)
-      setPosts(feed.items)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'بارگذاری انجام نشد')
-    } finally {
-      setLoading(false)
-    }
-  }, [id, activePetId])
+  const profileQuery = useQuery({
+    queryKey: ['pet-profile', id, activePetId],
+    queryFn: () =>
+      // `as` = which of my pets I'm browsing as, so `is_following` and the
+      // counts belong to the profile on screen rather than to my first pet.
+      socialApi.getProfile(id!, activePetId ?? undefined),
+    enabled: !!id,
+  })
 
-  useEffect(() => {
-    void load()
-  }, [load])
+  const postsQuery = useQuery({
+    queryKey: ['pet-posts', id],
+    queryFn: async () => (await socialApi.petPosts(id!)).items,
+    enabled: !!id,
+  })
 
-  if (loading) {
+  const profile = profileQuery.data ?? null
+  const posts = postsQuery.data ?? []
+  const error = actionError ?? (profileQuery.isError
+    ? (profileQuery.error instanceof Error ? profileQuery.error.message : 'بارگذاری انجام نشد')
+    : null)
+
+  if (profileQuery.isLoading) {
     return (
       <div className="mx-auto max-w-3xl px-4 pb-24 pt-28 sm:px-6">
         <Skeleton className="h-44 w-full rounded-3xl" />
@@ -119,12 +115,13 @@ export function PetProfilePage() {
                     disabled={adoptionBusy}
                     onClick={async () => {
                       setAdoptionBusy(true)
+                      setActionError(null)
                       try {
                         const next = p.adoption_status === 'available' ? '' : 'available'
-                        const updated = await socialApi.patchProfile(pet.id, { adoption_status: next })
-                        setProfile(updated)
+                        await socialApi.patchProfile(pet.id, { adoption_status: next })
+                        await queryClient.invalidateQueries({ queryKey: ['pet-profile'] })
                       } catch (err) {
-                        setError(err instanceof Error ? err.message : 'تغییر وضعیت انجام نشد')
+                        setActionError(err instanceof Error ? err.message : 'تغییر وضعیت انجام نشد')
                       } finally {
                         setAdoptionBusy(false)
                       }
@@ -271,7 +268,10 @@ export function PetProfilePage() {
           petId={pet.id}
           petName={pet.name}
           initialKind={composeKind}
-          onCreated={() => void load()}
+          onCreated={() => {
+            void queryClient.invalidateQueries({ queryKey: ['pet-posts'] })
+            void queryClient.invalidateQueries({ queryKey: ['pet-stories'] })
+          }}
         />
       )}
     </div>
