@@ -1,6 +1,7 @@
 import { Check, Heart, Home, Loader2, PawPrint, X } from 'lucide-react'
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/input'
 import { faDigits } from '@/lib/fa'
 import { formatDistance } from '@/lib/geo'
-import { mediaUrl, socialApi, type AdoptionRequest, type DiscoverPet } from '@/lib/social-api'
+import { mediaUrl, socialApi, type DiscoverPet } from '@/lib/social-api'
 import { useAuthStore } from '@/store/auth.store'
 import { useGeoStore } from '@/store/geo.store'
 
@@ -35,43 +36,29 @@ export function AdoptionPage() {
   const origin = useGeoStore((s) => s.origin)
   const status = useAuthStore((s) => s.status)
 
-  const [pets, setPets] = useState<DiscoverPet[]>([])
-  const [loading, setLoading] = useState(true)
-  const [box, setBox] = useState<{ incoming: AdoptionRequest[]; outgoing: AdoptionRequest[] } | null>(null)
   const [requestFor, setRequestFor] = useState<DiscoverPet | null>(null)
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [flash, setFlash] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
-  const loadPets = useCallback(async () => {
-    setLoading(true)
-    try {
+  const petsQuery = useQuery({
+    queryKey: ['adoptable-pets', origin.lat, origin.lng],
+    queryFn: async () => {
       const d = await socialApi.adoptablePets(origin.lat, origin.lng)
-      setPets(d.items.filter((p) => p.adoption_status === 'available'))
-    } catch {
-      setPets([])
-    } finally {
-      setLoading(false)
-    }
-  }, [origin.lat, origin.lng])
+      return d.items.filter((p) => p.adoption_status === 'available')
+    },
+  })
 
-  const loadBox = useCallback(async () => {
-    if (status !== 'authed') {
-      setBox(null)
-      return
-    }
-    try {
-      setBox(await socialApi.myAdoptionBox())
-    } catch {
-      setBox(null)
-    }
-  }, [status])
+  const boxQuery = useQuery({
+    queryKey: ['adoption-box'],
+    queryFn: () => socialApi.myAdoptionBox(),
+    enabled: status === 'authed',
+  })
 
-  useEffect(() => {
-    void loadPets()
-    void loadBox()
-  }, [loadPets, loadBox])
+  const pets = petsQuery.data ?? []
+  const box = status === 'authed' ? (boxQuery.data ?? null) : null
 
   async function submitRequest(e: FormEvent) {
     e.preventDefault()
@@ -83,7 +70,7 @@ export function AdoptionPage() {
       setRequestFor(null)
       setMessage('')
       setFlash('درخواست شما ثبت شد؛ نتیجه از سوی مالک اطلاع داده می‌شود.')
-      await loadBox()
+      await queryClient.invalidateQueries({ queryKey: ['adoption-box'] })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'ثبت درخواست انجام نشد')
     } finally {
@@ -95,7 +82,10 @@ export function AdoptionPage() {
     try {
       await socialApi.decideAdoption(id, action)
       setFlash(action === 'accept' ? 'سرپرستی پذیرفته شد 🎉' : 'درخواست رد شد.')
-      await Promise.all([loadBox(), loadPets()])
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['adoption-box'] }),
+        queryClient.invalidateQueries({ queryKey: ['adoptable-pets'] }),
+      ])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'تصمیم ثبت نشد')
     }
@@ -182,7 +172,7 @@ export function AdoptionPage() {
       )}
 
       {/* فهرست حیوانات */}
-      {loading ? (
+      {petsQuery.isLoading ? (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }, (_, i) => (
             <div key={i} className="h-64 animate-pulse rounded-2xl bg-muted" />
