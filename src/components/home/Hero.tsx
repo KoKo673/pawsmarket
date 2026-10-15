@@ -53,7 +53,13 @@ export function Hero() {
         <div className="min-w-0 text-center lg:text-start">
           <span
             data-motion-item
-            className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1.5 text-xs font-bold text-primary"
+            /* paw-800, not primary and not paw-700: --primary measured
+               2.79:1 here and paw-700 only reached 4.22:1, because this chip
+               sits on the hero's peach wash (#fbeae1) rather than a neutral
+               card — the same shade that passes elsewhere falls short on the
+               tint. paw-800 gives 5.82:1 on the wash and 4.43:1 against its
+               own border. */
+            className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1.5 text-xs font-bold text-paw-800 dark:text-paw-300"
           >
             <Sparkles className="size-3.5" />
             فروشگاه، خدمات دامپزشکی و سرپرستی — یک‌جا
@@ -80,10 +86,14 @@ export function Hero() {
             <QuickFilters />
           </div>
 
-          {/* ردیف اعتماد */}
+          {/* ردیف اعتماد.
+              foreground/80, not muted-foreground: this row sits on the hero's
+              peach wash (#fceae1), not on a neutral card, and the muted tone
+              measures 3.98:1 there — under AA. The tint is warm enough to eat
+              the contrast that the same grey clears everywhere else. */}
           <ul
             data-motion-item
-            className="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium text-muted-foreground lg:justify-start"
+            className="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium text-foreground/80 lg:justify-start"
           >
             <li className="inline-flex items-center gap-1.5">
               <MapPin className="size-4 text-primary" />

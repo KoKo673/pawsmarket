@@ -31,7 +31,10 @@
     --secondary: 40 20% 94%;
     --secondary-foreground: 20 24% 16%;
     --muted: 40 20% 94%;
-    --muted-foreground: 20 8% 46%;
+    /* 44%, not 46%: at 46 the secondary text measured 4.45:1 against
+       --card, 0.05 short of the 4.5 AA floor. Two points of lightness buys
+       the margin without changing how the greys read. */
+    --muted-foreground: 20 8% 44%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 

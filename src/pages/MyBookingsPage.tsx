@@ -17,9 +17,17 @@ import { bookingApi, type Booking } from '@/lib/booking-api'
  * confirmed appointment on its own, because the customer would otherwise
  * arrive to a closed door.
  */
+/**
+ * Cancelled is the one status whose tone is a flat muted background, so its
+ * text runs at normal muted contrast; the other four sit on a 10–15% wash of
+ * their own colour, where the tint's own shade leaves the text nearly
+ * unreadable — «تأییدشده» measured 1.00:1 on accent/15, i.e. a colour on
+ * itself. The 700/800 shades on the light theme and the 300s on the dark one
+ * bring every pair back over 4.5 without changing the palette.
+ */
 const STATUS_META: Record<Booking['status'], { label: string; tone: string }> = {
-  pending: { label: 'در انتظار پاسخ مرکز', tone: 'bg-amber-500/15 text-amber-600' },
-  confirmed: { label: 'تأییدشده', tone: 'bg-accent/15 text-accent' },
+  pending: { label: 'در انتظار پاسخ مرکز', tone: 'bg-amber-500/15 text-amber-800 dark:text-amber-300' },
+  confirmed: { label: 'تأییدشده', tone: 'bg-accent/15 text-tide-800 dark:text-tide-300' },
   declined: { label: 'رد شده', tone: 'bg-destructive/10 text-destructive' },
   cancelled: { label: 'لغو شده', tone: 'bg-muted text-muted-foreground' },
   done: { label: 'انجام شده', tone: 'bg-tide-500/15 text-tide-700 dark:text-tide-300' },

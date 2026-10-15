@@ -50,7 +50,10 @@ export function ProductRail() {
     <section data-motion-section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
       <div data-motion-item className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-tide-500/10 px-3 py-1 text-xs font-bold text-tide-600 dark:text-tide-400">
+          {/* tide-800 for the same reason as the booking badges: tide-600 on
+              its own 10% wash is 2.94:1. Dark theme already cleared AA at
+              tide-400, so only the light shade moves. */}
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-tide-500/10 px-3 py-1 text-xs font-bold text-tide-800 dark:text-tide-400">
             <ShoppingBasket className="size-3.5" />
             خرید از فروشگاه‌های محدوده
           </span>

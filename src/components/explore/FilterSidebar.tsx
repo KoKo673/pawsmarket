@@ -241,7 +241,9 @@ function FilterPanel() {
           <Label htmlFor="price" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             محدوده‌ی قیمت
           </Label>
-          <span className="rounded-full bg-tide-500/10 px-2.5 py-0.5 text-xs font-extrabold text-tide-600 dark:text-tide-400">
+          {/* Same fix as the other tide badges: 600 on a 10% tide wash is
+              2.94:1, 800 makes it 5.93:1. Dark keeps tide-400. */}
+          <span className="rounded-full bg-tide-500/10 px-2.5 py-0.5 text-xs font-extrabold text-tide-800 dark:text-tide-400">
             {priceLabel(priceRange[0], false)} تا {priceLabel(priceRange[1], true)} تومان
           </span>
         </div>

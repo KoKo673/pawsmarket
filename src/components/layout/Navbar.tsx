@@ -67,7 +67,12 @@ export function Navbar() {
             <PawPrint className="size-5" />
           </span>
           <span className="text-lg font-extrabold tracking-tight">
-            پاز<span className="text-primary">مارکت</span>
+            {/* --primary is a 50%-lightness orange meant for fills; as 18px
+                text on the light card it measures 3.13:1, short of the 4.5
+                the word needs at that size. paw-700 is the same hue two
+                steps darker (4.74:1); the dark theme keeps --primary, which
+                already passes there at 6.05:1. */}
+            پاز<span className="text-paw-700 dark:text-primary">مارکت</span>
           </span>
         </Link>
 
