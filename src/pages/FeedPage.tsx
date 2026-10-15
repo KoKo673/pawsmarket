@@ -1,51 +1,28 @@
 import { Newspaper } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useInfiniteQuery } from '@tanstack/react-query'
 
 import { EmptyFeed, MomentCard } from '@/components/social/MomentsFeed'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { socialApi, type Post } from '@/lib/social-api'
+import { socialApi } from '@/lib/social-api'
 import { useAuthStore } from '@/store/auth.store'
 
 /** فید لحظه‌ها — پست‌های حیوانات دنبال‌شده + خودم. */
 export function FeedPage() {
-  const [items, setItems] = useState<Post[]>([])
-  const [nextBefore, setNextBefore] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   // فید هر حیوان جداست؛ بدون این همیشه فید اولین حیوان نشان داده می‌شد.
   const activePetId = useAuthStore((s) => s.activePetId)
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const data = await socialApi.feed(undefined, activePetId ?? undefined)
-      setItems(data.items)
-      setNextBefore(data.next_before)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'بارگذاری فید نشد')
-    } finally {
-      setLoading(false)
-    }
-  }, [activePetId])
+  const query = useInfiniteQuery({
+    queryKey: ['feed', activePetId],
+    queryFn: ({ pageParam }) => socialApi.feed(pageParam, activePetId ?? undefined),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.next_before ?? undefined,
+  })
 
-  useEffect(() => {
-    void load()
-  }, [load])
-
-  async function loadMore() {
-    if (!nextBefore) return
-    setLoadingMore(true)
-    try {
-      const data = await socialApi.feed(nextBefore, activePetId ?? undefined)
-      setItems((prev) => [...prev, ...data.items])
-      setNextBefore(data.next_before)
-    } finally {
-      setLoadingMore(false)
-    }
-  }
+  const items = query.data?.pages.flatMap((p) => p.items) ?? []
+  const error = query.isError
+    ? (query.error instanceof Error ? query.error.message : 'بارگذاری فید نشد')
+    : null
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-28 sm:px-6">
@@ -59,7 +36,7 @@ export function FeedPage() {
         </p>
       </header>
 
-      {loading ? (
+      {query.isLoading ? (
         <div className="space-y-5">
           {Array.from({ length: 3 }, (_, i) => (
             <div key={i} className="rounded-2xl bg-card p-4 shadow-soft">
@@ -73,7 +50,7 @@ export function FeedPage() {
         <div className="rounded-2xl border border-destructive/25 bg-destructive/5 px-6 py-12 text-center">
           <p className="text-sm font-extrabold">اتصال برقرار نشد</p>
           <p className="mt-1 text-xs text-muted-foreground">{error}</p>
-          <Button size="sm" variant="outline" className="mt-4" onClick={() => void load()}>
+          <Button size="sm" variant="outline" className="mt-4" onClick={() => void query.refetch()}>
             تلاش دوباره
           </Button>
         </div>
@@ -86,10 +63,14 @@ export function FeedPage() {
               <MomentCard key={post.id} post={post} />
             ))}
           </div>
-          {nextBefore && (
+          {query.hasNextPage && (
             <div className="mt-6 text-center">
-              <Button variant="outline" onClick={() => void loadMore()} disabled={loadingMore}>
-                {loadingMore ? 'در حال بارگذاری…' : 'بیشتر'}
+              <Button
+                variant="outline"
+                onClick={() => void query.fetchNextPage()}
+                disabled={query.isFetchingNextPage}
+              >
+                {query.isFetchingNextPage ? 'در حال بارگذاری…' : 'بیشتر'}
               </Button>
             </div>
           )}
