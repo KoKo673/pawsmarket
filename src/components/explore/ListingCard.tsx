@@ -111,18 +111,23 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
       /* ورود پله‌ای از سیستم مشترک motion (fail-open: بدون JS هم نمایان) */
       data-motion-item
       style={{ '--motion-delay': `${Math.min(index, 12) * 33}ms` } as React.CSSProperties}
-      className="group relative cursor-pointer overflow-hidden rounded-2xl bg-card shadow-soft ring-1 ring-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-lifted"
-      onClick={() => openDetail(item.id)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          openDetail(item.id)
-        }
-      }}
-      aria-label={`مشاهده‌ی جزئیات ${item.name}`}
+      className="group relative overflow-hidden rounded-2xl bg-card shadow-soft ring-1 ring-border/60 transition-all duration-300 focus-within:-translate-y-1 focus-within:shadow-lifted hover:-translate-y-1 hover:shadow-lifted"
     >
+      {/* One control covers the card, instead of making the whole <article> a
+          clickable region with role="button". That shape nested the heart
+          button inside a button — invalid, and axe flags it on every card —
+          and its aria-label («مشاهدهی جزئیات آوا») never contained the
+          visible text, so screen readers announced a name the sighted user
+          cannot see. The overlay is a real <button>, so Enter/Space work
+          without a keydown handler, and its accessible name is composed from
+          both the action and the card's own title. */}
+      <button
+        type="button"
+        onClick={() => openDetail(item.id)}
+        className="absolute inset-0 z-10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      >
+        <span className="sr-only">مشاهدهی جزئیات {item.name}</span>
+      </button>
       {/* تصویر */}
       {/* Products use a squarer frame: the marketplace photos are square, and
           a 4:3 box left wide empty margins around each one on a phone, so a
@@ -173,7 +178,9 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
             toggleFavorite(item.id)
           }}
           className={cn(
-            'absolute left-2 top-2 grid size-11 place-items-center rounded-full backdrop-blur transition-all active:scale-90',
+            // z-20 to sit above the card's own overlay button, or the heart
+            // would be unreachable — the overlay covers the whole card.
+            'absolute left-2 top-2 z-20 grid size-11 place-items-center rounded-full backdrop-blur transition-all active:scale-90',
             liked ? 'bg-primary text-primary-foreground' : 'bg-black/30 text-white hover:bg-black/50',
           )}
         >
