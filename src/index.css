@@ -25,7 +25,10 @@
     --primary: 20 96% 50%;
     --primary-foreground: 0 0% 100%;
     --accent: 172 70% 42%;
-    --accent-foreground: 0 0% 100%;
+    /* Dark, matching what the dark theme already uses (20 30% 10% there).
+       White on this teal is 2.54:1 — the 11px «آمادهی سرپرستی» badge was
+       unreadable, and the light theme was the only one with the problem. */
+    --accent-foreground: 20 30% 10%;
 
     /* Supporting neutrals */
     --secondary: 40 20% 94%;

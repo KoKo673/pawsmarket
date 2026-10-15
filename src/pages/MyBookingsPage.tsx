@@ -64,7 +64,9 @@ export function MyBookingsPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-28 sm:px-6">
       <div className="mb-6">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+        {/* paw-800: the same chip shape as the hero's, and the same problem —
+            --primary as 12px bold text on its own 10% wash is 2.79:1. */}
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-paw-800 dark:text-paw-300">
           <CalendarDays className="size-3.5" />
           نوبت‌ها
         </span>
