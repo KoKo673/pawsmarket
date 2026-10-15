@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint src",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "audit:a11y": "node scripts/a11y_audit.mjs",
+    "audit:lh": "node scripts/lighthouse_audit.mjs",
+    "audit:serve": "node scripts/serve_dist.mjs",
+    "audit:build": "vite build --mode audit --outDir dist-audit"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",
@@ -31,6 +35,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
@@ -38,7 +43,9 @@
     "@vitejs/plugin-basic-ssl": "^2.3.0",
     "@vitejs/plugin-react": "^6.1.1",
     "autoprefixer": "^10.6.1",
+    "lighthouse": "^13.5.0",
     "oxlint": "^1.81.0",
+    "playwright": "^1.64.1",
     "postcss": "^8.5.28",
     "tailwindcss": "^3.4.19",
     "tailwindcss-animate": "^1.0.7",

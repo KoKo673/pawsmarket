@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Audit scratch: the throwaway build serve_dist.mjs serves, plus its reports.
+# Rebuild with `npx vite build --mode audit --outDir dist-audit`.
+dist-audit
+_audit/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
