@@ -1,10 +1,11 @@
 import { Loader2, Send } from 'lucide-react'
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { faDigits } from '@/lib/fa'
-import { mediaUrl, socialApi, type Comment } from '@/lib/social-api'
+import { mediaUrl, socialApi } from '@/lib/social-api'
 import { useAuthStore } from '@/store/auth.store'
 
 function faAgo(iso: string): string {
@@ -29,28 +30,25 @@ export function CommentsSheet({
   onCountChange?: (count: number) => void
 }) {
   const status = useAuthStore((s) => s.status)
-  const [items, setItems] = useState<Comment[]>([])
   const [text, setText] = useState('')
-  const [loading, setLoading] = useState(false)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const data = await socialApi.listComments(postId)
-      setItems(data.items)
-      onCountChange?.(data.items.length)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'بارگذاری کامنت‌ها نشد')
-    } finally {
-      setLoading(false)
-    }
-  }, [postId, onCountChange])
+  const query = useQuery({
+    queryKey: ['comments', postId],
+    queryFn: async () => (await socialApi.listComments(postId)).items,
+    enabled: open,
+  })
 
+  const items = query.data ?? []
+  const loading = query.isLoading
+
+  // The sheet's parent shows a comment count, so the tally follows every
+  // fetch — first load and refetch alike.
   useEffect(() => {
-    if (open) void load()
-  }, [open, load])
+    if (query.data) onCountChange?.(query.data.length)
+  }, [query.data, onCountChange])
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -59,10 +57,9 @@ export function CommentsSheet({
     setSending(true)
     setError(null)
     try {
-      const created = await socialApi.addComment(postId, body)
-      setItems((prev) => [...prev, created])
-      onCountChange?.(items.length + 1)
+      await socialApi.addComment(postId, body)
       setText('')
+      await queryClient.invalidateQueries({ queryKey: ['comments', postId] })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'ارسال نشد')
     } finally {
