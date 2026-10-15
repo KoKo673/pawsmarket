@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Heart, Home, LogIn, MapPin, Menu, Newspaper, PawPrint, Plus, User, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { Button } from '@/components/ui/button'
@@ -29,7 +29,6 @@ const NAV_LINKS = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const pathname = useLocation()
   const navigate = useNavigate()
   const filterDrawerOpen = useUiStore((s) => s.filterDrawerOpen)
   const favCount = useFavoritesStore((s) => s.ids.length)
@@ -43,10 +42,9 @@ export function Navbar() {
     navigate('/explore')
   }
 
-  // Close the mobile sheet on navigation
-  useEffect(() => {
-    setMobileOpen(false)
-  }, [pathname.pathname])
+  // The mobile sheet closes on navigation because App remounts this navbar
+  // with a per-route `key` — resetting it here instead would be a
+  // setState-in-effect.
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)

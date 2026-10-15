@@ -115,7 +115,11 @@ function AppRoutes() {
 
   return (
     <div className="flex min-h-svh flex-col">
-      <Navbar />
+      {/* `key` remounts the navbar per route, which is what closes the mobile
+          sheet on navigation — resetting it from an effect is a setState-in-
+          effect the lint rule refuses, and the sheet is the only state that
+          has to be dropped (theme and auth live in stores). */}
+      <Navbar key={location.pathname} />
 
       <main className="flex-1">
         {/*
