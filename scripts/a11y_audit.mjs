@@ -58,84 +58,82 @@ async function settle(page) {
   await page.waitForTimeout(700)
 }
 
-async function main() {
-  const browser = await chromium.launch({ channel: 'chrome', headless: true })
+/**
+ * Audit one route in its own browser and return the entry.
+ *
+ * A separate function rather than an inline loop body on purpose: guarded
+ * routes kept bouncing to /login when audited inside main()'s loop, while the
+ * identical sequence — own browser, context-level init script, same waits —
+ * passes when run on its own. Rather than guess at the difference, the audit
+ * is split so each route gets a clean process-shaped run and the guarded ones
+ * are exercised exactly the way that was proven to work.
+ */
+async function auditRoute(browser, { route, label, auth }) {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 2,
+    isMobile: true,
+    hasTouch: true,
+    locale: 'fa-IR',
+  })
+  if (auth && TOKEN) {
+    await context.addInitScript((t) => {
+      try { localStorage.setItem('pawsmarket-auth-token', t) } catch {}
+    }, TOKEN)
+  }
+  const page = await context.newPage()
+  let entry = { route, label, auth, ok: false }
+  try {
+    await page.goto(BASE + route, { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    await settle(page)
 
-  const results = []
-  for (const { route, label, auth } of ROUTES) {
-    // A context per route, not one shared context. Reusing it made guarded
-    // routes intermittently bounce to /login even with a valid token sitting
-    // in localStorage — reproduced 5 times out of 5 in one sequence and never
-    // in isolation, so it belongs to the harness (page teardown interfering
-    // with the next route's auth hydrate) rather than to the app. An isolated
-    // context removes the ambiguity instead of adding a retry that would hide
-    // a real redirect if one ever appears.
-    const context = await browser.newContext({
-      viewport: { width: 390, height: 844 },   // the size the app is designed for
-      deviceScaleFactor: 2,
-      isMobile: true,
-      hasTouch: true,
-      locale: 'fa-IR',
-    })
-    const page = await context.newPage()
-    let entry = { route, label, auth, ok: false }
-    try {
-      if (auth && TOKEN) {
-        // Seed the session on the app origin before the route renders, or
-        // RequireAuth bounces to /login before the token is ever read.
-        await page.goto(BASE + '/', { waitUntil: 'domcontentloaded', timeout: 30_000 })
-        await page.evaluate((t) => localStorage.setItem('pawsmarket-auth-token', t), TOKEN)
+    const want = route.split('?')[0]
+    const landed = new URL(page.url()).pathname
+    if (landed !== want) {
+      entry.error = `redirected to ${landed}${TOKEN ? '' : ' (needs --token)'}`
+    } else {
+      const res = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze()
+
+      const byImpact = { critical: 0, serious: 0, moderate: 0, minor: 0 }
+      const detail = []
+      for (const v of res.violations) {
+        byImpact[v.impact ?? 'minor'] += v.nodes.length
+        detail.push({
+          id: v.id,
+          impact: v.impact,
+          nodes: v.nodes.length,
+          help: v.help,
+          sample: v.nodes[0]?.target?.join(' ')?.slice(0, 120) ?? '',
+        })
       }
-
-      await page.goto(BASE + route, { waitUntil: 'domcontentloaded', timeout: 30_000 })
-      await settle(page)
-
-      // A guarded route without a token lands on /login — record that rather
-      // than pretending the numbers belong to the route that was asked for.
-      const landed = new URL(page.url()).pathname
-      const want = route.split('?')[0]
-      if (landed !== want) {
-        entry = {
-          route, label, auth, ok: false,
-          error: `redirected to ${landed}${TOKEN ? '' : ' (needs --token)'}`,
-        }
-      } else {
-        const res = await new AxeBuilder({ page })
-          .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-          .analyze()
-
-        const byImpact = { critical: 0, serious: 0, moderate: 0, minor: 0 }
-        const detail = []
-        for (const v of res.violations) {
-          byImpact[v.impact ?? 'minor'] += v.nodes.length
-          detail.push({
-            id: v.id,
-            impact: v.impact,
-            nodes: v.nodes.length,
-            help: v.help,
-            // The first selector is enough to find it; full lists bloat the file.
-            sample: v.nodes[0]?.target?.join(' ')?.slice(0, 120) ?? '',
-          })
-        }
-        detail.sort((a, b) => (a.impact > b.impact ? -1 : a.impact < b.impact ? 1 : 0))
-        entry = { route, label, auth, ok: true, byImpact, violations: detail }
-      }
-    } catch (err) {
-      entry = { route, label, auth, ok: false, error: String(err).split('\n')[0].slice(0, 160) }
+      detail.sort((a, b) => (a.impact > b.impact ? -1 : a.impact < b.impact ? 1 : 0))
+      entry = { route, label, auth, ok: true, byImpact, violations: detail }
     }
-    await context.close()
+  } catch (err) {
+    entry = { route, label, auth, ok: false, error: String(err).split('\n')[0].slice(0, 160) }
+  }
+  await context.close()
+  return entry
+}
+
+async function main() {
+  const results = []
+  for (const spec of ROUTES) {
+    const browser = await chromium.launch({ channel: 'chrome', headless: true })
+    const entry = await auditRoute(browser, spec)
+    await browser.close()
     results.push(entry)
 
     console.log(
-      `  ${route.padEnd(24)} crit=${entry.ok ? entry.byImpact.critical : '-'}` +
+      `  ${spec.route.padEnd(24)} crit=${entry.ok ? entry.byImpact.critical : '-'}` +
       ` serious=${entry.ok ? entry.byImpact.serious : '-'}` +
       ` moderate=${entry.ok ? entry.byImpact.moderate : '-'}` +
       ` minor=${entry.ok ? entry.byImpact.minor : '-'}` +
       (entry.ok ? '' : `  ${entry.error}`),
     )
   }
-
-  await browser.close()
 
   const failed = results.filter((r) => !r.ok)
   const gatingTotal = results.reduce(

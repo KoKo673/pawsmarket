@@ -27,12 +27,23 @@ export const TabsList = forwardRef<
 ))
 TabsList.displayName = 'TabsList'
 
+/**
+ * The app uses Tabs as a segmented control — the mobile List/Map switch —
+ * which swaps which pane is on screen rather than pairing triggers with
+ * tabpanels. No TabsContent is rendered anywhere, so Radix still stamps
+ * `aria-controls` pointing at a content id that never mounts, and axe
+ * reports it as a critical aria-valid-attr-value on every page with the
+ * control. Clearing it is the honest fix for this shape: the trigger keeps
+ * role="tab" and its selected state, and just stops claiming a panel it
+ * does not have. If a real tabpanel set is ever added, delete this line.
+ */
 export const TabsTrigger = forwardRef<
   ElementRef<typeof TabsPrimitive.Trigger>,
   ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
 >(({ className, ...props }, ref) => (
   <TabsPrimitive.Trigger
     ref={ref}
+    aria-controls={undefined}
     className={cn(
       'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-semibold transition-all',
       'data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-soft',
