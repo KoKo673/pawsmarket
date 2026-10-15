@@ -27,7 +27,7 @@ import time
 import urllib.request
 
 CHROME = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
-PORT = 9222
+PORT = int(os.environ.get("CDP_PORT", "9222"))
 PROFILE = os.path.join(os.environ.get("TEMP", "."), "pawsmarket-e2e-profile")
 
 

@@ -1,6 +1,6 @@
 import { Loader2, PawPrint, UserRound } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -25,28 +25,19 @@ export function FollowListPage() {
   const [params] = useSearchParams()
   const kind: ListKind = params.get('kind') === 'following' ? 'following' : 'followers'
 
-  const [items, setItems] = useState<FollowListItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [failed, setFailed] = useState(false)
+  const query = useQuery({
+    queryKey: ['follow-list', kind, id],
+    queryFn: async () => {
+      if (!id) return { items: [] as FollowListItem[] }
+      const data = kind === 'followers'
+        ? await socialApi.followers(id)
+        : await socialApi.following(id)
+      return { items: data.items ?? [] }
+    },
+    enabled: !!id,
+  })
 
-  const load = useCallback(async () => {
-    if (!id) return
-    setLoading(true)
-    setFailed(false)
-    try {
-      const data = kind === 'followers' ? await socialApi.followers(id) : await socialApi.following(id)
-      setItems(data.items ?? [])
-    } catch {
-      setFailed(true)
-    } finally {
-      setLoading(false)
-    }
-  }, [id, kind])
-
-  useEffect(() => {
-    void load()
-  }, [load])
-
+  const items = query.data?.items ?? []
   const title = kind === 'followers' ? 'دنبال‌کننده‌ها' : 'دنبال‌شده‌ها'
   const empty = kind === 'followers'
     ? 'هنوز هیچ دنبال‌کننده‌ای برای این پروفایل ثبت نشده است.'
@@ -62,7 +53,7 @@ export function FollowListPage() {
           بازگشت به پروفایل
         </Link>
         <h1 className="mt-3 text-2xl font-extrabold tracking-tight">{title}</h1>
-        {!loading && !failed && (
+        {!query.isLoading && !query.isError && (
           <p className="mt-1.5 text-sm text-muted-foreground">
             {items.length > 0
               ? `${items.length} مورد`
@@ -71,13 +62,13 @@ export function FollowListPage() {
         )}
       </header>
 
-      {loading ? (
+      {query.isLoading ? (
         <div className="mt-8 space-y-3">
           {[0, 1, 2].map((i) => (
             <Skeleton key={i} className="h-16 w-full rounded-2xl" />
           ))}
         </div>
-      ) : failed ? (
+      ) : query.isError ? (
         <div className="mt-10 flex flex-col items-center text-center">
           <span className="grid size-14 place-items-center rounded-full bg-muted">
             <UserRound className="size-6 text-muted-foreground" />
@@ -85,7 +76,11 @@ export function FollowListPage() {
           <p className="mt-4 text-sm font-semibold text-muted-foreground">
             بارگذاری این فهرست ممکن نشد.
           </p>
-          <Button variant="outline" className="mt-5 gap-2" onClick={() => void load()}>
+          <Button
+            variant="outline"
+            className="mt-5 gap-2"
+            onClick={() => void query.refetch()}
+          >
             <Loader2 className="size-4" />
             تلاش دوباره
           </Button>
