@@ -1,6 +1,7 @@
 import { LogOut, Loader2, PawPrint, Plus } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { FollowButton } from '@/components/social/FollowButton'
 import { Button } from '@/components/ui/button'
@@ -10,7 +11,6 @@ import { faDigits } from '@/lib/fa'
 import { mediaUrl, socialApi, type PetProfile } from '@/lib/social-api'
 import { useAuthStore } from '@/store/auth.store'
 import { useGeoStore } from '@/store/geo.store'
-import { useCallback, useEffect } from 'react'
 
 /**
  * حساب من — پروفایل کاربر + پروفایل(های) حیوان + خروج.
@@ -22,18 +22,17 @@ export function MyAccountPage() {
   const logout = useAuthStore((s) => s.logout)
   const origin = useGeoStore((s) => s.origin)
 
-  const [pets, setPets] = useState<PetProfile[]>([])
-  const [loadingPets, setLoadingPets] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState('')
   const [species, setSpecies] = useState('dog')
   const [bio, setBio] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
-  const loadPets = useCallback(async () => {
-    setLoadingPets(true)
-    try {
+  const petsQuery = useQuery({
+    queryKey: ['my-pet-profiles', origin.lat, origin.lng],
+    queryFn: async () => {
       // پروفایل‌های خودم: با discover روی موقعیت خودم و فیلتر is_owner در بهترین حالت؛
       // ساده‌تر: فید پروفایل من از طریق discover + getProfile انجام می‌شود.
       const me = await socialApi.discover(origin.lat, origin.lng, 30000)
@@ -46,15 +45,11 @@ export function MyAccountPage() {
           /* رد شو */
         }
       }
-      setPets(mine)
-    } finally {
-      setLoadingPets(false)
-    }
-  }, [origin.lat, origin.lng])
+      return mine
+    },
+  })
 
-  useEffect(() => {
-    void loadPets()
-  }, [loadPets])
+  const pets = petsQuery.data ?? []
 
   async function createPet(e: FormEvent) {
     e.preventDefault()
@@ -72,7 +67,7 @@ export function MyAccountPage() {
       setName('')
       setBio('')
       setShowForm(false)
-      await loadPets()
+      await queryClient.invalidateQueries({ queryKey: ['my-pet-profiles'] })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'ساخت پروفایل انجام نشد')
     } finally {
@@ -181,7 +176,7 @@ export function MyAccountPage() {
           </form>
         )}
 
-        {loadingPets ? (
+        {petsQuery.isLoading ? (
           <p className="text-sm text-muted-foreground">در حال بارگذاری…</p>
         ) : pets.length === 0 ? (
           <div className="rounded-2xl border border-border/60 bg-card px-6 py-10 text-center shadow-soft">
