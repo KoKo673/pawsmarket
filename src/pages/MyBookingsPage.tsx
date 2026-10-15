@@ -75,8 +75,14 @@ export function MyBookingsPage() {
 
       {query.isLoading ? (
         <div className="space-y-4">
+          {/* h-[10.75rem] (172px) is the tallest real card, measured in the
+              browser: one with a centre note and a cancel button. h-32 was
+              128px, so every card grew on arrival and the page shifted by
+              0.427 CLS. Card heights vary (116 without either, 168 with just
+              the button), so the skeleton matches the tallest — overshooting
+              into empty space costs less than content pushing down. */}
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 w-full rounded-2xl" />
+            <Skeleton key={i} className="h-[10.75rem] w-full rounded-2xl" />
           ))}
         </div>
       ) : error ? (

@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { FollowButton } from '@/components/social/FollowButton'
 import { Button } from '@/components/ui/button'
 import { Input, Textarea } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Label } from '@/components/ui/label'
 import { faDigits } from '@/lib/fa'
 import { mediaUrl, socialApi, type PetProfile } from '@/lib/social-api'
@@ -177,7 +178,24 @@ export function MyAccountPage() {
         )}
 
         {petsQuery.isLoading ? (
-          <p className="text-sm text-muted-foreground">در حال بارگذاری…</p>
+          // Same grid, same row shape and same 90px height as the cards
+          // below — measured in the browser, not guessed. A one-line «در حال
+          // بارگذاری…» was what this page showed before, and it shifted the
+          // content by 0.575 CLS when the pets arrived.
+          <div className="grid gap-4 sm:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-4 rounded-2xl border border-border/60 bg-card p-4 shadow-soft"
+              >
+                <Skeleton className="size-14 shrink-0 rounded-2xl" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : pets.length === 0 ? (
           <div className="rounded-2xl border border-border/60 bg-card px-6 py-10 text-center shadow-soft">
             <p className="text-sm font-semibold text-muted-foreground">

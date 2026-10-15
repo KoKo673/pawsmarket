@@ -81,9 +81,18 @@ function RouteFallback() {
 function AnimatedPage({ children, dim = false }: { children: React.ReactNode; dim?: boolean }) {
   return (
     <motion.div
+      /* The exiting page is taken out of flow. With both pages in the normal
+         document flow, the outgoing one kept its full height while the
+         incoming one rendered below it, and removing it afterwards pulled
+         everything up — 0.28 CLS on the four guarded routes under CPU
+         throttling, all of it the footer moving. Absolute positioning during
+         exit cuts the outgoing page out of the layout so the incoming one
+         takes the space immediately. `width: 100%` keeps it the same width,
+         since an absolutely positioned box no longer stretches to its
+         parent. */
+      exit={{ opacity: 0, y: dim ? 0 : MOTION.closeDistance, position: 'absolute', width: '100%' }}
       initial={{ opacity: 0, y: dim ? 0 : MOTION.distance }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: dim ? 0 : MOTION.closeDistance }}
       transition={{ duration: MOTION.duration / 1000, ease: [0.16, 1, 0.3, 1] }}
     >
       {children}
