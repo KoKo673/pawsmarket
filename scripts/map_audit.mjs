@@ -298,6 +298,83 @@ async function main() {
     await context.close()
   }
 
+  // ── 9. A single-listing pin, not a cluster ───────────────────────────────
+  {
+    /* Cases 1-8 all ran against the real catalogue, where the pins that appear
+       are CLUSTERS — «۶۲۸ مورد در این محدوده». The single-listing branch draws
+       different HTML (a price pill via markerIcon, not clusterIcon) and builds a
+       different accessible name (markerLabel, not the count sentence), so the
+       cases above never exercised it. Clustering has no off switch: a cell
+       holding one listing renders a single pin, so the way to reach that branch
+       is to give the map exactly one listing.
+
+       One store, 3km from the probe origin so it is the only thing in its cell. */
+    const ONE_STORE = {
+      pets: [],
+      products: [],
+      stores: [{
+        id: 9001, name: 'پت‌شاپ آزمایشی', address: 'تهران', category: 'shop',
+        lat: 35.73, lng: 51.42,
+      }],
+    }
+    const { context, page } = await openMap(browser, { geo: TEHRAN, permission: 'granted' })
+    await page.route('**/catalog.json', (r) => r.fulfill({
+      status: 200, contentType: 'application/json', body: JSON.stringify(ONE_STORE),
+    }))
+    await page.route('**/api/pets*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"items":[]}' }))
+    await page.route('**/api/products*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"items":[]}' }))
+    await page.route('**/api/stores/nearby*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"items":[]}' }))
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await page.waitForTimeout(5000)
+    const mapTab = page.locator('button, [role="tab"]').filter({ hasText: /^نقشه$/ }).first()
+    if (await mapTab.count()) { await mapTab.click({ timeout: 5000 }).catch(() => {}); await page.waitForTimeout(2500) }
+
+    const pin = await page.evaluate(() => {
+      // The origin dot is the only marker with no text; the listing pin has one.
+      const all = [...document.querySelectorAll('.leaflet-marker-icon')]
+      const p = all.find((m) => (m.textContent || '').trim())
+      if (!p) return { found: false, total: all.length }
+      return {
+        found: true,
+        total: all.length,
+        label: p.getAttribute('aria-label'),
+        title: p.getAttribute('title'),
+        role: p.getAttribute('role'),
+        tabindex: p.getAttribute('tabindex'),
+        text: (p.textContent || '').trim(),
+      }
+    })
+
+    if (!pin.found) {
+      record('9. Single-listing pin (not a cluster)', 'one named, focusable pin',
+        `no listing pin rendered (${pin.total} markers total)`, false)
+    } else {
+      const named = Boolean(pin.label && pin.label.length > 2)
+      const reachable = pin.tabindex === '0' && pin.role === 'button'
+      // Confirm it is NOT the cluster sentence — that would mean this case
+      // silently re-tested case 7 instead of the branch it is meant to.
+      const isClusterLabel = /مورد در این محدوده/.test(pin.label || '')
+      record(
+        '9. Single-listing pin (not a cluster)',
+        'named with the listing itself, focusable, and not the cluster wording',
+        `text=«${pin.text}» aria-label=«${pin.label}» role=${pin.role} tabindex=${pin.tabindex}`,
+        named && reachable && !isClusterLabel,
+        { note: isClusterLabel ? 'still hit the cluster branch — the fixture is wrong' : `title=«${pin.title}»` },
+      )
+
+      // And it must actually open on Enter, same as the cluster pin.
+      await page.evaluate(() => {
+        const p = [...document.querySelectorAll('.leaflet-marker-icon')].find((m) => (m.textContent || '').trim())
+        p?.focus()
+      })
+      await page.keyboard.press('Enter')
+      await page.waitForTimeout(1500)
+      const opened = await page.evaluate(() => !!document.querySelector('[role="dialog"]'))
+      record('9b. Single pin opens on Enter', 'dialog appears', `dialog=${opened}`, opened)
+    }
+    await context.close()
+  }
+
   await browser.close()
 
   const failed = results.filter((r) => !r.ok)
