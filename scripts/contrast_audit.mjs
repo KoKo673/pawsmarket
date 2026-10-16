@@ -272,9 +272,15 @@ async function main() {
     }
     const { unresolved } = entry
     const failing = entry.failing.filter((f) => !isBrandException(f))
-    const excused = entry.failing.length - failing.length
+    const excusedNodes = entry.failing.filter((f) => isBrandException(f))
+    const excused = excusedNodes.length
     entry.gating = failing
     entry.excused = excused
+    // Keep the nodes themselves, not just the count: the report names them so
+    // that whoever changes --primary-foreground can see what it was holding.
+    entry.excusedNodes = excusedNodes.map((f) => ({
+      text: f.text, ratio: f.ratio, px: f.px, weight: f.weight, cls: f.cls,
+    }))
     const worst = failing.reduce((m, f) => (m === null || f.ratio < m ? f.ratio : m), null)
     console.log(
       `  ${spec.route.padEnd(24)} failing=${String(failing.length).padStart(3)}` +
@@ -317,8 +323,16 @@ async function main() {
   const totalUnresolved = results.reduce((n, r) => n + (r.ok ? r.counts.unresolved : 0), 0)
 
   if (totalExcused > 0) {
-    console.log(`\n  ${totalExcused} node(s) are the documented brand exception` +
-      ' (white on --primary, 3.27) and are reported but not gated.')
+    console.log(`\n  BRAND EXCEPTION — ${totalExcused} node(s), reported but not gated.`)
+    console.log('  White on --primary (#fa5705) is 3.27 where 4.5 is needed. The fix is the')
+    console.log('  --primary-foreground token in src/index.css; see the note above')
+    console.log('  isBrandException for how to delete this. These are the nodes it holds back:')
+    for (const r of results) {
+      for (const e of r.excusedNodes ?? []) {
+        console.log(`      ${r.route.padEnd(22)} ${String(e.ratio).padStart(5)}` +
+          `  ${e.px}px/${e.weight}  «${e.text}»`)
+      }
+    }
   }
 
   console.log(

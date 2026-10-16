@@ -60,8 +60,21 @@ jobs:
       # stores, the same cards a visitor sees, which is where the 44 hidden
       # contrast failures were. /pets is the one gap, so a defect that only
       # appears on a live pet profile is not caught here.
-      - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+      # No `playwright install` here, deliberately. Playwright's bundled
+      # Chromium comes from cdn.playwright.dev, and that CDN answers 403
+      # "not available in your location" — the block that forced these scripts
+      # onto system Chrome in the first place. It would probably resolve on
+      # GitHub's own network, but "probably" is not worth a 150MB download on
+      # every run when the runner already has a browser.
+      #
+      # ubuntu-latest ships Google Chrome and Chromium (verified against the
+      # runner-images manifest), including the system libraries Chrome needs,
+      # which is what `--with-deps` would otherwise install. So this checks
+      # rather than installs: if a future image drops Chrome, that shows up
+      # here as a clear failure instead of a confusing launch error inside the
+      # audit.
+      - name: Verify a browser is available
+        run: google-chrome --version || chromium --version
 
       - name: Build for audit
         run: npm run audit:build
