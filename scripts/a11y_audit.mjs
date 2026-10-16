@@ -86,6 +86,71 @@ function visibleInPage(page, selector) {
   }, selector).catch(() => null)
 }
 
+/**
+ * WCAG contrast of this selector's element, computed from its own style.
+ *
+ * The point of doing this rather than trusting axe's silence: axe stops at
+ * "background color could not be determined" for anything under an overlay,
+ * so it can neither confirm nor deny. Walking up for the first opaque
+ * background and compositing the translucent ones in between answers it.
+ *
+ * Returns null when a gradient or an image sits between the text and that
+ * background — those paint something this cannot read, and a made-up ratio is
+ * worse than an admitted unknown.
+ */
+function contrastInPage(page, selector) {
+  return page.evaluate((s) => {
+    const el = document.querySelector(s)
+    if (!el) return null
+    const srgb = (c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4) }
+    const lum = (p) => 0.2126 * srgb(p[0]) + 0.7152 * srgb(p[1]) + 0.0722 * srgb(p[2])
+    const parse = (v) => {
+      const m = String(v).match(/rgba?\(([^)]+)\)/)
+      if (!m) return null
+      const p = m[1].split(/[,\s/]+/).filter(Boolean).map(Number)
+      if (p.length < 3 || p.some(Number.isNaN)) return null
+      return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1]
+    }
+    /* Composite a translucent layer onto what is already behind it. */
+    const over = (layer, bg) => [0, 1, 2].map((i) => layer[i] * layer[3] + bg[i] * (1 - layer[3]))
+
+    /* Collected from the element upward, so the last opaque entry is the
+       bottom of the pile and echoing back down composites in the right order. */
+    const stack = []
+    let opaque = false
+    for (let n = el; n; n = n.parentElement) {
+      const cs = getComputedStyle(n)
+      if (cs.backgroundImage && cs.backgroundImage !== 'none') return null
+      const c = parse(cs.backgroundColor)
+      if (c && c[3] > 0.001) { stack.push(c); if (c[3] >= 0.999) { opaque = true; break } }
+    }
+    if (!opaque) stack.push([255, 255, 255, 1])
+    let bg = stack.pop().slice(0, 3)
+    while (stack.length) bg = over(stack.pop(), bg)
+
+    const cs = getComputedStyle(el)
+    const fg = parse(cs.color)
+    if (!fg) return null
+    const op = parseFloat(cs.opacity)
+    const painted = over([fg[0], fg[1], fg[2], fg[3] * op], bg)
+    const la = lum(painted), lb = lum(bg)
+    const ratio = (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
+
+    const px = parseFloat(cs.fontSize)
+    const weight = parseInt(cs.fontWeight, 10) || 400
+    const large = px >= 24 || (px >= 18.66 && weight >= 700)
+    const need = large ? 3 : 4.5
+    return {
+      ratio: Math.round(ratio * 100) / 100,
+      need,
+      fails: ratio < need,
+      px, weight,
+      color: cs.color,
+      bg: `rgb(${bg.map(Math.round).join(',')})`,
+    }
+  }, selector).catch(() => null)
+}
+
 function arg(name, fallback) {
   const i = process.argv.indexOf(`--${name}`)
   return i !== -1 && process.argv[i + 1] ? process.argv[i + 1] : fallback
@@ -170,6 +235,7 @@ async function auditRoute(browser, { route, label, auth }) {
          it does not gate. */
       const unresolved = []
       let unresolvedVisible = 0
+      let unresolvedChecked = 0
       for (const v of res.incomplete ?? []) {
         if (v.id !== 'color-contrast') continue
         for (const n of v.nodes) {
@@ -177,28 +243,36 @@ async function auditRoute(browser, { route, label, auth }) {
           const seen = typeof sel === 'string' ? await visibleInPage(page, sel) : null
           const reason = (n.any?.[0]?.message ?? n.all?.[0]?.message ?? n.failureSummary ?? '')
             .replace(/\s+/g, ' ').slice(0, 170)
-          /* Not every `incomplete` is our doing. axe also gives up on things
-             nobody can fix from the colour tokens — an empty input whose
-             placeholder it refuses to judge without a value, for instance.
-             Gating on those would leave the gate permanently red for a reason
-             no fix can clear, and a gate nobody can clear stops being read.
-             The one axe gives up on *because of us* is occlusion, which is
-             exactly the failure this guard exists to catch, so that is what
-             gates. The rest is reported and left alone. */
-          const ourDoing = /overlapped by another element/i.test(reason)
+          /* "axe could not tell" is not the same as "it is fine", and it is not
+             the same as "it is broken" either. The overlay that hid the card
+             text still hides it after the text is fixed — axe cannot resolve
+             the background either way, so the node stays in `incomplete` and a
+             guard that fails on mere presence would be permanently red for a
+             reason no fix can clear. A gate nobody can clear stops being read.
+
+             So measure it here instead of guessing from the reason string:
+             the node's own computed colour against the first opaque background
+             behind it. Only a real failure gates. A gradient or an image in
+             the way yields `null` and is reported, not judged — the same
+             restraint contrast_audit.mjs applies, for the same reason. */
+          const measured = typeof sel === 'string' ? await contrastInPage(page, sel) : null
+          const gating = Boolean(seen) && measured !== null && measured.fails
           unresolved.push({
             target: n.target?.join(' ')?.slice(0, 140) ?? '',
             reason,
             visible: seen,
-            gating: Boolean(seen) && ourDoing,
+            ratio: measured?.ratio ?? null,
+            need: measured?.need ?? null,
+            gating,
           })
-          if (seen && ourDoing) unresolvedVisible++
+          if (gating) unresolvedVisible++
+          else if (measured !== null) unresolvedChecked++
         }
       }
 
       entry = {
         route, label, auth, ok: true, byImpact, violations: detail,
-        unresolved, unresolvedVisible,
+        unresolved, unresolvedVisible, unresolvedChecked,
       }
     }
   } catch (err) {
@@ -221,7 +295,8 @@ async function main() {
       ` serious=${entry.ok ? entry.byImpact.serious : '-'}` +
       ` moderate=${entry.ok ? entry.byImpact.moderate : '-'}` +
       ` minor=${entry.ok ? entry.byImpact.minor : '-'}` +
-      ` unmeasured=${entry.ok ? entry.unresolvedVisible : '-'}` +
+      ` axeGaveUp=${entry.ok ? entry.unresolved.length : '-'}` +
+      (entry.ok && entry.unresolvedVisible ? ` FAILING_UNMEASURED=${entry.unresolvedVisible}` : '') +
       (entry.ok ? '' : `  ${entry.error}`),
     )
   }
@@ -254,21 +329,27 @@ async function main() {
     }
     for (const u of r.unresolved) {
       if (u.visible === false) continue
-      const mark = u.gating ? 'GATING' : 'not-our-fix'
-      console.log(`        [unmeasured/${mark}] ${u.target}`)
-      console.log(`            ${u.reason}`)
+      if (u.gating) {
+        console.log(`        [UNMEASURED-BY-AXE, FAILS] ${u.ratio} (need ${u.need})  ${u.target}`)
+        console.log(`            ${u.reason}`)
+      } else if (u.ratio === null) {
+        console.log(`        [unmeasurable: gradient or image] ${u.target}`)
+      }
+      // Resolved and passing: nothing to say. It is only in the list because
+      // the reader may want the count.
     }
   }
 
   if (unmeasured > 0 && unmeasuredVisible === 0) {
-    console.log(`\n  ${unmeasured} contrast node(s) axe could not measure, none of them` +
-      ' caused by an overlay — reported, not gated.')
+    console.log(`\n  ${unmeasured} contrast node(s) axe could not resolve; measured here` +
+      ' and none of them fail.')
   }
 
   console.log(
     `\n  routes=${results.length}  audited=${results.length - failed.length}` +
     `  skipped=${failed.length}  gating_violations=${gatingTotal}` +
-    `  unmeasured_visible=${unmeasuredVisible}`)
+    `  axe_could_not_resolve=${unmeasured}` +
+    `  of_those_failing=${unmeasuredVisible}`)
 
   if (JSON_OUT) {
     writeFileSync(JSON_OUT, JSON.stringify(
