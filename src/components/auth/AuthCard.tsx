@@ -2,9 +2,11 @@ import { Loader2, PawPrint } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
+import { PhoneAuthForm } from '@/components/auth/PhoneAuthForm'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuthStore } from '@/store/auth.store'
 
 /**
@@ -26,6 +28,10 @@ export function AuthCard({ mode }: { mode: 'login' | 'register' }) {
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  /* تب پیش‌فرض «موبایل» است، چون برای کاربر ایرانی آشناتر است و
+     ثبت‌نام با نام کاربری برایش غیرطبیعی است. مسیر قدیمی سر جایش است و
+     کسی که رمز دارد یک کلیک فاصله دارد. */
+  const [method, setMethod] = useState<'phone' | 'password'>('phone')
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -76,6 +82,25 @@ export function AuthCard({ mode }: { mode: 'login' | 'register' }) {
           </p>
         </div>
 
+        {/* دو مسیر، نه دو صفحه: کاربر انتخاب می‌کند با شماره وارد شود یا
+            با رمز. تب پیش‌فرض موبایل است چون برای کاربر ایرانی آشناتر
+            است، ولی مسیر قدیمی یک کلیک فاصله دارد و چیزی از دست نمی‌رود. */}
+        <Tabs
+          value={method}
+          onValueChange={(v) => { setMethod(v as 'phone' | 'password'); setError(null) }}
+          className="mb-1"
+        >
+          <TabsList className="w-full">
+            <TabsTrigger value="phone" className="flex-1">شماره موبایل</TabsTrigger>
+            <TabsTrigger value="password" className="flex-1">
+              نام کاربری و رمز
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {method === 'phone' ? (
+          <PhoneAuthForm />
+        ) : (
         <form onSubmit={submit} className="space-y-4">
           {mode === 'register' && (
             <div data-motion-item className="space-y-2">
@@ -159,19 +184,24 @@ export function AuthCard({ mode }: { mode: 'login' | 'register' }) {
             {mode === 'register' ? 'ساخت حساب' : 'ورود'}
           </Button>
         </form>
+        )}
 
         <p data-motion-item className="mt-6 text-center text-sm text-muted-foreground">
           {mode === 'register' ? (
             <>
               حساب دارید؟{' '}
-              <Link to="/login" className="font-bold text-primary hover:underline">
+              <Link to="/login" className="font-bold text-paw-700 dark:text-paw-300 hover:underline">
                 وارد شوید
               </Link>
             </>
           ) : (
             <>
               حساب ندارید؟{' '}
-              <Link to="/register" className="font-bold text-primary hover:underline">
+              {/* paw-700 and not --primary: the brand orange as 14px text on
+                  this card is 3.24, under the 4.5 that size needs. paw-700 is
+                  the same hue at 4.89. The same shade the rest of the app's
+                  text links already use. */}
+              <Link to="/register" className="font-bold text-paw-700 dark:text-paw-300 hover:underline">
                 ثبت‌نام کنید
               </Link>
             </>

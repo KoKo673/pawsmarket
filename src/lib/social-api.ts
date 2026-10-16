@@ -240,6 +240,33 @@ export const authApi = {
       body: JSON.stringify({ current_password: currentPassword,
                              new_password: newPassword }),
     }),
+
+  /**
+   * کد یک‌بارمصرف پیامکی.
+   *
+   * پاسخ `request` برای شمارهٔ ثبت‌شده و ثبت‌نشده یکسان است — سرور
+   * عمداً هیچ تفاوتی نمی‌گذارد تا کسی نتواند با امتحان‌کردن شماره‌ها
+   * بفهمد کدام حساب دارد. پس فرانت هم نباید از روی پاسخ حدس بزند که
+   * کاربر تازه است یا نه؛ تنها `is_new` در پاسخ `verify` این را
+   * می‌گوید، و فقط بعد از تأیید موفق کد.
+   */
+  otpRequest: (phone: string, purpose: 'signup' | 'login') =>
+    request<{ ok: boolean; message: string }>('/api/auth/otp/request', {
+      method: 'POST',
+      body: JSON.stringify({ phone, purpose }),
+    }),
+  otpVerify: (phone: string, code: string, purpose: 'signup' | 'login',
+              displayName?: string) =>
+    request<{ token: string; user: AuthUser; is_new: boolean }>(
+      '/api/auth/otp/verify', {
+        method: 'POST',
+        body: JSON.stringify({
+          phone,
+          code,
+          purpose,
+          ...(displayName ? { display_name: displayName } : {}),
+        }),
+      }),
 }
 
 /* ── پروفایل و اجتماعی ──────────────────────────────────────── */
