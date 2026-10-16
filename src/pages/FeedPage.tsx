@@ -37,12 +37,18 @@ export function FeedPage() {
       </header>
 
       {query.isLoading ? (
-        <div className="space-y-5">
+        /* Measured, not guessed: a real feed card is 169px tall at 390px, and
+           the first page renders 20 of them — 4121px of content. This skeleton
+           used to show three cards and stop at 608px, so when the data arrived
+           everything below it jumped. The block now runs the height of the
+           viewport, which is all a reader can see at once, so nothing moves
+           above the fold whether the feed returns 3 cards or 20. */
+        <div className="min-h-[70vh] space-y-5">
           {Array.from({ length: 3 }, (_, i) => (
-            <div key={i} className="rounded-2xl bg-card p-4 shadow-soft">
+            <div key={i} className="h-[10.5625rem] rounded-2xl bg-card p-4 shadow-soft">
               <Skeleton className="h-11 w-11 rounded-full" />
               <Skeleton className="mt-3 h-4 w-1/3" />
-              <Skeleton className="mt-4 aspect-[4/3] w-full rounded-xl" />
+              <Skeleton className="mt-4 h-[7.5rem] w-full rounded-xl" />
             </div>
           ))}
         </div>

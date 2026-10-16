@@ -55,16 +55,62 @@ const BookingManagePage = lazy(() =>
 const MyBookingsPage = lazy(() =>
   import('@/pages/MyBookingsPage').then((m) => ({ default: m.MyBookingsPage })))
 
-/** Page-shaped skeleton while a split route arrives. */
-function RouteFallback() {
+/**
+ * Page-shaped skeleton while a split route arrives.
+ *
+ * Two shapes, chosen by route, because one shape cannot fit both kinds of page
+ * here and trying made things worse than leaving it alone:
+ *
+ *   catalogue  (/pets, /adoption)  a max-w-7xl grid of three-column cards
+ *   column     (/me, /bookings,    a max-w-2xl stack, the container those
+ *               /feed, /followers)  pages actually use
+ *
+ * The history, since it argues for keeping this honest. It was a max-w-7xl
+ * six-card grid for everything. On /me that painted 944px, then the page's own
+ * skeleton at 594px, then content — two jumps, measured as 0.095 CLS blamed on
+ * the footer. Narrowing it to a column fixed the guarded routes and broke /pets
+ * (0.000 -> 0.242) and /adoption (0.000 -> 0.155), whose real skeletons are the
+ * grid that had just been removed.
+ *
+ * Sizes below are measured at 390px, not guessed: catalogue cards are 371px
+ * (/pets) and 435px (/adoption); the column pages are 90-172px rows. NotFound
+ * has no shape of its own and takes the column, which is closest.
+ */
+const CATALOGUE_ROUTES = ['/pets', '/adoption']
+
+function RouteFallback({ pathname }: { pathname: string }) {
+  if (CATALOGUE_ROUTES.some((p) => pathname.startsWith(p))) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 pb-24 pt-28 sm:px-6">
+        <div className="mx-auto h-8 w-56 animate-pulse rounded-xl bg-muted" />
+        <div className="mx-auto mt-4 h-4 w-72 animate-pulse rounded bg-muted" />
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }, (_, i) => (
+            /* Mirrors the real card's box model, which is what makes the
+               heights match: the picture runs edge to edge and only the text
+               block below it is padded. An earlier version padded the whole
+               card, narrowing the picture by 32px and leaving the fallback
+               41px short — 0.129 CLS on desktop /pets. */
+            <div key={i} className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft">
+              <div className="aspect-[4/3] w-full animate-pulse bg-muted" />
+              <div className="space-y-2 p-4">
+                <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+                <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
   return (
-    <div className="mx-auto max-w-7xl px-4 py-24">
-      <div className="h-8 w-48 animate-pulse rounded-xl bg-muted" />
-      <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 6 }, (_, i) => (
-          <div key={i} className="rounded-2xl bg-card p-4 shadow-soft">
-            <div className="aspect-[4/3] w-full animate-pulse rounded-xl bg-muted" />
-            <div className="mt-3 h-4 w-2/3 animate-pulse rounded bg-muted" />
+    <div className="mx-auto max-w-2xl px-4 pb-24 pt-28 sm:px-6">
+      <div className="h-8 w-1/3 animate-pulse rounded-xl bg-muted" />
+      <div className="mt-8 space-y-4">
+        {Array.from({ length: 4 }, (_, i) => (
+          <div key={i} className="rounded-2xl bg-card p-5 shadow-soft">
+            <div className="h-4 w-2/3 animate-pulse rounded bg-muted" />
+            <div className="mt-3 h-3 w-1/2 animate-pulse rounded bg-muted" />
           </div>
         ))}
       </div>
@@ -138,7 +184,7 @@ function AppRoutes() {
           whose content never swapped — content/URL sync beats staged exits.
         */}
         <AnimatePresence initial={false}>
-          <Suspense fallback={<RouteFallback />}>
+          <Suspense fallback={<RouteFallback pathname={location.pathname} />}>
             <Routes location={location} key={location.pathname}>
             <Route
               path="/"

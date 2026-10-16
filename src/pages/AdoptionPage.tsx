@@ -173,9 +173,21 @@ export function AdoptionPage() {
 
       {/* فهرست حیوانات */}
       {petsQuery.isLoading ? (
+        /* Same box model as the card below: 4:3 picture edge to edge, padded
+           text block, and the full-width button that carries most of the
+           height — a real card is 435px at 390px, and the flat h-64 this
+           replaces (256px) was 179px short. */
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }, (_, i) => (
-            <div key={i} className="h-64 animate-pulse rounded-2xl bg-muted" />
+            <div key={i} className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft">
+              <div className="aspect-[4/3] w-full animate-pulse bg-muted" />
+              <div className="space-y-2.5 p-4">
+                <div className="h-5 w-2/3 animate-pulse rounded bg-muted" />
+                <div className="h-3 w-full animate-pulse rounded bg-muted" />
+                <div className="h-3.5 w-1/3 animate-pulse rounded bg-muted" />
+                <div className="h-11 w-full animate-pulse rounded-xl bg-muted" />
+              </div>
+            </div>
           ))}
         </div>
       ) : pets.length === 0 ? (

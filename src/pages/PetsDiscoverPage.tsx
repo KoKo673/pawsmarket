@@ -44,12 +44,20 @@ export function PetsDiscoverPage() {
       </header>
 
       {query.isLoading ? (
+        /* Mirrors the real card's box model — the picture runs edge to edge and
+           only the text block is padded. With `p-4` around the whole card the
+           picture sat 32px narrower than the real one, and at 1350px the column
+           was 360px against the real 401px: a 41px shortfall that shifted the
+           grid when the pets arrived. The card below is the same structure, so
+           this is copied from it rather than invented. */
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }, (_, i) => (
-            <div key={i} className="space-y-3 rounded-2xl bg-card p-4 shadow-soft">
-              <Skeleton className="aspect-[4/3] w-full rounded-xl" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-3.5 w-1/2" />
+            <div key={i} className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft">
+              <Skeleton className="aspect-[4/3] w-full rounded-none" />
+              <div className="space-y-2 p-4">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3.5 w-1/2" />
+              </div>
             </div>
           ))}
         </div>
