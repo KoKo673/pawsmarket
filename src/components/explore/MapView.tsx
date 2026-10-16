@@ -14,6 +14,21 @@ import { useUiStore } from '@/store/ui.store'
 import type { GeoPoint, ListingWithDistance } from '@/types'
 
 /**
+ * What a screen reader announces for a listing pin.
+ *
+ * The pin shows a price or «سرپرستی», which is not enough on its own: «۶۲۸»
+ * names nothing. This says what kind of listing it is and what it costs, and
+ * stops short of the shop name because `markerIcon` only receives the fields
+ * the map draws from.
+ */
+function markerLabel(item: ListingWithDistance): string {
+  const kind = item.kind === 'pet' ? 'حیوان' : item.kind === 'product' ? 'محصول' : 'فروشگاه'
+  if (item.kind === 'store') return `${kind}: ${item.name}`
+  if (item.price === 0) return `${kind} برای سرپرستی: ${item.name}`
+  return `${kind}: ${item.name} — ${faPriceShort(item.price)} تومان`
+}
+
+/**
  * Playful Airbnb-style marker: a white price/status pill with a pointer
  * tail, colored dot per kind. Rendered as inline-styled HTML inside a
  * Leaflet divIcon — Tailwind classes aren't guaranteed to cascade into
@@ -38,8 +53,15 @@ function markerIcon(item: ListingWithDistance): L.DivIcon {
   const cached = iconCache.get(key)
   if (cached) return cached
 
+  /* `role="img"` with a real name, not a bare div. Leaflet gives every marker
+     `role="button"` and `tabindex="0"` by default, but this inner box was
+     empty of any accessible name — a keyboard user tabbed onto a marker,
+     heard «button», and had no idea which listing it was, or that Enter would
+     open it. The name comes from the Marker's `alt` option (below), which
+     Leaflet puts on the wrapper; the inner box only needs to stop claiming to
+     be a button of its own. */
   const html = `
-    <div style="
+    <div role="img" style="
       display:flex;align-items:center;gap:6px;
       background:#fff;color:#1C1A17;
       font:700 12px/1 Vazirmatn,system-ui,sans-serif;
@@ -48,9 +70,9 @@ function markerIcon(item: ListingWithDistance): L.DivIcon {
       border:1.5px solid rgba(0,0,0,.06);
       white-space:nowrap;will-change:transform;
     ">
-      <span style="width:8px;height:8px;border-radius:999px;background:${dotColor};flex:none"></span>
+      <span aria-hidden="true" style="width:8px;height:8px;border-radius:999px;background:${dotColor};flex:none"></span>
       ${label}
-      <svg width="10" height="6" viewBox="0 0 10 6" style="position:absolute;left:50%;bottom:-5px;transform:translateX(-50%)">
+      <svg aria-hidden="true" width="10" height="6" viewBox="0 0 10 6" style="position:absolute;left:50%;bottom:-5px;transform:translateX(-50%)">
         <path d="M0 0h10L5 6z" fill="#fff"/>
       </svg>
     </div>
@@ -144,12 +166,22 @@ function MapSync({ origin }: { origin: GeoPoint }) {
   return null
 }
 
-/** "You are here" — pulsing brand dot pinned at the true origin coordinate. */
+/**
+ * "You are here" — pulsing brand dot at the true origin coordinate.
+ *
+ * `keyboard: false` on its Marker (below) is what actually keeps it out of the
+ * tab order; `role="presentation"` and `aria-hidden` tell assistive tech it is
+ * decoration, which it is. It had none of that and arrived as a focusable
+ * `role="button"` with no accessible name — a keyboard user tabbed onto it,
+ * heard «button», and Enter or Space did nothing, because the Marker is
+ * `interactive={false}`. A control that takes focus and cannot be operated is
+ * worse than one that is absent.
+ */
 const originIcon = L.divIcon({
   className: '',
   iconSize: [14, 14],
   iconAnchor: [7, 7],
-  html: `<span style="
+  html: `<span role="presentation" aria-hidden="true" style="
     display:block;width:14px;height:14px;border-radius:999px;
     background:#FA5C00;border:3px solid #fff;
     box-shadow:0 0 0 6px rgba(250,92,0,.28), 0 2px 10px rgba(0,0,0,.3);
@@ -394,25 +426,77 @@ function ListingMarkers({
     const layer = L.layerGroup().addTo(map)
 
     for (const cluster of clusterListings(listings, zoom)) {
-      const icon = cluster.items.length > 1
+      const clustered = cluster.items.length > 1
+      const icon = clustered
         ? clusterIcon(cluster.items.length)
         : markerIcon(cluster.items[0])
-      L.marker([cluster.lat, cluster.lng], {
+      const open = () => {
+        // A cluster stands for several listings. Opening an arbitrary one
+        // made the other four unreachable, so the parent is asked to offer
+        // the whole group instead.
+        if (clustered && clusterRef.current) {
+          clusterRef.current(cluster.items)
+        } else {
+          selectRef.current(cluster.items[0].id)
+        }
+      }
+
+      const marker = L.marker([cluster.lat, cluster.lng], {
         icon,
         riseOnHover: true,
-        keyboard: false,
+        /* These were `keyboard: false`, which took every listing pin out of the
+           tab order — a keyboard or screen-reader user could not open a listing
+           from the map at all, though a mouse could.
+
+           The obvious worry is tab order: 200+ pins would mean 200+ tabs before
+           the reader gets past the map. It does not apply here because
+           clustering bounds the rendered pins — measured at 3 at the default
+           zoom, and one cell means one pin whatever the city holds.
+
+           `keyboard: true` alone is NOT enough, which is worth knowing before
+           trusting it. Leaflet's _initIcon only does:
+
+             if (options.keyboard) { icon.tabIndex = '0'; icon.setAttribute('role', 'button') }
+
+           — it makes the marker focusable and stops there. Nothing in Leaflet
+           binds Enter or Space for a marker, so a focused pin announced itself
+           as a button and did nothing when pressed. The key handler below is
+           ours for that reason, not redundancy. */
+        keyboard: true,
+        /* `title`, not `alt`. Leaflet writes `alt` onto an `<img>`
+           (`icon.alt = options.alt` in _initIcon) and a divIcon has no image,
+           so the option is silently dropped — measured: the marker came out
+           with no name at all. `title` goes onto the div itself, which gives
+           both the hover tooltip and the accessible name for a divIcon. */
+        title: clustered
+          ? `${faDigits(cluster.items.length)} مورد در این محدوده`
+          : markerLabel(cluster.items[0]),
       })
-        .on('click', () => {
-          // A cluster stands for several listings. Opening an arbitrary one
-          // made the other four unreachable, so the parent is asked to offer
-          // the whole group instead.
-          if (cluster.items.length > 1 && clusterRef.current) {
-            clusterRef.current(cluster.items)
-          } else {
-            selectRef.current(cluster.items[0].id)
+
+      marker.on('click', open)
+
+      /* Leaflet puts these markers in the tab order but gives them no way to be
+         operated. Enter and Space are what a button is expected to answer to,
+         and the map's own key handling does not cover a focused marker. */
+      marker.on('add', () => {
+        const el = marker.getElement()
+        if (!el) return
+        /* Leaflet puts `title` on the wrapper, but the visible label («۶۲۸»)
+           is a child of it, so a screen reader announces both and the price
+           alone says nothing. aria-label replaces the computed name outright
+           with the full sentence. */
+        el.setAttribute('aria-label', clustered
+          ? `${faDigits(cluster.items.length)} مورد در این محدوده`
+          : markerLabel(cluster.items[0]))
+        el.addEventListener('keydown', (e: KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+            e.preventDefault()   // Space would otherwise scroll the map
+            open()
           }
         })
-        .addTo(layer)
+      })
+
+      marker.addTo(layer)
     }
 
     return () => {
@@ -461,7 +545,17 @@ export function MapView({
         />
         <MapSync origin={origin} />
 
-        <Marker position={[origin.lat, origin.lng]} icon={originIcon} interactive={false} zIndexOffset={1000} />
+        {/* `keyboard: false` is what keeps this out of the tab order — it is a
+            passive "you are here" dot, not a control. Without it Leaflet still
+            gave it tabindex="0" and role="button", so a keyboard user could
+            focus something that did nothing when pressed. */}
+        <Marker
+          position={[origin.lat, origin.lng]}
+          icon={originIcon}
+          interactive={false}
+          keyboard={false}
+          zIndexOffset={1000}
+        />
 
         <ListingMarkers listings={listings} onSelect={onSelect} onCluster={onCluster} />
       </MapContainer>
