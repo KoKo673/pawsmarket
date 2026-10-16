@@ -14,7 +14,11 @@ const buttonVariants = cva(
     'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold',
     'transition-all duration-200 ease-out',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-    'disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97]',
+    /* 70%, not 50%: halving the opacity of a dark ghost label drops it to
+       3.21:1 on the wizard's footer, where «بازگشت» sits disabled on the
+       first step of every add-listing visit. 70% measures 6.05 and still
+       reads as unavailable next to an enabled button. */
+    'disabled:pointer-events-none disabled:opacity-70 active:scale-[0.97]',
     '[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   ],
   {

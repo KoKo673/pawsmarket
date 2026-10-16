@@ -26,10 +26,14 @@ export function CtaBanner() {
           <p className="mx-auto mt-4 max-w-lg text-balance text-sm leading-relaxed text-white/85 sm:text-base">
             روی نقشه نقطه بگذارید، عکس‌ها را بارگذاری کنید و در فهرست پازمارکت ثبت شوید — کمتر از دو دقیقه.
           </p>
+          {/* The button is white and sits on the orange end of the gradient,
+              so orange text on it measured 1.19 — the worst pair in the app,
+              and the one call to action the banner exists for. paw-700 on the
+              same white is 4.94 and still reads as brand. */}
           <Button
             asChild
             size="lg"
-            className="mt-8 h-12 gap-2 rounded-full bg-white px-8 text-primary shadow-lifted hover:bg-white/90"
+            className="mt-8 h-12 gap-2 rounded-full bg-white px-8 text-paw-700 shadow-lifted hover:bg-white/90"
           >
             <Link to="/add">
               <ArrowLeft className="size-4" />
