@@ -102,7 +102,21 @@ export function ExplorePage() {
               <div className="min-w-0">
                 <h1 className="truncate text-lg font-extrabold tracking-tight">کاوش در اطراف</h1>
                 <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
-                  <span className={cn(isLoading && 'animate-pulse')}>
+                  {/* The loading state used to pulse these words. `animate-pulse`
+                      drives opacity, so at the trough of every cycle the text
+                      dropped to 2.03:1 against the header — measured with the
+                      API delayed, and imperceptible on a fast local backend
+                      only because the words are gone before the next sample.
+                      A reader on a slow connection stares at it. Nothing here
+                      needs to move: swapping to the result count is the
+                      feedback, so the words keep full contrast throughout. */}
+                  {isLoading && (
+                    <span
+                      aria-hidden
+                      className="inline-block size-1.5 shrink-0 animate-pulse rounded-full bg-primary"
+                    />
+                  )}
+                  <span>
                     {isLoading
                       ? 'در حال جستجو…'
                       : isError
