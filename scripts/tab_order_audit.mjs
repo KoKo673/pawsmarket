@@ -48,6 +48,8 @@ const ROUTES = [
   { route: '/explore', label: 'کاوش روی نقشه', auth: false },
   { route: '/pets', label: 'حیوانات نزدیک', auth: false },
   { route: '/adoption', label: 'سرپرستی', auth: false },
+  { route: '/login', label: 'ورود', auth: false },
+  { route: '/register', label: 'ثبت‌نام', auth: false },
   { route: '/me', label: 'حساب من', auth: true },
 ]
 

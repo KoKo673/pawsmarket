@@ -32,6 +32,11 @@ const ROUTES = [
   { route: '/explore?preset=vets', label: 'خدمات دامپزشکی', auth: false },
   { route: '/pets', label: 'حیوانات نزدیک', auth: false },
   { route: '/adoption', label: 'سرپرستی', auth: false },
+  /* The sign-in pages were in no audit's route list, which made the two screens
+     every visitor must pass through the only ones nobody measured. Public, so
+     they belong in the `--public-only` CI run too. */
+  { route: '/login', label: 'ورود', auth: false },
+  { route: '/register', label: 'ثبت‌نام', auth: false },
   { route: '/feed', label: 'لحظه‌ها', auth: true },
   { route: '/bookings', label: 'نوبت‌های من', auth: true },
   { route: '/me', label: 'حساب من', auth: true },

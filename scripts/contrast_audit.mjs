@@ -49,6 +49,11 @@ const ROUTES = [
   { route: '/me', label: 'حساب من', auth: true },
   { route: '/pet/1', label: 'پروفایل حیوان', auth: false },
   { route: '/add', label: 'ثبت آگهی', auth: false },
+  /* Login and register were never in any audit's route list, so the two pages
+     every visitor must get through were the only ones nobody measured. They
+     are public (no auth), which is why adding them here is enough. */
+  { route: '/login', label: 'ورود', auth: false },
+  { route: '/register', label: 'ثبت‌نام', auth: false },
 ]
 
 function arg(name, fallback) {
