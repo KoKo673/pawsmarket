@@ -37,7 +37,10 @@
     /* 44%, not 46%: at 46 the secondary text measured 4.45:1 against
        --card, 0.05 short of the 4.5 AA floor. Two points of lightness buys
        the margin without changing how the greys read. */
-    --muted-foreground: 20 8% 44%;
+    /* 42%, not 44%: on a card this grey clears 4.5 anywhere, but the muted
+       chips («لغو شده», the step numbers) sit on `bg-muted`, which is itself
+       a grey — and there 44% measures 4.44. Two points darker is 4.77. */
+    --muted-foreground: 20 8% 42%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
