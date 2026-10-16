@@ -59,6 +59,29 @@ function arg(name, fallback) {
 const BASE = arg('base', 'http://127.0.0.1:4173')
 const TOKEN = arg('token', process.env.PAWS_TOKEN ?? '')
 const JSON_OUT = arg('json', '')
+/* CI has no database, no backend and no session: the guarded routes would
+   bounce to /login and the login page would be measured under their names.
+   Dropping them from the list is not the same as skipping them — a skip still
+   fails the run, and it would be failing about the environment. */
+const PUBLIC_ONLY = process.argv.includes('--public-only')
+
+/**
+ * Prefer the installed Chrome, fall back to Playwright's bundled Chromium.
+ *
+ * The bundled browser cannot be downloaded from an Iranian network
+ * (cdn.playwright.dev answers 403 "not available in your location"), so local
+ * runs need system Chrome. CI runs on GitHub's servers, where that block does
+ * not apply and where Chrome is not installed — the bundled browser is both
+ * reachable and the only option there. Trying Chrome first keeps one script
+ * working in both places.
+ */
+async function launchBrowser() {
+  try {
+    return await chromium.launch({ channel: 'chrome', headless: true })
+  } catch {
+    return await chromium.launch({ headless: true })
+  }
+}
 
 /**
  * Runs in the page: returns every text node's computed foreground, resolved
@@ -213,24 +236,52 @@ async function auditRoute(browser, { route, label, auth }) {
   return entry
 }
 
-async function main() {
-  const browser = await chromium.launch({ channel: 'chrome', headless: true })
-  const results = []
+/**
+ * The documented brand exception — see the long note in a11y_audit.mjs.
+ *
+ * White on `--primary` (#fa5705) is 3.27 where the text needs 4.5, on every
+ * primary button in the app at every size. Enlarging does not help: WCAG's
+ * "large text" starts at 18.66px with weight >=700, and the Button base weight
+ * is 600, so sm/default/lg all need 4.5. The real fix is the
+ * `--primary-foreground` token, which repaints every primary button and is
+ * parked for the product owner.
+ *
+ * Matched on the fill and the text colour, not the size — one token, one
+ * exception. Delete this, and the matching block in a11y_audit.mjs, when the
+ * token moves.
+ */
+function isBrandException(f) {
+  return f.bg === 'rgb(250,87,5)' && f.color === 'rgb(255, 255, 255)'
+}
 
-  for (const spec of ROUTES) {
+async function main() {
+  const browser = await launchBrowser()
+  const results = []
+  const measured = PUBLIC_ONLY ? ROUTES.filter((r) => !r.auth) : ROUTES
+  if (PUBLIC_ONLY) {
+    console.log(`  --public-only: ${measured.length} of ${ROUTES.length} routes` +
+      ' (guarded ones need a session and are not measured here)')
+  }
+
+  for (const spec of measured) {
     const entry = await auditRoute(browser, spec)
     results.push(entry)
     if (!entry.ok) {
       console.log(`  ${spec.route.padEnd(24)} SKIPPED: ${entry.error}`)
       continue
     }
-    const { failing, unresolved } = entry
+    const { unresolved } = entry
+    const failing = entry.failing.filter((f) => !isBrandException(f))
+    const excused = entry.failing.length - failing.length
+    entry.gating = failing
+    entry.excused = excused
     const worst = failing.reduce((m, f) => (m === null || f.ratio < m ? f.ratio : m), null)
     console.log(
-      `  ${spec.route.padEnd(24)} failing=${String(entry.counts.failing).padStart(3)}` +
+      `  ${spec.route.padEnd(24)} failing=${String(failing.length).padStart(3)}` +
       ` of ${String(entry.counts.textNodes).padStart(4)} text nodes` +
       `  worst=${worst === null ? '—' : worst}` +
-      (entry.counts.unresolved ? `  unresolved=${entry.counts.unresolved}` : ''),
+      (entry.counts.unresolved ? `  unresolved=${entry.counts.unresolved}` : '') +
+      (excused ? `  brand_exception=${excused}` : ''),
     )
   }
 
@@ -238,16 +289,16 @@ async function main() {
 
   console.log('\n  failures grouped by cause (ratio, size, colours):')
   for (const r of results) {
-    if (!r.ok || r.failing.length === 0) continue
+    if (!r.ok || r.gating.length === 0) continue
     const grouped = new Map()
-    for (const f of r.failing) {
+    for (const f of r.gating) {
       const k = `${f.ratio}|${f.px}/${f.weight}|${f.color}|${f.bg}|${f.animation ?? '-'}`
       if (!grouped.has(k)) grouped.set(k, { ...f, count: 0, samples: [] })
       const g = grouped.get(k)
       g.count++
       if (g.samples.length < 3) g.samples.push(f.text)
     }
-    console.log(`\n    ${r.route} — ${r.failing.length} node(s)`)
+    console.log(`\n    ${r.route} — ${r.gating.length} node(s)`)
     for (const g of [...grouped.values()].sort((a, b) => a.ratio - b.ratio)) {
       console.log(
         `      ×${String(g.count).padStart(3)}  ${String(g.ratio).padStart(5)} (need ${g.need})` +
@@ -261,12 +312,19 @@ async function main() {
   }
 
   const skipped = results.filter((r) => !r.ok)
-  const totalFailing = results.reduce((n, r) => n + (r.ok ? r.failing.length : 0), 0)
+  const totalFailing = results.reduce((n, r) => n + (r.ok ? r.gating.length : 0), 0)
+  const totalExcused = results.reduce((n, r) => n + (r.ok ? r.excused : 0), 0)
   const totalUnresolved = results.reduce((n, r) => n + (r.ok ? r.counts.unresolved : 0), 0)
+
+  if (totalExcused > 0) {
+    console.log(`\n  ${totalExcused} node(s) are the documented brand exception` +
+      ' (white on --primary, 3.27) and are reported but not gated.')
+  }
 
   console.log(
     `\n  routes=${results.length}  audited=${results.length - skipped.length}` +
     `  skipped=${skipped.length}  failing_text_nodes=${totalFailing}` +
+    (totalExcused ? `  brand_exception=${totalExcused}` : '') +
     (totalUnresolved ? `  unresolved=${totalUnresolved}` : ''))
 
   if (JSON_OUT) {

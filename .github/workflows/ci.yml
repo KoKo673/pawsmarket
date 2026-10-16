@@ -31,3 +31,58 @@ jobs:
 
       - name: Catalog data QC
         run: python scripts/qc_catalog.py
+
+      # ——— Accessibility and contrast, public routes only ———
+      #
+      # Why the guarded routes are not here: this runner has no database, no
+      # backend and no session. /feed, /bookings and /me would each bounce to
+      # /login, and the audit would silently report on the login page three
+      # times under three different names. `--public-only` drops them from the
+      # list rather than skipping them — a skip still fails the run, and that
+      # failure would be about this environment instead of about the product.
+      #
+      # The full eight-route pass stays a manual run with a real token:
+      #   npm run audit:serve          (separate terminal, backend on :9650)
+      #   npm run audit:a11y -- --token <token>
+      #
+      # What actually gets measured here, counted with the API dead — because a
+      # route that renders an empty shell passes every audit trivially, and a
+      # green tick over an empty page is worse than no tick:
+      #
+      #   /                      14 cards, 194 text nodes   real content
+      #   /explore               48 cards, 405 text nodes   real content
+      #   /explore?preset=vets   48 cards, 403 text nodes   real content
+      #   /adoption               2 cards,  38 text nodes   thin but real
+      #   /pets                   0 cards,  55 text nodes   HEADER ONLY
+      #
+      # /explore does not need the backend: it fills from public/catalog.json,
+      # which is committed and carried into the build — 1071 products and 761
+      # stores, the same cards a visitor sees, which is where the 44 hidden
+      # contrast failures were. /pets is the one gap, so a defect that only
+      # appears on a live pet profile is not caught here.
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Build for audit
+        run: npm run audit:build
+
+      # Server and audits in one step on purpose. A background process started
+      # with `&` in one step is not reliably alive in the next: each `run:` is
+      # its own shell, and the runner is free to clean up what the previous one
+      # left behind. Keeping them together removes the question.
+      - name: Audit public routes (contrast + axe)
+        run: |
+          node scripts/serve_dist.mjs --dir dist-audit --port 4173 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+
+          # curl rather than a wait-on dependency: one loop is cheaper than a
+          # package, and the thing being waited for is a plain HTTP 200.
+          for i in $(seq 1 30); do
+            if curl -sf -o /dev/null http://127.0.0.1:4173/; then break; fi
+            if [ "$i" = 30 ]; then echo "the audit server never came up" >&2; exit 1; fi
+            sleep 1
+          done
+
+          node scripts/contrast_audit.mjs --base http://127.0.0.1:4173 --public-only
+          node scripts/a11y_audit.mjs --base http://127.0.0.1:4173 --public-only

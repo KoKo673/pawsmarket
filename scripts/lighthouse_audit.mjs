@@ -56,6 +56,12 @@ const BASE = arg('base', 'http://127.0.0.1:5173')
 const JSON_OUT = arg('json', '')
 const TOKEN = arg('token', process.env.PAWS_TOKEN ?? '')
 const ONLY = arg('only', '')
+/* CI has no database, no backend and no session. The guarded routes would
+   bounce to /login there, and measuring the login page under the name of three
+   others is worse than not measuring them — see the same flag in
+   a11y_audit.mjs. This drops them from the list rather than skipping them. */
+const PUBLIC_ONLY = process.argv.includes('--public-only')
+const MEASURED = PUBLIC_ONLY ? ROUTES.filter((r) => !r.auth) : ROUTES
 
 // Lighthouse opens its own tab, so the session has to already live in the
 // running browser rather than in a profile this script controls. Connecting
@@ -149,8 +155,12 @@ async function main() {
 
   const rows = []
   const only = ONLY ? new Set(ONLY.split(',').map(Number)) : null
+  if (PUBLIC_ONLY) {
+    console.log(`  --public-only: ${MEASURED.length} of ${ROUTES.length} routes` +
+      ' (guarded ones need a session and are not measured here)')
+  }
 
-  for (const [i, r] of ROUTES.entries()) {
+  for (const [i, r] of MEASURED.entries()) {
     if (only && !only.has(i + 1)) continue
     for (const ff of ['mobile', 'desktop']) {
       try {
