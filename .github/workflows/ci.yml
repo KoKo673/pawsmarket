@@ -104,3 +104,7 @@ jobs:
           # it ran: an unlabelled focusable origin dot, and listing pins that
           # were not keyboard reachable at all.
           node scripts/map_audit.mjs --base http://127.0.0.1:4173
+          # axe checks that a control has a name; this walks the keyboard and
+          # checks the name is actually there at every stop, and that the stop
+          # is visible. 115 stops across five routes, currently all named.
+          node scripts/tab_order_audit.mjs --base http://127.0.0.1:4173 --public-only
