@@ -13,14 +13,29 @@ import { buildSpaFallback } from './scripts/spaFallback.js'
  * "File not found" on a direct load, refresh or shared link. 404.html is the
  * documented fallback: Pages serves it, and the client router takes over on
  * the original URL.
+ *
+ * The output directory comes from Vite (`configResolved`), not from a
+ * hard-coded './dist'. It used to be hard-coded, which broke the audit build:
+ * `npm run audit:build` writes to dist-audit, the plugin then looked in dist/,
+ * and on a machine without a stale dist/ — CI, or any fresh clone — the
+ * readFileSync threw ENOENT inside closeBundle and took the whole build down.
+ *
+ * Locally it failed silently instead: a dist/ left over from an earlier
+ * production build was sitting there, so the plugin read the old index.html and
+ * wrote a stale dist/404.html pointing at asset hashes that no longer existed.
+ * The audit build reported success and produced output with no 404.html at all.
  */
 function spaFallback(base: string): Plugin {
+  let outDir = 'dist'
   return {
     name: 'pawsmarket-spa-fallback',
     apply: 'build',
+    configResolved(config) {
+      outDir = config.build.outDir
+    },
     closeBundle() {
       const written = buildSpaFallback(
-        fileURLToPath(new URL('./dist', import.meta.url)), base)
+        fileURLToPath(new URL(`./${outDir}`, import.meta.url)), base)
       this.info?.(`SPA fallback written: ${written}`)
     },
   }

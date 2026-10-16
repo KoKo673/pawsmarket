@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 /**
@@ -35,6 +35,17 @@ function absolutise(html: string, base: string): string {
 
 export function buildSpaFallback(outDir: string, base: string): string {
   const index = join(outDir, 'index.html')
+  /* Fail with something a person can act on. A bare ENOENT from readFileSync
+     is what made this take an hour to trace: it names a file but not the
+     decision that produced the path. The one way to get here is a build that
+     wrote somewhere other than the directory this was handed. */
+  if (!existsSync(index)) {
+    throw new Error(
+      `spaFallback: no index.html in ${outDir}. ` +
+      'The build output directory is empty or is not the one this was given — ' +
+      'check --outDir and the plugin that passes it.',
+    )
+  }
   let html = readFileSync(index, 'utf-8')
 
   html = absolutise(html, base)
