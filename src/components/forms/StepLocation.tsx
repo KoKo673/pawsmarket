@@ -3,6 +3,7 @@ import L from 'leaflet'
 import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 
+import { RequiredMark } from '@/components/forms/RequiredMark'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -41,7 +42,7 @@ export function StepLocation({ draft, update }: StepProps) {
     <div className="space-y-5">
       <div className="space-y-2">
         <Label htmlFor="draft-address">
-          آدرس / محله <span className="text-destructive">*</span>
+          آدرس / محله <RequiredMark />
         </Label>
         <Input
           id="draft-address"
@@ -55,7 +56,7 @@ export function StepLocation({ draft, update }: StepProps) {
       <div className="space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <Label>
-            محل دقیق روی نقشه <span className="text-destructive">*</span>
+            محل دقیق روی نقشه <RequiredMark />
           </Label>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => update({ location: origin })}>
             <Crosshair className="size-3.5" />

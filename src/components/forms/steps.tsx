@@ -1,6 +1,7 @@
 import { Cat, Dog, Package } from 'lucide-react'
 
 import { Dropzone, type DraftImage } from '@/components/forms/Dropzone'
+import { RequiredMark } from '@/components/forms/RequiredMark'
 import { Input, Textarea } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { faDigits } from '@/lib/fa'
@@ -95,7 +96,7 @@ export function StepBasics({ draft, update }: StepProps) {
       {/* نام */}
       <div className="space-y-2">
         <Label htmlFor="draft-name">
-          {draft.kind === 'pet' ? 'نام حیوان' : 'نام محصول'} <span className="text-destructive">*</span>
+          {draft.kind === 'pet' ? 'نام حیوان' : 'نام محصول'} <RequiredMark />
         </Label>
         <Input
           id="draft-name"
@@ -139,7 +140,7 @@ export function StepBasics({ draft, update }: StepProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="draft-breed">
-              نژاد <span className="text-destructive">*</span>
+              نژاد <RequiredMark />
             </Label>
             <Input
               id="draft-breed"
@@ -198,7 +199,7 @@ export function StepDetails({ draft, update }: StepProps) {
     <div className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="draft-desc">
-          توضیحات <span className="text-destructive">*</span>
+          توضیحات <RequiredMark />
         </Label>
         <Textarea
           id="draft-desc"
@@ -242,7 +243,7 @@ export function StepDetails({ draft, update }: StepProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="draft-age">
-                سن (ماه) <span className="text-destructive">*</span>
+                سن (ماه) <RequiredMark />
               </Label>
               <Input
                 id="draft-age"
@@ -258,7 +259,7 @@ export function StepDetails({ draft, update }: StepProps) {
           <>
             <div className="space-y-2">
               <Label htmlFor="draft-price">
-                قیمت (تومان) <span className="text-destructive">*</span>
+                قیمت (تومان) <RequiredMark />
               </Label>
               <Input
                 id="draft-price"
@@ -331,7 +332,7 @@ export function StepDetails({ draft, update }: StepProps) {
 
       <div className="space-y-2">
         <Label>
-          عکس‌ها <span className="text-destructive">*</span>
+          عکس‌ها <RequiredMark />
         </Label>
         <Dropzone images={draft.images} onChange={(images) => update({ images })} />
       </div>
