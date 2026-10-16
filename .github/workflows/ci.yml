@@ -99,3 +99,8 @@ jobs:
 
           node scripts/contrast_audit.mjs --base http://127.0.0.1:4173 --public-only
           node scripts/a11y_audit.mjs --base http://127.0.0.1:4173 --public-only
+          # The map is a canvas of Leaflet panes that axe does not read, so its
+          # pins need their own pass. This found two real defects the first time
+          # it ran: an unlabelled focusable origin dot, and listing pins that
+          # were not keyboard reachable at all.
+          node scripts/map_audit.mjs --base http://127.0.0.1:4173
