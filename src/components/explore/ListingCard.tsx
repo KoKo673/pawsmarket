@@ -216,7 +216,12 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
           {item.name}
         </h3>
         {priceLabel && (
-          <p className="text-sm font-extrabold text-primary">{priceLabel}</p>
+          /* paw-700, not --primary: the brand orange is a 50%-lightness fill
+             colour, and as 14px bold text on a card it measures 3.27 — under
+             the 4.5 this size needs, since "large text" starts at 18.66px.
+             paw-700 is the same hue two steps darker (4.85) and the price
+             still reads as brand. */
+          <p className="text-sm font-extrabold text-paw-700 dark:text-paw-300">{priceLabel}</p>
         )}
 
         {/* خط متادیتای نوع‌محور */}
@@ -255,8 +260,11 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
               {item.kind === 'product' ? item.storeName : item.address}
             </span>
           </span>
+          {/* amber-500 on a white card is 2.15 — the worst ratio in the app,
+              and this little rating is on every store card. amber-700 keeps
+              the star reading as a star at 4.72. */}
           {item.kind === 'store' && (
-            <span className="inline-flex shrink-0 items-center gap-1 text-amber-500">
+            <span className="inline-flex shrink-0 items-center gap-1 text-amber-700 dark:text-amber-400">
               <Star className="size-3 fill-current" />
               {faDecimal(item.rating)}
             </span>

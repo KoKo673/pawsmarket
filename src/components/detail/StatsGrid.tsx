@@ -109,7 +109,7 @@ export function StatsGrid({ item }: { item: ListingWithDistance }) {
             {/* بازارگاه واقعی — فقط وقتی محصول با فهرست خودش تطبیق خورده باشد */}
             {item.rating !== undefined && (item.ratingCount ?? 0) > 0 && (
               <Stat
-                icon={<Star className="size-3.5 text-amber-500" />}
+                icon={<Star className="size-3.5 text-amber-700 dark:text-amber-400" />}
                 label="امتیاز خریداران"
                 value={`${faDecimal(item.rating)} از ۵ · ${faDigits(item.ratingCount!)} نظر`}
               />
@@ -132,7 +132,7 @@ export function StatsGrid({ item }: { item: ListingWithDistance }) {
         {item.kind === 'store' && (
           <>
             <Stat
-              icon={<Star className="size-3.5 text-amber-500" />}
+              icon={<Star className="size-3.5 text-amber-700 dark:text-amber-400" />}
               label="امتیاز"
               value={
                 item.reviewCount > 0

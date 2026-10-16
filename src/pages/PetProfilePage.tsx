@@ -183,7 +183,10 @@ export function PetProfilePage() {
             ].map((s) => {
               const inner = (
                 <>
-                  <p className="text-lg font-extrabold text-primary">{faDigits(s.value)}</p>
+                  {/* 18px is just under the 18.66 "large text" line, so these
+                      counts need 4.5 — and --primary gives 3.11 on a card.
+                      paw-700 is the same hue at 4.85. */}
+                  <p className="text-lg font-extrabold text-paw-700 dark:text-paw-300">{faDigits(s.value)}</p>
                   <p className="text-[11px] font-bold text-muted-foreground">{s.label}</p>
                 </>
               )
