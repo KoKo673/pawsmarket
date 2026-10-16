@@ -31,7 +31,7 @@ export function PetsDiscoverPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 pb-24 pt-28 sm:px-6">
       <header data-motion-section className="mb-8 text-center">
-        <span data-motion-item className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3.5 py-1.5 text-xs font-bold text-accent">
+        <span data-motion-item className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3.5 py-1.5 text-xs font-bold text-tide-800 dark:text-tide-300">
           <Radar className="size-3.5" />
           مرتب بر اساس فاصله از شما
         </span>

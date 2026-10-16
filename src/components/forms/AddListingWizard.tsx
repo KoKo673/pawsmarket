@@ -140,7 +140,7 @@ export function AddListingWizard() {
         transition={{ type: 'spring', bounce: 0.35, duration: 0.6 }}
         className="flex flex-col items-center rounded-3xl bg-card p-10 text-center shadow-lifted"
       >
-        <span className="grid size-20 place-items-center rounded-full bg-accent/15 text-accent">
+        <span className="grid size-20 place-items-center rounded-full bg-accent/15 text-tide-800 dark:text-tide-300">
           <CheckCircle2 className="size-10" />
         </span>
         <h2 className="mt-6 text-2xl font-extrabold tracking-tight">آگهی منتشر شد!</h2>

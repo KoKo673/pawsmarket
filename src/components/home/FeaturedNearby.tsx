@@ -19,7 +19,7 @@ export function FeaturedNearby() {
     <section data-motion-section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
       <div data-motion-item className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1 text-xs font-bold text-accent">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1 text-xs font-bold text-tide-800 dark:text-tide-300">
             <Radar className="size-3.5" />
             داخل شعاع جستجوی شما
           </span>

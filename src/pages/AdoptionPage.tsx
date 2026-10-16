@@ -94,7 +94,7 @@ export function AdoptionPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 pb-24 pt-28 sm:px-6">
       <header data-motion-section className="mb-8 text-center">
-        <span data-motion-item className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3.5 py-1.5 text-xs font-bold text-accent">
+        <span data-motion-item className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3.5 py-1.5 text-xs font-bold text-tide-800 dark:text-tide-300">
           <Home className="size-3.5" />
           سرپرستی مسئولانه
         </span>
@@ -107,7 +107,7 @@ export function AdoptionPage() {
       </header>
 
       {flash && (
-        <p data-motion-item className="mx-auto mb-6 max-w-lg rounded-2xl bg-accent/10 px-5 py-3.5 text-center text-sm font-bold text-accent">
+        <p data-motion-item className="mx-auto mb-6 max-w-lg rounded-2xl bg-accent/10 px-5 py-3.5 text-center text-sm font-bold text-tide-800 dark:text-tide-300">
           {flash}
         </p>
       )}

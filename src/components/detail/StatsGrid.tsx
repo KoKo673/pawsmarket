@@ -61,7 +61,7 @@ function Stat({
 /* ── چیپ‌های وضعیت پزشکی ─────────────────────────────────────── */
 
 const MEDICAL_META: Record<MedicalFlag, { label: string; className: string }> = {
-  vaccinated: { label: 'واکسینه', className: 'bg-accent/15 text-accent' },
+  vaccinated: { label: 'واکسینه', className: 'bg-accent/15 text-tide-800 dark:text-tide-300' },
   sterilized: { label: 'عقیم‌شده', className: 'bg-tide-500/15 text-tide-700 dark:text-tide-300' },
   microchipped: { label: 'شناسه‌گذاری', className: 'bg-paw-100 text-paw-700 dark:bg-paw-900/50 dark:text-paw-300' },
   'needs-care': { label: 'نیاز به مراقبت', className: 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300' },

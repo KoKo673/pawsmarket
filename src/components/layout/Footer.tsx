@@ -39,7 +39,7 @@ export function Footer() {
               <PawPrint className="size-5" />
             </span>
             <span className="text-lg font-extrabold tracking-tight">
-              پاز<span className="text-primary">مارکت</span>
+              پاز<span className="text-paw-700 dark:text-primary">مارکت</span>
             </span>
           </Link>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
