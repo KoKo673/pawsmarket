@@ -21,6 +21,14 @@
 # coin flip. The build stage's size does not reach production anyway.
 FROM node:22 AS build
 
+# Explicit WORKDIR, and it is not decoration. The node images have no WORKDIR
+# set, so `COPY` and `RUN` land in `/` — the build then writes `/dist` while
+# the second stage copies `/app/dist`, and the failure reads as "dist not
+# found" rather than as "you never said where to work". Measured: `npm run
+# build` reported success in 4.1s and produced `/dist/assets/...`, and the
+# image build died at the COPY with no hint as to why.
+WORKDIR /app
+
 # `npm ci`, not `npm ci --omit=dev`: the build needs TypeScript, vite and the
 # React plugin, all of which are devDependencies. Pruning them here would
 # produce an image that cannot compile the app it is supposed to serve.
