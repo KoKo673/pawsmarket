@@ -157,13 +157,16 @@ export function ExplorePage() {
                 </span>
                 <h2 className="mt-5 text-lg font-extrabold">اتصال به سرور برقرار نشد</h2>
                 <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-muted-foreground">
-                  پاسخی از بک‌اند پازمارکت (localhost:9232) نرسید. مطمئن شوید سرویس در حال اجراست و
-                  سه مسیر <code className="rounded bg-muted px-1 py-0.5 text-xs">/api/pets</code>،{' '}
-                  <code className="rounded bg-muted px-1 py-0.5 text-xs">/api/products</code> و{' '}
-                  <code className="rounded bg-muted px-1 py-0.5 text-xs">/api/stores/nearby</code>{' '}
-                  پاسخ می‌دهند.
+                  ارتباط با سرور برقرار نشد. اتصال اینترنت را بررسی کنید و چند
+                  لحظه بعد دوباره تلاش کنید.
                 </p>
-                {error instanceof Error && (
+                {/* Technical detail is for whoever is running the app, not for
+                    the person using it: an internal port and three API paths
+                    mean nothing to a visitor, and naming them leaked the
+                    deployment's shape. This used to read "localhost:9232" in
+                    production — a port that is only a fallback default in
+                    vite.config.ts, so it was both a leak and wrong. */}
+                {import.meta.env.DEV && error instanceof Error && (
                   <p className="ltr-inline mt-2 max-w-full truncate text-xs text-muted-foreground/70" title={error.message}>
                     {error.message}
                   </p>
