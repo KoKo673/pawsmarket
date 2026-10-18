@@ -1,0 +1,68 @@
+# What the frontend build context excludes.
+#
+# The image is built in two stages (see Dockerfile): node:22 compiles, then
+# nginx:alpine serves the result. This file matters most for the *first* stage
+# — every byte listed here is a byte the daemon does not ship to the builder on
+# every build. node_modules alone is the difference between a context of a few
+# megabytes and one of several hundred.
+#
+# Nothing here affects the final image's contents directly: the second stage
+# copies only `dist/` from the first. So an exclusion missing from this list
+# costs build time, not image size — unless it lands inside dist/, which is why
+# dist/ and dist-audit/ are excluded (a stale dist/ from an earlier build must
+# never be mistaken for the one just compiled).
+
+# ── Dependencies and build output ──────────────────────────────────
+# Reinstalled inside the image with `npm ci`, which builds Linux-native
+# binaries. Copying the host's node_modules in would ship Windows binaries into
+# a Linux container — rolldown and oxlint both fail with "Cannot find native
+# binding" rather than anything that names the real cause, so this is worth
+# excluding even though the Dockerfile never COPYs it.
+node_modules/
+dist/
+dist-audit/
+dist-ssr/
+
+# ── Version control ────────────────────────────────────────────────
+.git
+.gitignore
+.github
+
+# ── Audit scratch ──────────────────────────────────────────────────
+# serve_dist.mjs output and Lighthouse/axe reports. Regenerated per run.
+_audit/
+scripts/.overpass-cache/
+scripts/.store_images_done.json
+scripts/*.tmp
+
+# ── Secrets ────────────────────────────────────────────────────────
+# Only .env.example is meaningful to a build (it documents which VITE_ vars
+# exist and contains no values). A real .env or .env.local entering an image
+# layer would be readable with `docker history` after the file is gone.
+#
+# .env.production and .env.audit ARE needed — vite reads them by mode — so they
+# stay, and that is deliberate: both are committed already and contain no
+# secrets (a base path, a router flag, and a public API URL).
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ── Editor and OS noise ────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── Python bytecode (the QC and harvest scripts) ───────────────────
+__pycache__/
+*.pyc
+
+# Logs
+logs
+*.log
