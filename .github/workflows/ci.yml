@@ -133,3 +133,9 @@ jobs:
           # /login is reachable without a backend (it renders the auth card),
           # so this needs no API.
           node scripts/phone_theme_audit.mjs --base http://127.0.0.1:4173
+          # Hiding the booking button is not enough — /booking/:storeId is a
+          # shareable URL. Uses ids from the committed catalog (68 is a real
+          # shop, 478 a real vet) so it cannot drift into testing a category
+          # nothing has. Mutation-tested: with the guard removed, a shop got
+          # the full form and this failed.
+          node scripts/booking_guard_audit.mjs --base http://127.0.0.1:4173
