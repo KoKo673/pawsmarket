@@ -69,7 +69,7 @@ export function Hero() {
             data-motion-item
             className="mt-6 text-balance text-4xl font-extrabold leading-[1.25] tracking-tight sm:text-5xl lg:text-6xl"
           >
-            بازار تخصصی حیوانات خانگی{' '}
+            پلتفرم اختصاصی حیوانات خانگی{' '}
             <em className="font-display font-black not-italic text-primary">در محدوده‌ی شما</em>
           </h1>
 

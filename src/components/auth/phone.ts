@@ -34,16 +34,39 @@ export function isValidIranMobile(raw: string): boolean {
   return /^09\d{9}$/.test(normalisePhone(raw))
 }
 
+const LATIN_TO_PERSIAN: Record<string, string> = {
+  '0': '۰', '1': '۱', '2': '۲', '3': '۳', '4': '۴',
+  '5': '۵', '6': '۶', '7': '۷', '8': '۸', '9': '۹',
+}
+
 /**
- * «۰۹۱۲ ۳۴۵ ۶۷۸۹» — برای نمایش، با فاصله.
+ * «۰۹۱۲ ۳۴۵ ۶۷۸۹» — برای نمایش، با فاصله و با ارقام فارسی.
+ *
+ * دو چیز که نسخهٔ قبلی اشتباه می‌کرد و هر دو در اسکرین‌شات دیده شد:
+ *
+ *   ۱. ارقام لاتین بودند. بقیهٔ رابط فارسی است، پس یک شمارهٔ لاتین
+ *      وسط آن هم ناهمخوان است و هم برای کاربر ایرانی غریبه.
+ *
+ *   ۲. در متن راست‌به‌چپ، رشتهٔ «0937 844 0647» از چپ خوانده می‌شود
+ *      ولی از راست چیده می‌شود، و کاربر «0647 844 0937» می‌بیند —
+ *      یعنی شماره برعکس. هر بخش را با U+2068 (FIRST STRONG ISOLATE)
+ *      جدا می‌کنیم تا الگوریتم bidi آن را یک واحد چپ‌به‌راست ببیند و
+ *      ترتیبش حفظ شود. کاراکترهای ایزوله نامرئی‌اند و کپی‌کردن
+ *      شماره را خراب نمی‌کنند.
  *
  * ورودی می‌تواند ناقص باشد (کاربر در حال تایپ است) و این نباید استثنا
  * بدهد؛ هر چه هست را گروه‌بندی می‌کند.
  */
 export function formatPhoneForDisplay(raw: string): string {
   const s = normalisePhone(raw)
-  if (s.length <= 4) return s
-  if (s.length <= 7) return `${s.slice(0, 4)} ${s.slice(4)}`
-  if (s.length <= 9) return `${s.slice(0, 4)} ${s.slice(4, 7)} ${s.slice(7)}`
-  return `${s.slice(0, 4)} ${s.slice(4, 7)} ${s.slice(7, 11)}`
+  const fa = (part: string) => part.replace(/[0-9]/g, (d) => LATIN_TO_PERSIAN[d] ?? d)
+
+  let grouped: string
+  if (s.length <= 4) grouped = s
+  else if (s.length <= 7) grouped = `${s.slice(0, 4)} ${s.slice(4)}`
+  else if (s.length <= 9) grouped = `${s.slice(0, 4)} ${s.slice(4, 7)} ${s.slice(7)}`
+  else grouped = `${s.slice(0, 4)} ${s.slice(4, 7)} ${s.slice(7, 11)}`
+
+  // ⁨ … ⁩ keeps the run left-to-right inside RTL text.
+  return `⁨${fa(grouped)}⁩`
 }
