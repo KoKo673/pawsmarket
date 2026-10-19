@@ -5,7 +5,10 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useNearbyListings } from '@/hooks/use-listings'
+import { useQuery } from '@tanstack/react-query'
+
+import { fetchNearbyListings } from '@/lib/api'
+import { useGeoStore } from '@/store/geo.store'
 import { faDigits } from '@/lib/fa'
 import { bookingApi } from '@/lib/booking-api'
 import { cn } from '@/lib/utils'
@@ -56,10 +59,64 @@ function upcomingDays(): { value: string; label: string }[] {
   return out
 }
 
+/** The one refusal screen: unknown store, wrong category, failed request. */
+function BookingNotice({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="mx-auto max-w-lg px-4 pb-24 pt-28 sm:px-6">
+      <div className="glass rounded-3xl p-8 text-center shadow-lifted">
+        <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-muted text-muted-foreground">
+          <CalendarDays className="size-7" />
+        </span>
+        <h1 className="mt-4 text-xl font-extrabold">{title}</h1>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
+        <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+          <Button asChild className="flex-1">
+            <Link to="/explore">بازگشت به جستجو</Link>
+          </Button>
+          <Button asChild variant="outline" className="flex-1">
+            <Link to="/bookings">نوبت‌های من</Link>
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function BookingPage() {
   const { storeId } = useParams<{ storeId: string }>()
   const [params] = useSearchParams()
-  const { data } = useNearbyListings()
+  const origin = useGeoStore((s) => s.origin)
+
+  /**
+   * Deliberately NOT `useNearbyListings()`.
+   *
+   * That hook puts the visitor's filters in its query key, and those
+   * filters drop rows: a 10 km radius, category chips, the kind toggles.
+   * This page only needs to know which business the id refers to, so a
+   * groomer 15 km away — or one filtered out on /explore a minute ago —
+   * must still be findable. With the filtered hook, `store` came back
+   * undefined and the guard below never ran, so the form opened for a
+   * store nobody had checked.
+   *
+   * Wide-open filters still apply distance, so keep the radius unbounded.
+   * If this ever grows a real lookup, `GET /api/stores/{id}` is the honest
+   * version; there is no such endpoint today.
+   */
+  const { data, isPending, isError } = useQuery({
+    queryKey: ['booking-store', origin],
+    queryFn: () => fetchNearbyListings(origin, {
+      query: '',
+      radiusKm: 100_000,
+      priceRange: [0, Number.MAX_SAFE_INTEGER],
+      kinds: [],
+      species: [],
+      categories: [],
+      sort: 'distance',
+    }),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  })
+
   const user = useAuthStore((s) => s.user)
   const myPets = useAuthStore((s) => s.myPets)
 
@@ -182,32 +239,41 @@ export function BookingPage() {
     )
   }
 
-  /* A shop, or a category nobody listed, gets a real answer here. The store
-     may still be resolving on the first render (`data` is an async query),
-     so this waits for it rather than flashing the refusal at someone who
-     arrived through the normal button. */
-  if (store && store.kind === 'store' && !BOOKABLE.includes(store.category)) {
+  /*
+   * Three states, and `undefined` must be its own answer.
+   *
+   * The previous guard was `if (store && !BOOKABLE.includes(...))`. Every
+   * way of not having a store — still loading, an id that does not exist,
+   * a failed request — fell through it and rendered the whole form, which
+   * then posted an id the API would reject. Silence from the data read as
+   * permission. These are separate now so that can't happen again.
+   */
+  if (isPending) {
     return (
       <div className="mx-auto max-w-lg px-4 pb-24 pt-28 sm:px-6">
         <div className="glass rounded-3xl p-8 text-center shadow-lifted">
-          <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-muted text-muted-foreground">
-            <CalendarDays className="size-7" />
-          </span>
-          <h1 className="mt-4 text-xl font-extrabold">این مرکز نوبت نمی‌گیرد</h1>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            <strong>{store.name}</strong> فروشگاه است، نه مرکز خدماتی. برای
-            خرید یا پرسش، از صفحهٔ خودش با آن‌ها تماس بگیرید.
-          </p>
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-            <Button asChild className="flex-1">
-              <Link to={`/explore`}>بازگشت به جستجو</Link>
-            </Button>
-            <Button asChild variant="outline" className="flex-1">
-              <Link to="/bookings">نوبت‌های من</Link>
-            </Button>
-          </div>
+          <Loader2 className="mx-auto size-6 animate-spin text-muted-foreground" />
+          <p className="mt-3 text-sm text-muted-foreground">در حال یافتن مرکز…</p>
         </div>
       </div>
+    )
+  }
+
+  if (isError || !store) {
+    return (
+      <BookingNotice
+        title="این مرکز پیدا نشد"
+        body="ممکن است حذف شده باشد یا نشانی صفحه درست نباشد."
+      />
+    )
+  }
+
+  if (store.kind === 'store' && !BOOKABLE.includes(store.category)) {
+    return (
+      <BookingNotice
+        title="این مرکز نوبت نمی‌گیرد"
+        body={`${store.name} فروشگاه است، نه مرکز خدماتی. برای خرید یا پرسش، از صفحهٔ خودش با آن‌ها تماس بگیرید.`}
+      />
     )
   }
 
