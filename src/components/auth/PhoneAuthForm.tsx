@@ -3,7 +3,12 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { OtpInput } from '@/components/auth/OtpInput'
-import { formatPhoneForDisplay, isValidIranMobile, normalisePhone } from '@/components/auth/phone'
+import {
+  formatPhoneForDisplay,
+  isValidIranMobile,
+  normalisePhone,
+  toPersianDigits,
+} from '@/components/auth/phone'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -102,8 +107,13 @@ export function PhoneAuthForm() {
             <Label htmlFor="otp-phone">شماره موبایل</Label>
             <Input
               id="otp-phone"
+              type="text"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              /* هر چیزی که وارد فیلد شود — تایپ، paste، یا پرکردن خودکار
+                 مرورگر — از همین یک مسیر می‌گذرد و با ارقام فارسی
+                 نمایش داده می‌شود. `autoComplete="tel"` معمولاً لاتین
+                 می‌آورد؛ بدون این تبدیل، دو حالت نمایشی داشتیم. */
+              onChange={(e) => setPhone(toPersianDigits(e.target.value))}
               placeholder="۰۹۱۲ ۳۴۵ ۶۷۸۹"
               /* `dir="ltr"` حیاتی است: بدون آن «۰۹۱۲…» در چیدمان راست‌به‌چپ
                  وارونه نمایش داده می‌شود و کاربر عدد اشتباه می‌خواند. */
@@ -111,10 +121,11 @@ export function PhoneAuthForm() {
               inputMode="numeric"
               autoComplete="tel"
               autoFocus
-              /* مقدار خام می‌مانَد تا کاربر بتواند با اعداد فارسی تایپ کند؛
-                 نرمال‌سازی هنگام ارسال انجام می‌شود. */
               aria-describedby="otp-phone-hint"
             />
+            {/* `phone.length` نه `normalised.length`: با ارقام فارسی،
+                `normalisePhone` همان طول را دارد ولی `phone` آن چیزی است
+                که کاربر می‌بیند — و این خط باید هم‌زمان با فیلد باشد. */}
             {phone.length > 0 && (
               <p id="otp-phone-hint" className="text-[11px] text-muted-foreground">
                 {phoneOk
