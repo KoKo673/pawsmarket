@@ -28,9 +28,16 @@
  * effect would satisfy 1 and 2 and quietly break the button. It is the
  * assertion that keeps the fix honest.
  *
+ * Mutation-tested, because a test that has never failed is not evidence.
+ * Restoring the old guard (`shown.length > prev` with no floor) and building
+ * it: the two scrollIntoView assertions fail — 1 call during load, 1 during
+ * reload — while both position assertions still PASS. That is the whole
+ * argument for counting calls: a position-only test would have been green
+ * against the bug.
+ *
  *   node scripts/scroll_audit.mjs [--base http://127.0.0.1:4173]
  *
- * Exit 0 when all three hold, 1 otherwise.
+ * Exit 0 when all hold, 1 otherwise.
  */
 import { chromium } from 'playwright'
 
@@ -147,9 +154,16 @@ try {
   )
 
   // ── 2. Reload from deep in the page returns to the top ────────────
+  // Scroll to the maximum the document actually allows, not a fixed 3000.
+  // The first version demanded > 2000 and failed at the default viewport,
+  // where the page only scrolls to 110 — a test bug that looked like a
+  // product bug. What matters is that the page ends at 0 after a reload
+  // from wherever it could get to, and that it got there at all.
   const beforeReload = await page.evaluate(() => {
-    window.scrollTo(0, 3000)
-    return new Promise((r) => setTimeout(() => r(document.scrollingElement.scrollTop), 120))
+    const se = document.scrollingElement
+    se.scrollTop = se.scrollHeight
+    return new Promise((r) =>
+      setTimeout(() => r(Math.round(se.scrollTop)), 200))
   })
   await page.reload({ waitUntil: 'load' })
   await settle(page)
@@ -160,8 +174,8 @@ try {
   })
   const afterSiv = await page.evaluate(() => window.__siv || 0)
   record(
-    'reload from 3000px returns to the top',
-    beforeReload > 2000 && after.stable && after.top === 0 && (afterH1 ?? 1) > 0,
+    'reload from the bottom returns to the top',
+    beforeReload > 50 && after.stable && after.top === 0 && (afterH1 ?? 1) > 0,
     `was=${Math.round(beforeReload)} now=${after.top} h1.top=${afterH1} stable=${after.stable}`,
   )
   record(
