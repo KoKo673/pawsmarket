@@ -40,6 +40,19 @@ const LATIN_TO_PERSIAN: Record<string, string> = {
 }
 
 /**
+ * رقم لاتین → فارسی. هر چیز دیگر (فاصله، خط تیره) دست‌نخورده می‌ماند.
+ *
+ * تبدیل **رقم‌به‌رقم** است، پس طول رشته عوض نمی‌شود. همین است که وقتی
+ * این را روی `value` یک input می‌گذاریم جای مکان‌نما (caret) حفظ
+ * می‌شود: React مقدار تازه را می‌نویسد، ولی چون طول و موقعیت‌ها
+ * یکی‌اند مرورگر نشانگر را جابه‌جا نمی‌کند. اگر روزی اینجا حذف یا
+ * درج کاراکتر اضافه شود، تایپ از وسط رشته می‌پرد.
+ */
+export function toPersianDigits(s: string): string {
+  return s.replace(/[0-9]/g, (d) => LATIN_TO_PERSIAN[d] ?? d)
+}
+
+/**
  * «۰۹۱۲ ۳۴۵ ۶۷۸۹» — برای نمایش، با فاصله و با ارقام فارسی.
  *
  * دو چیز که نسخهٔ قبلی اشتباه می‌کرد و هر دو در اسکرین‌شات دیده شد:
@@ -59,7 +72,7 @@ const LATIN_TO_PERSIAN: Record<string, string> = {
  */
 export function formatPhoneForDisplay(raw: string): string {
   const s = normalisePhone(raw)
-  const fa = (part: string) => part.replace(/[0-9]/g, (d) => LATIN_TO_PERSIAN[d] ?? d)
+  const fa = toPersianDigits
 
   let grouped: string
   if (s.length <= 4) grouped = s
