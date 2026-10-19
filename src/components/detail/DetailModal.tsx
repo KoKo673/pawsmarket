@@ -25,6 +25,25 @@ const KIND_BADGE = {
 const BOOKABLE = ['vet', 'groomer', 'boarding', 'shelter']
 
 /**
+ * ⛔ TEMPORARILY OFF — the catalog and the API name different businesses
+ * with the same id.
+ *
+ * Measured against the live site: the snapshot built itself while the
+ * database was unreachable, numbering stores by their position in
+ * `seed_real.sql`; the database was separately restored from an older
+ * dump. 0 of 218 shared ids carry the same name. Sending the snapshot's id
+ * to POST /api/bookings produced 284 failures and 67 bookings on an
+ * unrelated clinic — verified by a real request, not inferred.
+ *
+ * A booking that silently goes to the wrong vet is worse than a button
+ * that is not there: the visitor believes they are booked and nobody
+ * answers. So the button is hidden until the snapshot is exported from the
+ * database itself (see REVIEW-ANSWERS-TO-TWO-QUESTIONS). Turn this back on
+ * in the same commit that makes the ids agree — not before.
+ */
+const BOOKING_ENABLED = false
+
+/**
  * برگه‌ی جزئیات جهانی — با باز شدن هر کارت/پین باز می‌شود.
  * دسکتاپ: کارت شناور وسط‌چین؛ موبایل: شیت پایینی (Dialog).
  */
@@ -160,7 +179,7 @@ export function DetailModal() {
                     مسیریابی
                   </Button>
                   {/* نوبت‌گیری فقط برای مراکز خدماتی — فروشگاه کالا نوبت نمی‌خواهد */}
-                  {BOOKABLE.includes(item.category) ? (
+                  {BOOKING_ENABLED && BOOKABLE.includes(item.category) ? (
                     <Button asChild className="flex-1 gap-1.5 sm:flex-none">
                       <Link to={`/booking/${item.id.replace('store:', '')}`}>
                         <CalendarDays className="size-4" />
