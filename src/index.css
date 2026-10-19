@@ -98,6 +98,20 @@
     color-scheme: dark;
   }
 
+  /**
+   * An explicit light choice, even on a phone set to dark.
+   *
+   * `color-scheme` is what tells the browser to paint its own controls —
+   * native form widgets, scrollbars, the caret — in the matching scheme.
+   * It used to live only on `:root`, so a visitor who chose light on a dark
+   * phone got light CSS variables but dark-drawn inputs. The class is
+   * always present on <html> (see ui.store.ts), so this needs no media
+   * query to stay in sync.
+   */
+  .light {
+    color-scheme: light;
+  }
+
   html {
     scroll-behavior: smooth;
     /* Native-app feel: kill the grey tap flash on mobile */
