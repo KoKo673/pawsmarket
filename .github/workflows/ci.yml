@@ -108,3 +108,17 @@ jobs:
           # checks the name is actually there at every stop, and that the stop
           # is visible. 115 stops across five routes, currently all named.
           node scripts/tab_order_audit.mjs --base http://127.0.0.1:4173 --public-only
+          # The page must not scroll itself on load. This was reported twice
+          # and survived two fixes before the cause was found, so it gets a
+          # gate. It asserts the scrollIntoView CALL, not just the resting
+          # position: the position was already correct in the buggy build once
+          # the settle timers ran, so a position-only check would have passed
+          # against the defect.
+          #
+          # Verified to work in this job's conditions. ProductRail renders
+          # nothing without data, and this runner has no backend — but
+          # /explore and the home rail read the committed catalog.json
+          # snapshot, so the rail does mount. Measured: with the API stubbed
+          # to an empty list, the buggy build still fails here (1
+          # scrollIntoView during load) and the fixed build still passes.
+          node scripts/scroll_audit.mjs --base http://127.0.0.1:4173
