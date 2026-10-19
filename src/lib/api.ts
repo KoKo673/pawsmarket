@@ -145,17 +145,33 @@ const isProductCategory = (v: unknown): v is ProductCategory =>
  * Deliberately NOT the hero's three photos. Those are the first images a
  * visitor sees, and reusing them here made the same golden retriever appear
  * again as "a pet for adoption" a few hundred pixels down — measured on the
- * live page, cat-orange.jpg appeared six times. A fallback that repeats the
- * decoration reads as a broken catalogue rather than a placeholder.
+ * live page, cat-orange.jpg appeared six times.
+ *
+ * Each species has a few photos, not one, and the pick rotates by the row's
+ * id. With a single image per species every cat in the feed showed the same
+ * white cat — three of the five seed pets are cats, so the page looked like it
+ * was repeating a photo. The database has no pet_photos at all yet, so this
+ * path is what every listing uses today, not an edge case.
  */
-const PET_IMAGE: Record<Species, string> = {
-  dog: asset('images/listings/dog-shiba.jpg'),
-  cat: asset('images/listings/cat-white.jpg'),
-  rabbit: asset('images/listings/rabbit2.jpg'),
-  bird: asset('images/listings/parrot.jpg'),
-  fish: asset('images/listings/fish.jpg'),
-  small: asset('images/listings/guinea.jpg'),
-  other: asset('images/listings/dog-jack.jpg'),
+const PET_IMAGES: Record<Species, string[]> = {
+  dog: ['dog-shiba.jpg', 'dog-jack.jpg', 'dog-corgi.jpg', 'dog-pug.jpg'].map(
+    (f) => asset('images/listings/' + f)),
+  cat: ['cat-white.jpg', 'cat-grey.jpg', 'cat-look.jpg'].map(
+    (f) => asset('images/listings/' + f)),
+  rabbit: ['rabbit2.jpg', 'rabbit.jpg'].map((f) => asset('images/listings/' + f)),
+  bird: ['parrot.jpg'].map((f) => asset('images/listings/' + f)),
+  fish: ['fish.jpg'].map((f) => asset('images/listings/' + f)),
+  small: ['guinea.jpg'].map((f) => asset('images/listings/' + f)),
+  other: ['dog-jack.jpg'].map((f) => asset('images/listings/' + f)),
+}
+
+/**
+ * Pick a species photo, rotating by the listing id so two cats side by side
+ * do not show the same picture. `seed` is the row's id when it has one.
+ */
+function petFallback(species: Species, seed: number): string {
+  const pool = PET_IMAGES[species] ?? PET_IMAGES.other
+  return pool[Math.abs(Math.trunc(seed)) % pool.length]
 }
 
 /**
@@ -229,12 +245,20 @@ function toPetListing(raw: RawRow): PetListing {
   const has = (v: unknown) => (v === null || v === undefined || v === '' ? undefined : v)
   const genderRaw = raw.gender
 
+  // The row id drives which fallback photo a pets gets, so two cats next to
+  // each other do not show the same picture. `raw.id` is a number or numeric
+  // string in both the snapshot and the API.
+  const idSeed = Number(raw.id)
+  const petId = wireId('pet', raw)
+
   return {
-    id: wireId('pet', raw),
+    id: petId,
     kind: 'pet',
     name: str(raw.name, 'حیوان خانگی'),
     description: str(raw.description, 'توضیحاتی برای این آگهی ثبت نشده است.'),
-    images: Array.isArray(raw.images) && raw.images.length > 0 ? (raw.images as string[]) : [PET_IMAGE[species]],
+    images: Array.isArray(raw.images) && raw.images.length > 0
+      ? (raw.images as string[])
+      : [petFallback(species, Number.isFinite(idSeed) ? idSeed : 0)],
     location: toPoint(raw),
     address: str(raw.address, 'تهران'),
     createdAt: str(raw.created_at ?? raw.createdAt, new Date(0).toISOString()),

@@ -163,18 +163,35 @@ function AppRoutes() {
   // هر مسیر جدید از بالای صفحه شروع شود. بدون این، پیمایش از انتهای یک صفحه‌ی
   // بلند، نمای پایینی صفحه‌ی بعدی را نشان می‌دهد.
   //
-  // The scroll is applied on the next frame, not immediately. On a cold load
-  // the page is still short when this effect runs — the hero has rendered but
-  // the rails below it have not — so scrolling to 0 does nothing, and the
-  // content that arrives a frame later leaves the browser wherever its scroll
-  // anchoring decided to put it. Measured on the live site: an unrelated load
-  // of "/" ended at scrollY=1482, which is exactly the "why did it jump down?"
-  // in the report. Waiting one frame means the target exists.
+  // Two separate mechanisms produced the "jumps to the products on load" report,
+  // and a single scrollTo fixed neither:
+  //
+  //   1. Scroll anchoring. The rails below the hero fill in after first paint
+  //      (React Query returns later), and the browser keeps its chosen anchor
+  //      element in view — which moved the page down as content appeared.
+  //      Measured on the live site: an untouched load of "/" ended at
+  //      scrollY=1482 with the h1 at top=-1268, i.e. above the viewport.
+  //      `overflow-anchor: none` on the root turns that off.
+  //
+  //   2. Timing. Scrolling to 0 while the document is still short is a no-op,
+  //      so it has to happen again once the page has grown. A frame is not
+  //      enough for that; a short settle window is, and it costs nothing when
+  //      the page was already at the top.
   useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, behavior: 'auto' })
-    })
-    return () => cancelAnimationFrame(id)
+    const root = document.documentElement
+    root.style.overflowAnchor = 'none'
+
+    const toTop = () => window.scrollTo({ top: 0, behavior: 'auto' })
+
+    toTop()
+    const frame = requestAnimationFrame(toTop)
+    const timers = [50, 150, 400].map((ms) => window.setTimeout(toTop, ms))
+
+    return () => {
+      cancelAnimationFrame(frame)
+      timers.forEach((t) => window.clearTimeout(t))
+      root.style.overflowAnchor = ''
+    }
   }, [location.pathname, location.search])
   // The Explore view is a full-height app surface — no footer there
   const isExplore = location.pathname === '/explore'
