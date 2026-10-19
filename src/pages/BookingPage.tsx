@@ -31,6 +31,17 @@ const SERVICES: Record<string, string[]> = {
 
 const HOURS = Array.from({ length: 15 }, (_, i) => i + 7) // 07:00 … 21:00
 
+/**
+ * The same four categories the server accepts (`bookings.py:126`) and the
+ * detail sheet shows a button for (`DetailModal.tsx:25`).
+ *
+ * Hiding the button is not enough on its own: /booking/:storeId is a plain
+ * URL, so anyone who guesses or shares it reached a form that could only
+ * fail at the last second. This page refuses early, in words, instead of
+ * collecting a whole form the server will reject.
+ */
+const BOOKABLE = ['vet', 'groomer', 'boarding', 'shelter']
+
 /** Next 21 days, as {value, label} in the visitor's own locale. */
 function upcomingDays(): { value: string; label: string }[] {
   const out: { value: string; label: string }[] = []
@@ -164,6 +175,35 @@ export function BookingPage() {
             </Button>
             <Button asChild variant="outline" className="flex-1">
               <Link to="/explore">بازگشت به جستجو</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  /* A shop, or a category nobody listed, gets a real answer here. The store
+     may still be resolving on the first render (`data` is an async query),
+     so this waits for it rather than flashing the refusal at someone who
+     arrived through the normal button. */
+  if (store && store.kind === 'store' && !BOOKABLE.includes(store.category)) {
+    return (
+      <div className="mx-auto max-w-lg px-4 pb-24 pt-28 sm:px-6">
+        <div className="glass rounded-3xl p-8 text-center shadow-lifted">
+          <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-muted text-muted-foreground">
+            <CalendarDays className="size-7" />
+          </span>
+          <h1 className="mt-4 text-xl font-extrabold">این مرکز نوبت نمی‌گیرد</h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            <strong>{store.name}</strong> فروشگاه است، نه مرکز خدماتی. برای
+            خرید یا پرسش، از صفحهٔ خودش با آن‌ها تماس بگیرید.
+          </p>
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+            <Button asChild className="flex-1">
+              <Link to={`/explore`}>بازگشت به جستجو</Link>
+            </Button>
+            <Button asChild variant="outline" className="flex-1">
+              <Link to="/bookings">نوبت‌های من</Link>
             </Button>
           </div>
         </div>
