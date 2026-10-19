@@ -139,15 +139,23 @@ const KNOWN_PRODUCT_CATEGORIES = new Set<string>([
 const isProductCategory = (v: unknown): v is ProductCategory =>
   typeof v === 'string' && KNOWN_PRODUCT_CATEGORIES.has(v)
 
-/** Bundled fallback imagery — always present in /public/images/listings. */
+/**
+ * Bundled fallback imagery — always present in /public/images/listings.
+ *
+ * Deliberately NOT the hero's three photos. Those are the first images a
+ * visitor sees, and reusing them here made the same golden retriever appear
+ * again as "a pet for adoption" a few hundred pixels down — measured on the
+ * live page, cat-orange.jpg appeared six times. A fallback that repeats the
+ * decoration reads as a broken catalogue rather than a placeholder.
+ */
 const PET_IMAGE: Record<Species, string> = {
-  dog: asset('images/listings/dog-golden.jpg'),
-  cat: asset('images/listings/cat-orange.jpg'),
+  dog: asset('images/listings/dog-shiba.jpg'),
+  cat: asset('images/listings/cat-white.jpg'),
   rabbit: asset('images/listings/rabbit2.jpg'),
   bird: asset('images/listings/parrot.jpg'),
   fish: asset('images/listings/fish.jpg'),
   small: asset('images/listings/guinea.jpg'),
-  other: asset('images/listings/dog-pug.jpg'),
+  other: asset('images/listings/dog-jack.jpg'),
 }
 
 /**

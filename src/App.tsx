@@ -162,8 +162,19 @@ function AppRoutes() {
   }, [])
   // هر مسیر جدید از بالای صفحه شروع شود. بدون این، پیمایش از انتهای یک صفحه‌ی
   // بلند، نمای پایینی صفحه‌ی بعدی را نشان می‌دهد.
+  //
+  // The scroll is applied on the next frame, not immediately. On a cold load
+  // the page is still short when this effect runs — the hero has rendered but
+  // the rails below it have not — so scrolling to 0 does nothing, and the
+  // content that arrives a frame later leaves the browser wherever its scroll
+  // anchoring decided to put it. Measured on the live site: an unrelated load
+  // of "/" ended at scrollY=1482, which is exactly the "why did it jump down?"
+  // in the report. Waiting one frame means the target exists.
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'auto' })
+    const id = requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: 'auto' })
+    })
+    return () => cancelAnimationFrame(id)
   }, [location.pathname, location.search])
   // The Explore view is a full-height app surface — no footer there
   const isExplore = location.pathname === '/explore'
