@@ -122,3 +122,14 @@ jobs:
           # to an empty list, the buggy build still fails here (1
           # scrollIntoView during load) and the fixed build still passes.
           node scripts/scroll_audit.mjs --base http://127.0.0.1:4173
+          # Two phone-reported bugs, measured as behaviour rather than as
+          # source shape. The phone field must show Persian digits and still
+          # validate; the theme must follow the phone until the visitor
+          # chooses, then stop following. Mutation-tested: with the old code
+          # restored, 6 of these 8 fail — and the one about the *first* theme
+          # read passes either way, which is why the count of failures, not
+          # any single assertion, is what makes this evidence.
+          #
+          # /login is reachable without a backend (it renders the auth card),
+          # so this needs no API.
+          node scripts/phone_theme_audit.mjs --base http://127.0.0.1:4173
