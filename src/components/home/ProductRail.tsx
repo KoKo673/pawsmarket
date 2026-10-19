@@ -23,7 +23,26 @@ export function ProductRail() {
   const { data, isLoading, isError } = useNearbyListings()
   const [extra, setExtra] = useState(0)
   const gridRef = useRef<HTMLUListElement | null>(null)
-  const prevCount = useRef(STEP)
+  // How many cards were on screen last time — 0 meaning "none yet".
+  //
+  // This ref is the whole of the "the page jumps down to the products by
+  // itself" report. The effect below exists for «بیشتر»: after the button
+  // adds a row, bring the first new card into view. Its guard has to answer
+  // "did the USER ask for more?", and the way to answer that is by looking
+  // at the previous count — a previous count of zero means the page is still
+  // filling in, not that anyone pressed anything.
+  //
+  // It used to start at STEP and compare only `shown.length > previous`.
+  // That fails on a cold mount: the first render has no data, so the effect
+  // recorded 0, and the render after the query resolved looked like an
+  // increase from 0 to 8. It scrolled children[0] — the first card — as if
+  // the button had been pressed.
+  //
+  // Measured on the live site: that card sits at document top 2889 with
+  // height 333, and centring it computes 2889 - (808-333)/2 = 2652 — exactly
+  // where a cold load came to rest, with the hero h1 at top -1965. A stack
+  // captured in the page confirmed this effect was the caller.
+  const prevShown = useRef(0)
 
   const products = useMemo(
     () => (data ?? []).filter((l) => l.kind === 'product'),
@@ -35,13 +54,16 @@ export function ProductRail() {
   // Bring the first newly-added card into view, so pressing «بیشتر» reads as
   // "here is the next row" rather than as a button that did nothing.
   useEffect(() => {
-    if (shown.length > prevCount.current && gridRef.current) {
-      const next = gridRef.current.children[prevCount.current] as
+    // `> 0` and not `>= 0`: an empty previous row means this is the first
+    // data arriving, not the user asking for more. Without that, the load
+    // itself scrolls.
+    if (prevShown.current > 0 && shown.length > prevShown.current && gridRef.current) {
+      const next = gridRef.current.children[prevShown.current] as
         | HTMLElement
         | undefined
       next?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
-    prevCount.current = shown.length
+    prevShown.current = shown.length
   }, [shown.length])
 
   if (isError || (!isLoading && products.length === 0)) return null
