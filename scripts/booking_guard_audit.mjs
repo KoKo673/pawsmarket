@@ -50,19 +50,34 @@ try {
     `h1="${shopH1}" form inputs=${shopInputs}`,
   )
 
-  // ── A clinic still gets the form ──────────────────────────────────
-  // The h1 is the store's own name; «درخواست نوبت» is the badge above it.
-  // Asserting the badge against the h1 was this test's first bug, not the
-  // product's — the form did render, under its own name.
+  // ── An id that does not exist is refused, not silently allowed ────
+  // This is the hole that made the old guard useless. `store` is
+  // undefined here, and the guard was `if (store && ...)` — so the whole
+  // condition was false and the full form rendered for id 99999.
+  await page.goto(BASE + '/booking/99999', { waitUntil: 'load' })
+  await page.waitForTimeout(3000)
+  const missingH1 = (await page.locator('h1').allTextContents()).join(' ')
+  const missingInputs = await page.locator('form input').count()
+  record(
+    'an unknown id gets «پیدا نشد», not the form',
+    missingH1.includes('پیدا نشد') && missingInputs === 0,
+    `h1="${missingH1}" form inputs=${missingInputs}`,
+  )
+
+  // ── A clinic is still allowed through the guard ───────────────────
+  // NOT asserting that the form renders: booking is switched off while
+  // the catalog and the API name different businesses by the same id
+  // (BOOKING_ENABLED in DetailModal). What must hold either way is that a
+  // clinic is not refused — the refusal screen must name the store, which
+  // only happens when the guard let it past.
   await page.goto(BASE + '/booking/478', { waitUntil: 'load' })
   await page.waitForTimeout(3000)
+  const vetBody = await page.locator('body').innerText()
   const vetH1 = (await page.locator('h1').allTextContents()).join(' ')
-  const badge = (await page.locator('body').innerText()).includes('درخواست نوبت')
-  const hasForm = await page.locator('form').count()
   record(
-    'a clinic id still reaches the booking form',
-    badge && hasForm > 0 && !vetH1.includes('نوبت نمی‌گیرد'),
-    `h1="${vetH1}" badge=${badge} forms=${hasForm}`,
+    'a clinic is not refused',
+    !vetBody.includes('نوبت نمی‌گیرد') && !vetBody.includes('پیدا نشد'),
+    `h1="${vetH1}"`,
   )
 
   const failed = results.filter((r) => !r.pass)
