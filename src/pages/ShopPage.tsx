@@ -128,7 +128,14 @@ function ProductCard({ product }: { product: ShopProduct }) {
 
   return (
     <li className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card">
-      <Link to={href} className="block aspect-square overflow-hidden bg-muted/40">
+      <Link
+        to={href}
+        className="block aspect-square overflow-hidden bg-muted/40"
+        /* The image is the whole link, so the accessible name has to come
+           from somewhere. An empty alt made this a link announced as just
+           «لینک» — 40 of them in a row for a screen reader. */
+        aria-label={product.name}
+      >
         {product.image ? (
           <img
             src={product.image}

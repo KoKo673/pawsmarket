@@ -85,6 +85,9 @@ export function ProductPage() {
       </Link>
 
       <div className="grid gap-8 md:grid-cols-2">
+        {/* The image keeps an empty alt on purpose: the H1 below already
+            names the product, and repeating it here would make a screen
+            reader say the name twice. */}
         <div className="overflow-hidden rounded-3xl border border-border bg-muted/30">
           {p.image ? (
             <img src={p.image} alt="" className="aspect-square size-full object-contain" />
