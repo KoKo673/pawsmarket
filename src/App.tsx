@@ -51,6 +51,8 @@ const BookingPage = lazy(() =>
   import('@/pages/BookingPage').then((m) => ({ default: m.BookingPage })))
 const ShopPage = lazy(() =>
   import('@/pages/ShopPage').then((m) => ({ default: m.ShopPage })))
+const ProductPage = lazy(() =>
+  import('@/pages/ProductPage').then((m) => ({ default: m.ProductPage })))
 const CartPage = lazy(() =>
   import('@/pages/CartPage').then((m) => ({ default: m.CartPage })))
 const OrderResultPage = lazy(() =>
@@ -265,6 +267,14 @@ function AppRoutes() {
               element={
                 <AnimatedPage>
                   <ShopPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/shop/:id"
+              element={
+                <AnimatedPage>
+                  <ProductPage />
                 </AnimatedPage>
               }
             />

@@ -489,6 +489,12 @@ function appendNew(snapshot: RawRow[], live: RawRow[]): RawRow[] {
   return extra.length === 0 ? snapshot : [...snapshot, ...extra]
 }
 
+/** A store we list as a place, not as something to buy from. */
+const SERVICE_CATEGORIES = new Set(['vet', 'groomer', 'boarding', 'shelter', 'cafe'])
+function isServiceStore(row: RawRow): boolean {
+  return SERVICE_CATEGORIES.has(String(row.category ?? ''))
+}
+
 async function catalogSnapshot(): Promise<{
   pets: RawRow[]; products: RawRow[]; stores: RawRow[]
 }> {
@@ -517,10 +523,21 @@ async function catalogSnapshot(): Promise<{
       `Invalid catalog.json at ${path}: expected {pets,products,stores} arrays`,
       200)
   }
+  // The snapshot is a vendored scrape of Digikala's listings. Those are
+  // other people's products, and this shop sells only its own stock, so
+  // both `products` and the `shop`-category stores are dropped here.
+  //
+  // Dropped at the source rather than filtered later: every surface
+  // (explore, map, search, category tiles, the detail sheet) reads this
+  // one function, and a filter applied in four places is a filter the
+  // fifth place forgets. Service centres stay — a vet is a listing, not
+  // something we sell.
+  const stores = (catalog.stores as RawRow[]).filter(isServiceStore)
+
   return {
     pets: catalog.pets as RawRow[],
-    products: catalog.products as RawRow[],
-    stores: catalog.stores as RawRow[],
+    products: [],
+    stores,
   }
 }
 
@@ -587,8 +604,15 @@ export async function fetchNearbyListings(
     // whose profile was just created, a shop added since the last export.
     if (live.status === 'fulfilled') {
       petRows = appendNew(petRows, okRows(live.value[0]))
-      productRows = appendNew(productRows, okRows(live.value[1]))
-      storeRows = appendNew(storeRows, okRows(live.value[2]))
+      // Products are not taken from the catalogue API at all. Its `products`
+      // table is the legacy directory of shops' inventory; what this shop
+      // sells lives in `marketplace_products` and is read by /api/shop,
+      // which the storefront owns. Mixing the two is how a customer ends up
+      // buying something we cannot supply.
+      storeRows = appendNew(
+        storeRows,
+        okRows(live.value[2]).filter((s) => isServiceStore(s)),
+      )
     }
   }
 
