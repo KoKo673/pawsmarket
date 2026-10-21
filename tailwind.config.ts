@@ -103,6 +103,24 @@ export default {
         glass: 'var(--shadow-glass)',
       },
 
+      /**
+       * ردیابی صفر — deliberately overridden.
+       *
+       * Tailwind's `tracking-tight` is -0.025em. Persian is a joined
+       * script: negative letter-spacing pulls the connecting strokes into
+       * each other, so «محصولات» starts to read as a smear at display
+       * sizes. The Latin habit of tightening headings does not transfer.
+       *
+       * Overriding the token rather than editing 27 call sites means the
+       * mistake cannot come back the next time someone reaches for
+       * `tracking-tight` out of muscle memory.
+       */
+      letterSpacing: {
+        tight: '0',
+        tighter: '0',
+        tightest: '0',
+      },
+
       zIndex: {
         /* Above Leaflet's internal panes (which reach z-index 700) */
         nav: '1000',
