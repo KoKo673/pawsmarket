@@ -134,8 +134,15 @@ jobs:
           # so this needs no API.
           node scripts/phone_theme_audit.mjs --base http://127.0.0.1:4173
           # Hiding the booking button is not enough — /booking/:storeId is a
-          # shareable URL. Uses ids from the committed catalog (68 is a real
-          # shop, 478 a real vet) so it cannot drift into testing a category
-          # nothing has. Mutation-tested: with the guard removed, a shop got
-          # the full form and this failed.
+          # shareable URL, so the route itself must be closed while the
+          # catalog and the API disagree about which business an id names.
+          # Uses ids from the committed catalog (68 is a real shop, 478 a
+          # real vet, 99999 exists nowhere) so it cannot drift into testing
+          # a category nothing has. Mutation-tested: with the route gate
+          # removed, the clinic id rendered 2 form inputs and this failed.
           node scripts/booking_guard_audit.mjs --base http://127.0.0.1:4173
+
+          # NOTE: nearby_limit_audit.mjs is deliberately NOT here. It asserts
+          # the live API truncates at its default page size and that the
+          # client asks for more — which needs a real backend. Run it by hand:
+          #     node scripts/nearby_limit_audit.mjs --api https://pawsmarket.ir
