@@ -121,6 +121,11 @@ export interface AuthUser {
   display_name: string | null
   bio: string | null
   avatar_url: string | null
+  /**
+   * فقط برای کشیدن/نکشیدن لینک پنل. گیت واقعی سمت سرور است و هر مسیر
+   * ادمین دوباره `is_admin` را می‌خواند؛ این مقدار فقط UI را ساده می‌کند.
+   */
+  is_admin?: boolean
 }
 
 export interface PetProfile {

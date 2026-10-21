@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, HashRouter, Route, Routes, useLocation } from 'react-router-dom'
 
+import { RequireAdmin } from '@/components/auth/RequireAdmin'
 import { RequireAuth } from '@/components/auth/RequireAuth'
 import { Footer } from '@/components/layout/Footer'
 import { Navbar } from '@/components/layout/Navbar'
@@ -55,6 +56,10 @@ const ProductPage = lazy(() =>
   import('@/pages/ProductPage').then((m) => ({ default: m.ProductPage })))
 const SupportPage = lazy(() =>
   import('@/pages/SupportPage').then((m) => ({ default: m.SupportPage })))
+const AdminPage = lazy(() =>
+  import('@/pages/AdminPage').then((m) => ({ default: m.AdminPage })))
+const AdminSupportPage = lazy(() =>
+  import('@/pages/AdminSupportPage').then((m) => ({ default: m.AdminSupportPage })))
 const StoreDashboardPage = lazy(() =>
   import('@/pages/StoreDashboardPage').then((m) => ({ default: m.StoreDashboardPage })))
 const CompleteSignupPage = lazy(() =>
@@ -281,6 +286,26 @@ function AppRoutes() {
               element={
                 <AnimatedPage>
                   <SupportPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <AnimatedPage>
+                  <RequireAdmin>
+                    <AdminPage />
+                  </RequireAdmin>
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/admin/support"
+              element={
+                <AnimatedPage>
+                  <RequireAdmin>
+                    <AdminSupportPage />
+                  </RequireAdmin>
                 </AnimatedPage>
               }
             />

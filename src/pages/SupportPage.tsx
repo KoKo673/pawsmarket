@@ -111,8 +111,109 @@ export function SupportPage() {
         </section>
       )}
 
+      <Assistant />
+
       <NewTicket signedIn={!!user} onCreated={() => void list.refetch()} />
     </div>
+  )
+}
+
+/**
+ * دستیار — پاسخ از دیتابیس، نه از یک مدل.
+ *
+ * Sits *above* the ticket form on purpose: most questions are one of a
+ * handful, and answering them instantly is better than queueing a human
+ * for something the database already knows. The form stays visible
+ * underneath, because the assistant's own failures have to end somewhere
+ * a person will read.
+ *
+ * It says what it is. A box that looks like a chatbot but always answers
+ * from templates would be a lie if it pretended otherwise; the copy makes
+ * clear that every sentence comes from orders and site rules.
+ */
+function Assistant() {
+  const [text, setText] = useState('')
+  const [thread, setThread] = useState<{ q: string; a: string; handoff?: boolean }[]>([])
+
+  const ask = useMutation({
+    mutationFn: async (question: string) => {
+      const res = await fetch(`${API}/api/assistant/ask`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
+        },
+        body: JSON.stringify({ text: question }),
+      })
+      const body = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error((body as { detail?: string })?.detail || 'پاسخ نیامد')
+      }
+      return body as { reply: string; handoff: boolean }
+    },
+    onSuccess: (data, question) => {
+      setThread(t => [...t, { q: question, a: data.reply, handoff: data.handoff }])
+      setText('')
+    },
+  })
+
+  return (
+    <section className="mb-6 rounded-2xl border border-border bg-card p-4">
+      <h2 className="text-sm font-bold">یک سؤال سریع</h2>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+        پاسخ‌ها از سفارش‌ها و قوانین همین سایت می‌آید — نه از حدس. اگر
+        موضوع دربارهٔ پول یا شکایت باشد، همین‌جا به یک نفر ارجاع داده می‌شود.
+      </p>
+
+      {thread.length > 0 && (
+        <ul className="mt-3 space-y-3">
+          {thread.map((m, i) => (
+            <li key={i} className="space-y-1.5">
+              <p className="ms-auto w-fit max-w-[85%] rounded-lg bg-primary/10 px-3 py-2 text-sm">
+                {m.q}
+              </p>
+              <p className="me-auto w-fit max-w-full whitespace-pre-line rounded-lg
+                bg-muted/50 px-3 py-2 text-sm leading-relaxed">
+                {m.a}
+              </p>
+              {m.handoff && (
+                <p className="me-auto w-fit max-w-full rounded-lg bg-amber-500/10
+                  px-3 py-2 text-[11px] font-semibold text-amber-700">
+                  برای پیگیری، از فرم پایین یک تیکت بگذارید.
+                </p>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (text.trim() && !ask.isPending) ask.mutate(text.trim())
+        }}
+        className="mt-3 flex gap-2"
+      >
+        <Input
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="مثلاً: سفارش من کجاست؟"
+          aria-label="سؤال از دستیار"
+        />
+        <Button type="submit" size="icon" disabled={!text.trim() || ask.isPending}
+                aria-label="پرسیدن">
+          {ask.isPending
+            ? <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+            : <Send className="size-4" aria-hidden="true" />}
+        </Button>
+      </form>
+
+      {ask.isError && (
+        <p role="alert" className="mt-2 text-[11px] font-semibold text-destructive">
+          {ask.error instanceof Error ? ask.error.message : 'پاسخ نیامد'}
+        </p>
+      )}
+    </section>
   )
 }
 
