@@ -37,6 +37,14 @@ const ROUTES = [
      they belong in the `--public-only` CI run too. */
   { route: '/login', label: 'ورود', auth: false },
   { route: '/register', label: 'ثبت‌نام', auth: false },
+  /* The shop is the half of the business where money changes hands, and it
+     was in no audit's route list at all - same gap the sign-in pages had.
+     A signed-out visitor still sees the product grid, so it audits clean
+     without a token; /cart and /order/result redirect to /login and would
+     measure the login page under three names, exactly the trap the header
+     comment describes. */
+  { route: '/shop', label: 'فروشگاه', auth: false },
+  { route: '/shop/1', label: 'صفحهٔ محصول', auth: false },
   { route: '/feed', label: 'لحظه‌ها', auth: true },
   { route: '/bookings', label: 'نوبت‌های من', auth: true },
   { route: '/me', label: 'حساب من', auth: true },

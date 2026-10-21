@@ -140,25 +140,30 @@ export function ProductPage() {
           </div>
 
           <dl className="mt-6 space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
+            {/* A <dl> may only contain <dt>, <dd>, <div> or <script>
+                directly. The <dt> sat inside a nested div, so axe counted
+                it as having no <dl> parent - 4 dlitems and the list itself.
+                The icon moves into the <dt> so the structure is legal and
+                the description still reads as one row. */}
             <div className="flex items-start gap-2">
-              <Truck className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-              <div>
-                <dt className="font-bold">ارسال</dt>
-                <dd className="text-muted-foreground">
-                  سفارش را ما تأمین و ارسال می‌کنیم؛ پس از ثبت، وضعیت در
-                  «سفارش‌های من» به‌روز می‌شود.
-                </dd>
-              </div>
+              <dt className="flex items-center gap-2 font-bold">
+                <Truck className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                ارسال
+              </dt>
+              <dd className="flex-1 text-muted-foreground">
+                سفارش را ما تأمین و ارسال می‌کنیم؛ پس از ثبت، وضعیت در
+                «سفارش‌های من» به‌روز می‌شود.
+              </dd>
             </div>
             {p.source && (
               <div className="flex items-start gap-2">
-                <Package className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                <div>
-                  <dt className="font-bold">تأمین</dt>
-                  <dd className="text-muted-foreground">
-                    از {p.source} — قیمت روزانه به‌روز می‌شود.
-                  </dd>
-                </div>
+                <dt className="flex items-center gap-2 font-bold">
+                  <Package className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                  تأمین
+                </dt>
+                <dd className="flex-1 text-muted-foreground">
+                  از {p.source} — قیمت روزانه به‌روز می‌شود.
+                </dd>
               </div>
             )}
           </dl>
