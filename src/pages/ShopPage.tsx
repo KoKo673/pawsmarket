@@ -128,13 +128,20 @@ function ProductCard({ product }: { product: ShopProduct }) {
 
   return (
     <li className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card">
+      {/*
+        One link per card, not three.
+
+        The image and the title both linked here, so tabbing through 40
+        products took 120 stops to reach one card's button — measured with
+        a keyboard-only walk. The image is now inside the title link with
+        `tabIndex={-1}`, so the whole card is one stop and the image is
+        still clickable for anyone using a mouse.
+      */}
       <Link
         to={href}
-        className="block aspect-square overflow-hidden bg-muted/40"
-        /* The image is the whole link, so the accessible name has to come
-           from somewhere. An empty alt made this a link announced as just
-           «لینک» — 40 of them in a row for a screen reader. */
-        aria-label={product.name}
+        className="group/link block aspect-square overflow-hidden bg-muted/40"
+        tabIndex={-1}
+        aria-hidden="true"
       >
         {product.image ? (
           <img
