@@ -392,6 +392,9 @@ function toStoreListing(raw: RawRow): StoreListing {
 
 /* ── Geo query strings ─────────────────────────────────────────── */
 
+/** Largest page the nearby endpoints accept (`le=2000` on all three). */
+const NEARBY_MAX_LIMIT = 2000
+
 /**
  * Radius is sent as BOTH `radius` and `max_distance`.
  *
@@ -399,6 +402,14 @@ function toStoreListing(raw: RawRow): StoreListing {
  * `/api/pets` instead takes `radius`. Sending only `radius` left the store
  * query pinned at the 5 km default, so widening the sidebar slider changed
  * nothing for stores/products — the catalog silently looked tiny.
+ *
+ * `limit` is pinned to the server's ceiling on purpose. The endpoints default
+ * it to 150 (products 120) because the page size was sized for a slow link,
+ * and nothing in the UI ever asked for more — so `/api/stores/nearby` returned
+ * 150 of 218 stores. /explore never noticed (it reads the committed snapshot),
+ * but a page that looks a store up BY ID does: the missing 68 ids resolve to
+ * nothing and are then refused as «پیدا نشد». That is a wrong answer about a
+ * real business, so the lookup asks for the whole set rather than the default.
  */
 function geoParams(origin: GeoPoint, filters: Filters): URLSearchParams {
   const metres = String(filters.radiusKm * 1000)
@@ -407,6 +418,7 @@ function geoParams(origin: GeoPoint, filters: Filters): URLSearchParams {
     lng: origin.lng.toFixed(6),
     radius: metres,
     max_distance: metres,
+    limit: String(NEARBY_MAX_LIMIT),
     ...(filters.query ? { q: filters.query } : {}),
   })
 }
