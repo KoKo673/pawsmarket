@@ -37,47 +37,55 @@ try {
   const ctx = await browser.newContext()
   const page = await ctx.newPage()
 
-  // ── A shop is refused ─────────────────────────────────────────────
-  await page.goto(BASE + '/booking/68', { waitUntil: 'load' })
-  // The store resolves from an async query, so wait for the decision
-  // rather than reading the first paint and calling it the answer.
-  await page.waitForTimeout(3000)
-  const shopH1 = (await page.locator('h1').allTextContents()).join(' ')
-  const shopInputs = await page.locator('form input').count()
-  record(
-    'a shop id gets the refusal, not the form',
-    shopH1.includes('نوبت نمی‌گیرد') && shopInputs === 0,
-    `h1="${shopH1}" form inputs=${shopInputs}`,
-  )
+  /*
+   * 1. The route is closed at all.
+   *
+   * BOOKING_ENABLED is false while the catalog and the API name different
+   * businesses with the same id. Gating only the detail sheet left this
+   * URL live: a shared or guessed link collected a whole form and posted
+   * it, and that post can land on an unrelated clinic. Every id below
+   * must get the closed notice — shop, clinic and nonsense alike.
+   *
+   * 2. No form, ever.
+   *
+   * The old holes were all «store came back undefined, so the guard fell
+   * through». While the door is shut that cannot be observed directly, so
+   * this asserts the consequence instead: zero form inputs on any id.
+   */
+  for (const [label, id] of [
+    ['a shop id', '68'],
+    ['a clinic id', '478'],
+    ['an id that does not exist', '99999'],
+  ]) {
+    await page.goto(`${BASE}/booking/${id}`, { waitUntil: 'load' })
+    // The store resolves from an async query, so wait for the decision
+    // rather than reading the first paint and calling it the answer.
+    await page.waitForTimeout(3000)
+    const h1 = (await page.locator('h1').allTextContents()).join(' ')
+    const inputs = await page.locator('form input').count()
+    const closed = h1.includes('غیرفعال')
+    record(
+      `${label} cannot open the booking form`,
+      closed && inputs === 0,
+      `h1="${h1}" form inputs=${inputs}`,
+    )
+  }
 
-  // ── An id that does not exist is refused, not silently allowed ────
-  // This is the hole that made the old guard useless. `store` is
-  // undefined here, and the guard was `if (store && ...)` — so the whole
-  // condition was false and the full form rendered for id 99999.
-  await page.goto(BASE + '/booking/99999', { waitUntil: 'load' })
-  await page.waitForTimeout(3000)
-  const missingH1 = (await page.locator('h1').allTextContents()).join(' ')
-  const missingInputs = await page.locator('form input').count()
+  /*
+   * 3. The button is gone from the detail sheet too.
+   *
+   * The two surfaces read one flag now (lib/booking-rules). If someone
+   * turns BOOKING_ENABLED back on before the ids agree, this passes but
+   * the routes reopen — so when that flip happens, the assertions above
+   * must be rewritten to test the guard again, not deleted.
+   */
+  await page.goto(BASE + '/explore', { waitUntil: 'load' })
+  await page.waitForTimeout(5000)
+  const exploreBody = await page.locator('body').innerText()
   record(
-    'an unknown id gets «پیدا نشد», not the form',
-    missingH1.includes('پیدا نشد') && missingInputs === 0,
-    `h1="${missingH1}" form inputs=${missingInputs}`,
-  )
-
-  // ── A clinic is still allowed through the guard ───────────────────
-  // NOT asserting that the form renders: booking is switched off while
-  // the catalog and the API name different businesses by the same id
-  // (BOOKING_ENABLED in DetailModal). What must hold either way is that a
-  // clinic is not refused — the refusal screen must name the store, which
-  // only happens when the guard let it past.
-  await page.goto(BASE + '/booking/478', { waitUntil: 'load' })
-  await page.waitForTimeout(3000)
-  const vetBody = await page.locator('body').innerText()
-  const vetH1 = (await page.locator('h1').allTextContents()).join(' ')
-  record(
-    'a clinic is not refused',
-    !vetBody.includes('نوبت نمی‌گیرد') && !vetBody.includes('پیدا نشد'),
-    `h1="${vetH1}"`,
+    'the explore page offers no booking entry point',
+    !exploreBody.includes('درخواست نوبت'),
+    `«درخواست نوبت» occurrences: ${(exploreBody.match(/درخواست نوبت/g) || []).length}`,
   )
 
   const failed = results.filter((r) => !r.pass)
