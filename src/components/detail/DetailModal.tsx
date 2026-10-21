@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { SHOP_DETAIL } from '@/data/shops-detail'
 import { SHOP_ENRICHMENT } from '@/data/shops'
+import { BOOKING_ENABLED, isBookableCategory } from '@/lib/booking-rules'
 import { faDecimal, faDigits, faPrice, faTimeRange } from '@/lib/fa'
 import { formatDistance } from '@/lib/geo'
 import { useNearbyListings } from '@/hooks/use-listings'
@@ -21,27 +22,9 @@ const KIND_BADGE = {
   store: { label: 'فروشگاه', icon: Store },
 } as const
 
-/** دسته‌هایی که نوبت‌گیری برایشان معنا دارد — یک پت‌شاپ نوبت نمی‌گیرد. */
-const BOOKABLE = ['vet', 'groomer', 'boarding', 'shelter']
-
-/**
- * ⛔ TEMPORARILY OFF — the catalog and the API name different businesses
- * with the same id.
- *
- * Measured against the live site: the snapshot built itself while the
- * database was unreachable, numbering stores by their position in
- * `seed_real.sql`; the database was separately restored from an older
- * dump. 0 of 218 shared ids carry the same name. Sending the snapshot's id
- * to POST /api/bookings produced 284 failures and 67 bookings on an
- * unrelated clinic — verified by a real request, not inferred.
- *
- * A booking that silently goes to the wrong vet is worse than a button
- * that is not there: the visitor believes they are booked and nobody
- * answers. So the button is hidden until the snapshot is exported from the
- * database itself (see REVIEW-ANSWERS-TO-TWO-QUESTIONS). Turn this back on
- * in the same commit that makes the ids agree — not before.
- */
-const BOOKING_ENABLED = false
+/* دسته‌های نوبت‌پذیر و کلید خاموش‌بودن در `lib/booking-rules` است، نه اینجا:
+   صفحهٔ نوبت هم همان دو را می‌خواند و اگر دو نسخه داشته باشند از هم دور
+   می‌افتند — که دقیقاً همان اتفاقی بود که افتاد. */
 
 /**
  * برگه‌ی جزئیات جهانی — با باز شدن هر کارت/پین باز می‌شود.
@@ -179,7 +162,7 @@ export function DetailModal() {
                     مسیریابی
                   </Button>
                   {/* نوبت‌گیری فقط برای مراکز خدماتی — فروشگاه کالا نوبت نمی‌خواهد */}
-                  {BOOKING_ENABLED && BOOKABLE.includes(item.category) ? (
+                  {BOOKING_ENABLED && isBookableCategory(item.category) ? (
                     <Button asChild className="flex-1 gap-1.5 sm:flex-none">
                       <Link to={`/booking/${item.id.replace('store:', '')}`}>
                         <CalendarDays className="size-4" />
