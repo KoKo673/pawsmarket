@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Heart, Home, LogIn, MapPin, Menu, Newspaper, PawPrint, Plus, User, X } from 'lucide-react'
+import { Heart, Home, LogIn, MapPin, Menu, Newspaper, PawPrint, Plus, ShoppingCart, User, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 
@@ -15,6 +15,10 @@ import { useUiStore } from '@/store/ui.store'
 
 const NAV_LINKS = [
   { to: '/', label: 'خانه' },
+  // The shop is second on purpose: it is the half of the business where we
+  // sell our own stock, and it was reachable only by typing the URL until
+  // this line existed.
+  { to: '/shop', label: 'فروشگاه' },
   { to: '/explore', label: 'کاوش روی نقشه' },
   { to: '/pets', label: 'حیوانات' },
   { to: '/adoption', label: 'سرپرستی' },
@@ -119,6 +123,19 @@ export function Navbar() {
                 {favCount > 9 ? '۹+' : faDigits(favCount)}
               </span>
             )}
+          </Button>
+
+          {/* سبد خرید — بدون این، محصولی که «افزودن به سبد» می‌خورد
+              جایی برای دیده‌شدن نداشت. */}
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="relative hidden md:inline-flex"
+          >
+            <Link to="/cart" aria-label="سبد خرید">
+              <ShoppingCart className="size-4" />
+            </Link>
           </Button>
 
           {/* حساب کاربری */}
