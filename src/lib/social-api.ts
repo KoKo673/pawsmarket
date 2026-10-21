@@ -255,6 +255,22 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify({ phone, purpose }),
     }),
+  /** آیا این نام کاربری آزاد است؟ — برای بازخورد زنده در فرم ثبت‌نام. */
+  usernameAvailable: (username: string) =>
+    request<{ available: boolean; reason: 'taken' | 'reserved' | 'format' | null }>(
+      `/api/auth/username/available?username=${encodeURIComponent(username)}`,
+    ),
+
+  /**
+   * نام کاربری خودت را انتخاب کن — یک بار، بلافاصله پس از ثبت‌نام.
+   * سرور اگر حسابی از قبل نام انتخابی داشته باشد ۴۰۹ می‌دهد.
+   */
+  setUsername: (username: string) =>
+    request<{ user: AuthUser }>('/api/auth/username', {
+      method: 'POST',
+      body: JSON.stringify({ username }),
+    }),
+
   otpVerify: (phone: string, code: string, purpose: 'signup' | 'login',
               displayName?: string) =>
     request<{ token: string; user: AuthUser; is_new: boolean }>(

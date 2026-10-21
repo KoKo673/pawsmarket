@@ -90,7 +90,10 @@ export function PhoneAuthForm() {
       // بدون یک درخواست اضافه به /me مستقیم وارد شود.
       setToken(r.token)
       await hydrate()
-      navigate(r.is_new ? '/me' : next, { replace: true })
+      // A brand-new account lands on /welcome to choose its name. Going
+      // straight to /me was voice note 02's complaint: the first thing a
+      // new customer saw was `user_09123456789`.
+      navigate(r.is_new ? '/welcome' : next, { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'کد تأیید نشد')
       setCode('')

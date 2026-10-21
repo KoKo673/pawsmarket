@@ -24,6 +24,9 @@ const FOOTER_LINKS = [
       { label: 'گربه‌ها', to: '/explore?preset=cats' },
       { label: 'غذای حیوان', to: '/explore?preset=food' },
       { label: 'آگهی‌های ذخیره‌شده', to: '/explore?favorites=1' },
+      /* Support had no entry point anywhere - the one page a stuck
+         customer needs was reachable only by typing the URL. */
+      { label: 'پشتیبانی', to: '/support' },
     ],
   },
 ]

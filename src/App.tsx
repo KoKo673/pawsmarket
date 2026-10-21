@@ -53,6 +53,12 @@ const ShopPage = lazy(() =>
   import('@/pages/ShopPage').then((m) => ({ default: m.ShopPage })))
 const ProductPage = lazy(() =>
   import('@/pages/ProductPage').then((m) => ({ default: m.ProductPage })))
+const SupportPage = lazy(() =>
+  import('@/pages/SupportPage').then((m) => ({ default: m.SupportPage })))
+const StoreDashboardPage = lazy(() =>
+  import('@/pages/StoreDashboardPage').then((m) => ({ default: m.StoreDashboardPage })))
+const CompleteSignupPage = lazy(() =>
+  import('@/pages/CompleteSignupPage').then((m) => ({ default: m.CompleteSignupPage })))
 const CartPage = lazy(() =>
   import('@/pages/CartPage').then((m) => ({ default: m.CartPage })))
 const OrderResultPage = lazy(() =>
@@ -259,6 +265,30 @@ function AppRoutes() {
               element={
                 <AnimatedPage>
                   <AuthCard mode="login" />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/store/dashboard/:token"
+              element={
+                <AnimatedPage>
+                  <StoreDashboardPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/support"
+              element={
+                <AnimatedPage>
+                  <SupportPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/welcome"
+              element={
+                <AnimatedPage>
+                  <CompleteSignupPage />
                 </AnimatedPage>
               }
             />
