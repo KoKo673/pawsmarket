@@ -49,6 +49,8 @@ const ForgotPasswordPage = lazy(() =>
     .then((m) => ({ default: m.ForgotPasswordPage })))
 const BookingPage = lazy(() =>
   import('@/pages/BookingPage').then((m) => ({ default: m.BookingPage })))
+const ShopPage = lazy(() =>
+  import('@/pages/ShopPage').then((m) => ({ default: m.ShopPage })))
 const BookingManagePage = lazy(() =>
   import('@/pages/BookingManagePage')
     .then((m) => ({ default: m.BookingManagePage })))
@@ -251,6 +253,14 @@ function AppRoutes() {
               element={
                 <AnimatedPage>
                   <AuthCard mode="login" />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/shop"
+              element={
+                <AnimatedPage>
+                  <ShopPage />
                 </AnimatedPage>
               }
             />

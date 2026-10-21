@@ -39,3 +39,7 @@ assets/
 # Python bytecode from the test scripts
 __pycache__/
 *.pyc
+
+# Database dumps: contain password hashes and live session tokens.
+*.dump
+backups/
