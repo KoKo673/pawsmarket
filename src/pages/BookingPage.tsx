@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { useQuery } from '@tanstack/react-query'
 
 import { fetchNearbyListings } from '@/lib/api'
+import { BOOKING_ENABLED, isBookableCategory } from '@/lib/booking-rules'
 import { useGeoStore } from '@/store/geo.store'
 import { faDigits } from '@/lib/fa'
 import { bookingApi } from '@/lib/booking-api'
@@ -34,16 +35,8 @@ const SERVICES: Record<string, string[]> = {
 
 const HOURS = Array.from({ length: 15 }, (_, i) => i + 7) // 07:00 … 21:00
 
-/**
- * The same four categories the server accepts (`bookings.py:126`) and the
- * detail sheet shows a button for (`DetailModal.tsx:25`).
- *
- * Hiding the button is not enough on its own: /booking/:storeId is a plain
- * URL, so anyone who guesses or shares it reached a form that could only
- * fail at the last second. This page refuses early, in words, instead of
- * collecting a whole form the server will reject.
- */
-const BOOKABLE = ['vet', 'groomer', 'boarding', 'shelter']
+/* BOOKABLE و BOOKING_ENABLED از `lib/booking-rules` می‌آیند — همان دو
+   چیزی که دکمهٔ برگهٔ جزئیات هم می‌خواند. */
 
 /** Next 21 days, as {value, label} in the visitor's own locale. */
 function upcomingDays(): { value: string; label: string }[] {
@@ -248,6 +241,24 @@ export function BookingPage() {
    * then posted an id the API would reject. Silence from the data read as
    * permission. These are separate now so that can't happen again.
    */
+  /*
+   * Closed for business, not just missing a button.
+   *
+   * BOOKING_ENABLED gated only the detail sheet, so the route stayed live:
+   * a shared or guessed /booking/:id still collected a whole form and posted
+   * it. While the ids are known to disagree, that post can land on an
+   * unrelated clinic — so the route itself has to close, first and before
+   * any lookup.
+   */
+  if (!BOOKING_ENABLED) {
+    return (
+      <BookingNotice
+        title="درخواست نوبت موقتاً غیرفعال است"
+        body="در حال اصلاح اطلاعات فروشگاه‌ها هستیم تا هر درخواست به مرکز درست برسد. به‌زودی برمی‌گردد."
+      />
+    )
+  }
+
   if (isPending) {
     return (
       <div className="mx-auto max-w-lg px-4 pb-24 pt-28 sm:px-6">
@@ -268,7 +279,7 @@ export function BookingPage() {
     )
   }
 
-  if (store.kind === 'store' && !BOOKABLE.includes(store.category)) {
+  if (store.kind === 'store' && !isBookableCategory(store.category)) {
     return (
       <BookingNotice
         title="این مرکز نوبت نمی‌گیرد"
