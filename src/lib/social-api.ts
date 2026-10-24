@@ -232,12 +232,20 @@ export const authApi = {
   logout: () => request<{ ok: boolean }>('/api/auth/logout', { method: 'POST' }),
   me: () => request<{ user: AuthUser }>('/api/auth/me'),
   /** رمز موقت می‌گیرد. پاسخ برای حساب ناموجود هم یکسان است. */
-  recover: (username: string, email: string) =>
-    request<{ ok: boolean; username?: string; temp_password?: string;
-              expires_in_minutes?: number; message: string }>(
+  /**
+   * بازیابی رمز — فقط با شمارهٔ موبایل.
+   *
+   * The email variant is gone from the server too: no SMTP exists and no
+   * account has an email, so the old call showed a temporary password on
+   * screen that was never mailed and, for most accounts, was a placeholder
+   * that could not verify. The response still carries no password — the
+   * real one goes by SMS to a verified number.
+   */
+  recover: (phone: string) =>
+    request<{ ok: boolean; message: string }>(
       '/api/auth/recover', {
         method: 'POST',
-        body: JSON.stringify({ username, email }),
+        body: JSON.stringify({ phone }),
       }),
   changePassword: (currentPassword: string, newPassword: string) =>
     request<{ ok: boolean; message: string }>('/api/auth/change-password', {

@@ -1,4 +1,4 @@
-import { Check, Copy, KeyRound, Loader2, PawPrint } from 'lucide-react'
+import { Check, KeyRound, Loader2, MessageSquare, PawPrint } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -8,52 +8,53 @@ import { Label } from '@/components/ui/label'
 import { authApi } from '@/lib/social-api'
 
 /**
- * بازیابی رمز — دو مرحله است، چون در این استقرار سرویس ایمیل وجود ندارد.
+ * بازیابی رمز — فقط با پیامک.
  *
- * The server answers identically whether or not the account exists, so the
- * screen cannot reveal which usernames are real. When it does succeed the
- * temporary password is shown once, with a copy button — there is no mail to
- * send it to, so this screen IS the delivery.
+ * This page used to ask for «نام کاربری + ایمیل ثبت‌شده» and then draw a
+ * temporary password on screen. That could never work for anyone here:
+ *
+ *   · No SMTP is configured, so nothing was ever emailed.
+ *   · All 20 active accounts have an empty email column — the field was
+ *     optional at signup and nobody filled it.
+ *   · The password it drew was, for any account without a matching email,
+ *     the *placeholder* password — which by design is never hashed and
+ *     never verifies. So the screen showed a code that looked real and was
+ *     guaranteed not to work.
+ *
+ * Reported exactly like that from the product: «از من ایمیل گرفت و یک کد
+ * نشانم داد که وارد کردم کار نمی‌کرد، ایمیل هم نیامد.»
+ *
+ * Now it asks for the phone. The server sends a real password by SMS to a
+ * number that must already be *verified*, and nothing sensitive comes back
+ * in the response. The response is identical whether or not the account
+ * exists, so this page cannot be used to discover who has an account —
+ * which is why it says "if that number is registered" rather than
+ * "wrong number".
  */
 export function ForgotPasswordPage() {
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [result, setResult] = useState<{ temp?: string; minutes?: number;
-                                        username?: string } | null>(null)
-  const [copied, setCopied] = useState(false)
+  const [done, setDone] = useState(false)
 
   async function submit(e: FormEvent) {
     e.preventDefault()
     setError(null)
-    if (!username.trim() || !email.trim()) {
-      setError('نام کاربری و ایمیل هر دو لازم است')
+
+    const digits = phone.replace(/\D/g, '')
+    if (digits.length < 10) {
+      setError('شمارهٔ موبایل را کامل وارد کنید')
       return
     }
+
     setBusy(true)
     try {
-      const r = await authApi.recover(username.trim(), email.trim())
-      setResult({
-        temp: r.temp_password,
-        minutes: r.expires_in_minutes,
-        username: r.username,
-      })
+      await authApi.recover(phone.trim())
+      setDone(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'مشکلی پیش آمد')
     } finally {
       setBusy(false)
-    }
-  }
-
-  async function copy() {
-    if (!result?.temp) return
-    try {
-      await navigator.clipboard.writeText(result.temp)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      /* clipboard blocked — the password is on screen to read out */
     }
   }
 
@@ -68,100 +69,66 @@ export function ForgotPasswordPage() {
             بازیابی رمز عبور
           </h1>
           <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-            نام کاربری و ایمیلی که هنگام ثبت‌نام دادید را بنویسید تا یک رمز
-            موقت بگیرید.
+            شمارهٔ موبایلی که با آن ثبت‌نام کرده‌اید را بنویسید تا رمز تازه
+            با پیامک برسد.
           </p>
         </div>
 
-        {result?.temp ? (
+        {done ? (
           <div data-motion-item className="space-y-4">
-            <div className="rounded-2xl border border-accent/30 bg-accent/10 p-4">
-              <p className="text-sm font-bold text-accent">
-                رمز موقت شما (فقط همین یک‌بار نشان داده می‌شود)
+            <div className="rounded-2xl border border-accent/30 bg-accent/10 p-4 text-center">
+              <MessageSquare className="mx-auto size-7 text-accent" aria-hidden="true" />
+              <p className="mt-2 text-sm font-bold text-accent">
+                اگر این شماره در پازمارکت ثبت شده باشد، رمز تازه پیامک شد
               </p>
-              <div className="mt-3 flex items-center gap-2">
-                <code
-                  dir="ltr"
-                  className="min-w-0 flex-1 rounded-xl bg-card px-4 py-3 text-center text-lg font-extrabold tracking-wider"
-                >
-                  {result.temp}
-                </code>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={copy}
-                  aria-label="کپی رمز موقت"
-                >
-                  {copied ? <Check className="size-4 text-accent" />
-                          : <Copy className="size-4" />}
-                </Button>
-              </div>
-              <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-                {result.minutes
-                  ? `تا ${result.minutes} دقیقه اعتبار دارد. `
-                  : ''}
-                با آن وارد شوید، بعد از «حساب من» رمز تازه بگذارید.
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                پیامک ممکن است چند دقیقه طول بکشد. با رمز جدید وارد شوید و
+                بعد از «حساب من» رمز دلخواهتان را بگذارید.
               </p>
             </div>
 
-            <Button asChild size="lg" className="w-full gap-2">
+            <Button asChild size="lg" className="w-full">
               <Link to="/login">رفتن به صفحه‌ی ورود</Link>
             </Button>
+
             <p className="text-center text-xs text-muted-foreground">
-              به‌خاطر امنیت، همه‌ی دستگاه‌های دیگری که با این حساب وارد بودند
-              از حساب خارج شدند.
+              پیامک نرسید؟ مطمئن شوید شماره همان است که با آن ثبت‌نام
+              کرده‌اید، و{' '}
+              <Link to="/support" className="font-bold text-primary hover:underline">
+                به پشتیبانی پیام بدهید
+              </Link>
+              .
             </p>
-          </div>
-        ) : result ? (
-          <div data-motion-item className="space-y-4">
-            <p className="rounded-xl bg-muted px-4 py-3 text-sm leading-relaxed text-muted-foreground">
-              اگر این نام کاربری و ایمیل با هم بخوانند، رمز موقت ساخته می‌شود.
-              اگر رمز نگرفتید، یعنی ایمیل با ثبت‌نام نمی‌خواند — با پشتیبانی
-              تماس بگیرید.
-            </p>
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/login">بازگشت به ورود</Link>
-            </Button>
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-4">
             <div data-motion-item className="space-y-2">
-              <Label htmlFor="ru">نام کاربری</Label>
+              <Label htmlFor="rp">شمارهٔ موبایل</Label>
               <Input
-                id="ru"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="فقط حروف انگلیسی، عدد و _"
+                id="rp"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="۰۹۱۲۳۴۵۶۷۸۹"
                 dir="ltr"
-                autoComplete="username"
-                required
-              />
-            </div>
-            <div data-motion-item className="space-y-2">
-              <Label htmlFor="re">ایمیل ثبت‌شده</Label>
-              <Input
-                id="re"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="همان ایمیلی که در ثبت‌نام دادید"
-                dir="ltr"
-                autoComplete="email"
+                inputMode="numeric"
+                autoComplete="tel"
                 required
               />
             </div>
 
             {error && (
-              <p data-motion-item className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive">
+              <p data-motion-item role="alert"
+                 className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive">
                 {error}
               </p>
             )}
 
             <Button data-motion-item type="submit" size="lg"
                     className="w-full gap-2" disabled={busy}>
-              {busy && <Loader2 className="size-4 animate-spin" />}
-              گرفتن رمز موقت
+              {busy
+                ? <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                : <MessageSquare className="size-4" aria-hidden="true" />}
+              ارسال رمز با پیامک
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
@@ -174,11 +141,18 @@ export function ForgotPasswordPage() {
         )}
       </div>
 
-      {!result && (
+      {done && (
         <p data-motion-item className="mt-6 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-          <PawPrint className="mt-0.5 size-3.5 shrink-0 text-primary" />
-          اگر هنگام ثبت‌نام ایمیلی وارد نکردید، بازیابی خودکار ممکن نیست —
-          از «حساب من» بعد از ورود می‌توانید ایمیل اضافه کنید.
+          <Check className="mt-0.5 size-3.5 shrink-0 text-accent" aria-hidden="true" />
+          به‌خاطر امنیت، همهٔ دستگاه‌هایی که با این حساب وارد بودند از حساب
+          خارج شدند.
+        </p>
+      )}
+      {!done && (
+        <p data-motion-item className="mt-6 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+          <PawPrint className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden="true" />
+          بازیابی فقط با پیامک است، چون ایمیلی برای هیچ حسابی ثبت نشده. اگر
+          شماره‌تان عوض شده، از پشتیبانی بخواهید.
         </p>
       )}
     </div>

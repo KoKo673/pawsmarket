@@ -166,7 +166,8 @@ export function ForBusinessPage() {
 
 function ClaimForm({ store, onBack }: { store: StoreHit; onBack: () => void }) {
   const [form, setForm] = useState({
-    name: '', role: 'owner', phone: '', email: '', note: '',
+    name: '', role: 'owner', phone: '', email: '',
+    national_id: '', licence_no: '', proof: '', note: '',
   })
   const create = useMutation({
     mutationFn: () => getJson<{ store: string; message: string }>(
@@ -188,7 +189,12 @@ function ClaimForm({ store, onBack }: { store: StoreHit; onBack: () => void }) {
     )
   }
 
-  const invalid = form.name.trim().length < 2 || form.phone.replace(/\D/g, '').length < 8
+  const nidDigits = form.national_id.replace(/\D/g, '')
+  const invalid =
+    form.name.trim().length < 2 ||
+    form.phone.replace(/\D/g, '').length < 8 ||
+    nidDigits.length < 8 ||
+    form.licence_no.trim().length < 3
 
   return (
     <form
@@ -219,6 +225,26 @@ function ClaimForm({ store, onBack }: { store: StoreHit; onBack: () => void }) {
             {ROLE_FA.map((r) => <option key={r.v} value={r.v}>{r.l}</option>)}
           </select>
         </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="c-nid">کد ملی</Label>
+        <Input id="c-nid" value={form.national_id} dir="ltr" inputMode="numeric"
+               required maxLength={10}
+               onChange={(e) => setForm({ ...form, national_id: e.target.value })} />
+        <p className="text-[11px] text-muted-foreground">
+          برای تطبیق با نام روی جواز کسب.
+        </p>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="c-lic">شمارهٔ جواز کسب</Label>
+        <Input id="c-lic" value={form.licence_no} dir="ltr" required
+               onChange={(e) => setForm({ ...form, licence_no: e.target.value })} />
+        <p className="text-[11px] text-muted-foreground">
+          شماره‌ای که روی پروانهٔ کسب شما چاپ شده. این تنها چیزی است که
+          یک غریبه نمی‌تواند از فهرست عمومی ما بسازد.
+        </p>
       </div>
 
       <div className="space-y-1.5">

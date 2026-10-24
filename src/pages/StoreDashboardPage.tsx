@@ -1,8 +1,8 @@
 import {
-  CalendarDays, Check, ChevronLeft, ChevronRight, Clock, List,
-  Loader2, Phone, X,
+  AlertCircle, CalendarDays, Check, CheckCheck, ChevronLeft, ChevronRight,
+  Clock, Loader2, List, Phone, TrendingUp, User, X,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 
@@ -10,15 +10,20 @@ import { Button } from '@/components/ui/button'
 import { faDigits } from '@/lib/fa'
 
 /**
- * داشبورد کسب‌وکار — همهٔ نوبت‌های یک مرکز در یک صفحه.
+ * داشبورد کسب‌وکار — میز کار مرکز، نه یک جدول.
  *
- * Voice notes 07/08: the per-booking link answers one request; a clinic
- * needs to see the queue. This opens with one token per store — no
- * account, for the same reason the booking link has none: these
- * businesses were harvested from maps, not signed up, and a dashboard
- * behind a login would have nobody to log in.
+ * The first version was four small counters, three tabs and one large empty
+ * box. It answered "how many" and nothing else. A clinic opening this at
+ * 9am needs three questions answered in order:
  *
- * Opens on `pending` because that is the only list that needs a human.
+ *   ۱. چه کسی امروز می‌آید؟      → today's schedule, with a time column
+ *   ۲. چه چیزی منتظر من است؟     → the pending queue, one tap to decide
+ *   ۳. چقدر کار داشته‌ام؟        → counts that mean something
+ *
+ * So the layout is a work surface: a header that names the clinic, a
+ * today strip, the pending queue as the primary object, and the week grid
+ * as a secondary view. Counters stay, but they sit where a summary belongs
+ * rather than occupying the top third of the screen.
  */
 
 type Status = 'pending' | 'confirmed' | 'declined' | 'cancelled' | 'done'
@@ -39,7 +44,10 @@ interface DashboardBooking {
 
 interface Dashboard {
   store: { id: number; name: string; address: string; category: string; phone: string | null }
-  counts: { pending: number; confirmed: number; done: number; today: number; total: number; last_request: string | null }
+  counts: {
+    pending: number; confirmed: number; done: number
+    today: number; total: number; last_request: string | null
+  }
   status: Status
   items: DashboardBooking[]
 }
@@ -62,10 +70,15 @@ const TABS: { key: Status; label: string }[] = [
   { key: 'done', label: 'انجام‌شده' },
 ]
 
+const FA_MONTH = new Intl.DateTimeFormat('fa-IR', { day: 'numeric', month: 'long' })
+const FA_WEEKDAY = new Intl.DateTimeFormat('fa-IR', { weekday: 'long' })
+const FA_TIME = (d: Date) =>
+  `${faDigits(d.getHours())}:${faDigits(String(d.getMinutes()).padStart(2, '0'))}`
+
 export function StoreDashboardPage() {
   const { token } = useParams<{ token: string }>()
   const [tab, setTab] = useState<Status>('pending')
-  const [view, setView] = useState<'list' | 'week'>('list')
+  const [view, setView] = useState<'queue' | 'week'>('queue')
   const qc = useQueryClient()
 
   const q = useQuery({
@@ -81,19 +94,27 @@ export function StoreDashboardPage() {
       body: JSON.stringify({ action }),
     })
     await qc.invalidateQueries({ queryKey: ['store-dashboard', token] })
+    await qc.invalidateQueries({ queryKey: ['store-week', token] })
   }
 
   if (q.isPending) {
-    return <Shell><div className="grid place-items-center py-20"><Loader2 className="size-6 animate-spin text-muted-foreground" /></div></Shell>
+    return (
+      <Shell>
+        <div className="grid place-items-center py-24">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" aria-hidden="true" />
+          <span className="sr-only">در حال بارگذاری</span>
+        </div>
+      </Shell>
+    )
   }
 
   if (q.isError || !q.data) {
     return (
       <Shell>
-        <div className="rounded-3xl border border-border bg-muted/30 px-6 py-16 text-center">
-          <CalendarDays className="mx-auto size-8 text-muted-foreground" />
+        <div className="rounded-3xl border border-border bg-muted/30 px-6 py-20 text-center">
+          <AlertCircle className="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
           <h1 className="mt-3 text-lg font-extrabold">این داشبورد پیدا نشد</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             ممکن است نشانی اشتباه باشد یا دسترسی این مرکز لغو شده باشد.
           </p>
         </div>
@@ -102,120 +123,288 @@ export function StoreDashboardPage() {
   }
 
   const d = q.data
+  const needsAttention = d.counts.pending > 0
 
   return (
     <Shell>
+      {/* ── سربرگ ── */}
       <header className="mb-6">
-        <h1 className="text-2xl font-extrabold tracking-tight">{d.store.name}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{d.store.address}</p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">
+              {d.store.name}
+            </h1>
+            <p className="mt-1 truncate text-sm text-muted-foreground">
+              {d.store.address}
+            </p>
+          </div>
+          {d.store.phone && (
+            <a
+              href={`tel:${d.store.phone.replace(/[^+\d]/g, '')}`}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border
+                border-border bg-card px-3 py-2 text-sm font-bold text-primary"
+            >
+              <Phone className="size-4" aria-hidden="true" />
+              {faDigits(d.store.phone)}
+            </a>
+          )}
+        </div>
       </header>
 
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="در انتظار" value={d.counts.pending} tone="primary" />
-        <Stat label="امروز" value={d.counts.today} />
-        <Stat label="تأییدشده" value={d.counts.confirmed} />
-        <Stat label="کل" value={d.counts.total} />
-      </div>
+      {/* ── نوار امروز — اولین چیزی که صبح لازم است ── */}
+      <section aria-labelledby="today-h" className="mb-6">
+        <h2 id="today-h" className="mb-2 flex items-center gap-1.5 text-xs font-bold
+          text-muted-foreground">
+          <CalendarDays className="size-3.5" aria-hidden="true" />
+          امروز
+        </h2>
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+          <Tile
+            label="منتظر تأیید"
+            value={d.counts.pending}
+            tone={needsAttention ? 'warn' : 'plain'}
+            hint={needsAttention ? 'نیاز به اقدام' : 'چیزی نیست'}
+          />
+          <Tile label="نوبت امروز" value={d.counts.today} tone="primary" />
+          <Tile label="تأییدشده" value={d.counts.confirmed} />
+          <Tile label="کل" value={d.counts.total} hint={
+            d.counts.last_request
+              ? `آخرین: ${new Intl.RelativeTimeFormat('fa', { numeric: 'auto' })
+                  .format(-Math.max(1, Math.round(
+                    (Date.now() - new Date(d.counts.last_request).getTime()) / 60000)), 'minute')}`
+              : undefined
+          } />
+        </div>
+      </section>
 
-      <div className="mb-4 flex items-center gap-2">
-        <div role="tablist" aria-label="نمای نوبت‌ها"
-             className="flex flex-1 gap-1 rounded-xl border border-border p-1">
-          {TABS.map(t => (
-            <button
-              key={t.key}
-              role="tab"
-              type="button"
-              aria-selected={view === 'list' && tab === t.key}
-              disabled={view === 'week'}
-              onClick={() => setTab(t.key)}
-              className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition-colors disabled:opacity-40 ${
-                view === 'list' && tab === t.key
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
+      {/* ── صف کار ── */}
+      <section aria-labelledby="queue-h">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h2 id="queue-h" className="flex items-center gap-1.5 text-xs font-bold
+            text-muted-foreground">
+            <List className="size-3.5" aria-hidden="true" />
+            نوبت‌ها
+          </h2>
+
+          <button
+            type="button"
+            onClick={() => setView(view === 'queue' ? 'week' : 'queue')}
+            aria-pressed={view === 'week'}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border
+              bg-card px-2.5 py-1.5 text-xs font-bold text-muted-foreground
+              hover:text-foreground"
+          >
+            {view === 'queue'
+              ? <><CalendarDays className="size-3.5" aria-hidden="true" /> نمای هفته</>
+              : <><List className="size-3.5" aria-hidden="true" /> فهرست</>}
+          </button>
         </div>
 
-        {/*
-          The week grid and the status tabs answer different questions —
-          "when is Thursday full?" versus "who is waiting on me?" — so they
-          are two views of the same data rather than another tab. The tabs
-          are disabled in week view because the grid shows every status at
-          once, and leaving them enabled would suggest they filter it.
-        */}
-        <button
-          type="button"
-          onClick={() => setView(view === 'list' ? 'week' : 'list')}
-          aria-pressed={view === 'week'}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border
-            border-border bg-card px-3 py-2 text-sm font-bold
-            text-muted-foreground hover:text-foreground"
-        >
-          {view === 'list'
-            ? <><CalendarDays className="size-4" aria-hidden="true" /> تقویم</>
-            : <><List className="size-4" aria-hidden="true" /> فهرست</>}
-        </button>
-      </div>
+        {view === 'queue' ? (
+          <>
+            <div role="tablist" aria-label="وضعیت نوبت"
+                 className="mb-3 flex gap-1 rounded-xl border border-border p-1">
+              {TABS.map(t => (
+                <button
+                  key={t.key}
+                  role="tab"
+                  type="button"
+                  aria-selected={tab === t.key}
+                  onClick={() => setTab(t.key)}
+                  className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold
+                    transition-colors ${tab === t.key
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  {t.label}
+                  {t.key === 'pending' && d.counts.pending > 0 && (
+                    <span className={`ms-1.5 rounded-full px-1.5 py-0.5 text-[10px] ${
+                      tab === t.key ? 'bg-primary-foreground/20' : 'bg-primary/15 text-primary'}`}>
+                      {faDigits(d.counts.pending)}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
 
-      {view === 'week' ? (
-        <WeekCalendar token={token!} onDecide={decide} />
-      ) : d.items.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-muted/30 px-6 py-14 text-center">
-          <Clock className="mx-auto size-7 text-muted-foreground" />
-          <p className="mt-3 text-sm font-semibold">در این بخش چیزی نیست</p>
-        </div>
-      ) : (
-        <ul className="space-y-3">
-          {d.items.map(b => (
-            <li key={b.id} className="rounded-2xl border border-border bg-card p-4">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="font-extrabold">{b.service}</span>
-                <span className="text-xs text-muted-foreground">
-                  {new Intl.DateTimeFormat('fa-IR', {
-                    weekday: 'long', day: 'numeric', month: 'long',
-                  }).format(new Date(b.preferred_at))}
-                  {' · '}
-                  ساعت {faDigits(new Date(b.preferred_at).getHours())}
-                </span>
-              </div>
-
-              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                <span>{b.contact_name}</span>
-                <a href={`tel:${b.contact_phone.replace(/[^+\d]/g, '')}`}
-                   className="inline-flex items-center gap-1 font-semibold text-primary">
-                  <Phone className="size-3.5" />
-                  {faDigits(b.contact_phone)}
-                </a>
-                {b.pet_name && <span>برای {b.pet_name}</span>}
-              </div>
-
-              {b.note && (
-                <p className="mt-2 rounded-xl bg-muted/40 px-3 py-2 text-xs">{b.note}</p>
-              )}
-
-              {b.status === 'pending' && (
-                <div className="mt-3 flex gap-2">
-                  <Button size="sm" className="gap-1.5" onClick={() => void decide(b.id, 'confirm')}>
-                    <Check className="size-3.5" /> تأیید
-                  </Button>
-                  <Button size="sm" variant="outline" className="gap-1.5"
-                          onClick={() => void decide(b.id, 'decline')}>
-                    <X className="size-3.5" /> رد
-                  </Button>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+            {d.items.length === 0 ? (
+              <EmptyState tab={tab} />
+            ) : (
+              <ul className="space-y-2.5">
+                {d.items.map(b => (
+                  <BookingRow key={b.id} b={b} onDecide={decide} />
+                ))}
+              </ul>
+            )}
+          </>
+        ) : (
+          <WeekCalendar token={token!} onDecide={decide} />
+        )}
+      </section>
     </Shell>
   )
 }
 
-/* ── نمای تقویم هفتگی ──────────────────────────────────────── */
+/* ── یک نوبت ───────────────────────────────────────────────── */
+
+function BookingRow({ b, onDecide }: {
+  b: DashboardBooking
+  onDecide: (id: number, action: 'confirm' | 'decline') => Promise<void>
+}) {
+  const [busy, setBusy] = useState<'confirm' | 'decline' | null>(null)
+  const at = new Date(b.preferred_at)
+  const today = new Date().toDateString() === at.toDateString()
+
+  async function run(action: 'confirm' | 'decline') {
+    setBusy(action)
+    try { await onDecide(b.id, action) } finally { setBusy(null) }
+  }
+
+  return (
+    <li className={`rounded-2xl border bg-card p-4 transition-colors ${
+      b.status === 'pending' ? 'border-primary/30' : 'border-border'}`}>
+      <div className="flex items-start gap-3">
+        {/* ستون زمان — چشم اول روی ساعت می‌افتد، نه روی نام */}
+        <div className={`shrink-0 rounded-xl px-2.5 py-2 text-center ${
+          today ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
+          <p className="text-sm font-extrabold tabular-nums leading-none">
+            {FA_TIME(at)}
+          </p>
+          <p className={`mt-1 text-[10px] leading-none ${
+            today ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+            {today ? 'امروز' : FA_WEEKDAY.format(at)}
+          </p>
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="font-extrabold">{b.service}</span>
+            <span className="text-xs text-muted-foreground">
+              {FA_MONTH.format(at)} · {faDigits(b.window_minutes)} دقیقه
+            </span>
+          </div>
+
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm
+            text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              <User className="size-3.5" aria-hidden="true" />
+              {b.contact_name}
+            </span>
+            <a href={`tel:${b.contact_phone.replace(/[^+\d]/g, '')}`}
+               className="inline-flex items-center gap-1 font-semibold text-primary">
+              <Phone className="size-3.5" aria-hidden="true" />
+              {faDigits(b.contact_phone)}
+            </a>
+            {b.pet_name && (
+              <span className="text-xs">برای {b.pet_name}</span>
+            )}
+          </div>
+
+          {b.note && (
+            <p className="mt-2 rounded-lg bg-muted/50 px-2.5 py-1.5 text-xs leading-relaxed">
+              {b.note}
+            </p>
+          )}
+
+          {b.status === 'pending' && (
+            <div className="mt-3 flex gap-2">
+              <Button size="sm" className="flex-1 gap-1.5 sm:flex-none"
+                      disabled={busy !== null}
+                      onClick={() => void run('confirm')}>
+                {busy === 'confirm'
+                  ? <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                  : <Check className="size-3.5" aria-hidden="true" />}
+                تأیید
+              </Button>
+              <Button size="sm" variant="outline" className="flex-1 gap-1.5 sm:flex-none"
+                      disabled={busy !== null}
+                      onClick={() => void run('decline')}>
+                {busy === 'decline'
+                  ? <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                  : <X className="size-3.5" aria-hidden="true" />}
+                رد
+              </Button>
+            </div>
+          )}
+
+          {b.decision_note && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              یادداشت شما: {b.decision_note}
+            </p>
+          )}
+        </div>
+
+        <StatusDot status={b.status} />
+      </div>
+    </li>
+  )
+}
+
+function StatusDot({ status }: { status: Status }) {
+  const map: Record<Status, { cls: string; label: string }> = {
+    pending: { cls: 'bg-amber-500', label: 'در انتظار' },
+    confirmed: { cls: 'bg-emerald-500', label: 'تأییدشده' },
+    done: { cls: 'bg-primary', label: 'انجام‌شده' },
+    declined: { cls: 'bg-muted-foreground/40', label: 'رد‌شده' },
+    cancelled: { cls: 'bg-muted-foreground/40', label: 'لغو‌شده' },
+  }
+  const m = map[status]
+  return (
+    <span className="mt-1 shrink-0" title={m.label}>
+      <span className={`block size-2 rounded-full ${m.cls}`} aria-hidden="true" />
+      <span className="sr-only">{m.label}</span>
+    </span>
+  )
+}
+
+function Tile({ label, value, tone, hint }: {
+  label: string
+  value: number
+  tone?: 'primary' | 'warn'
+  hint?: string
+}) {
+  const cls = tone === 'primary' ? 'border-primary/30 bg-primary/5'
+    : tone === 'warn' ? 'border-amber-500/40 bg-amber-500/5'
+    : 'border-border bg-card'
+  const num = tone === 'primary' ? 'text-primary'
+    : tone === 'warn' ? 'text-amber-600'
+    : ''
+  return (
+    <div className={`rounded-2xl border px-3 py-2.5 ${cls}`}>
+      <p className={`text-2xl font-extrabold tabular-nums leading-none ${num}`}>
+        {faDigits(value)}
+      </p>
+      <p className="mt-1 text-[11px] font-medium text-muted-foreground">{label}</p>
+      {hint && (
+        <p className={`mt-0.5 truncate text-[10px] ${tone === 'warn' ? 'text-amber-600' : 'text-muted-foreground/70'}`}>
+          {hint}
+        </p>
+      )}
+    </div>
+  )
+}
+
+function EmptyState({ tab }: { tab: Status }) {
+  const copy = {
+    pending: { icon: CheckCheck, title: 'صف خالی است', body: 'هیچ درخواستی منتظر تأیید شما نیست.' },
+    confirmed: { icon: Clock, title: 'نوبت تأییدشده‌ای نیست', body: 'وقتی درخواستی را تأیید کنید، اینجا می‌آید.' },
+    done: { icon: TrendingUp, title: 'هنوز کاری ثبت نشده', body: 'نوبت‌های انجام‌شده اینجا جمع می‌شوند.' },
+  }[tab as 'pending' | 'confirmed' | 'done'] ?? {
+    icon: Clock, title: 'چیزی نیست', body: '',
+  }
+  const Icon = copy.icon
+  return (
+    <div className="rounded-2xl border border-dashed border-border bg-muted/20 px-6 py-14 text-center">
+      <Icon className="mx-auto size-7 text-muted-foreground/60" aria-hidden="true" />
+      <p className="mt-3 text-sm font-bold">{copy.title}</p>
+      {copy.body && (
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{copy.body}</p>
+      )}
+    </div>
+  )
+}
+
+/* ── نمای هفته ──────────────────────────────────────────── */
 
 interface WeekBooking {
   id: number
@@ -244,14 +433,6 @@ const STATUS_TONE: Record<string, string> = {
   cancelled: 'border-border bg-muted/50 opacity-60 line-through',
 }
 
-/**
- * یک هفته، ستون به ستون از شنبه.
- *
- * Days are derived from the returned `week_start` rather than from the
- * browser's clock: the server snapped the date to a Saturday in Tehran, and
- * a client that recomputed the grid locally could disagree with it by a day
- * for anyone whose device timezone is not Tehran.
- */
 function WeekCalendar({ token, onDecide }: {
   token: string
   onDecide: (id: number, action: 'confirm' | 'decline') => Promise<void>
@@ -263,9 +444,8 @@ function WeekCalendar({ token, onDecide }: {
     queryFn: async () => {
       const base = new Date()
       base.setDate(base.getDate() + offsetWeeks * 7)
-      const iso = base.toISOString().slice(0, 10)
       const res = await fetch(
-        `${API}/api/store/dashboard/${token}/week?start=${iso}`)
+        `${API}/api/store/dashboard/${token}/week?start=${base.toISOString().slice(0, 10)}`)
       if (!res.ok) throw new Error('هفته بارگذاری نشد')
       return await res.json() as Week
     },
@@ -273,27 +453,35 @@ function WeekCalendar({ token, onDecide }: {
     retry: false,
   })
 
-  if (q.isPending) {
-    return <div className="grid place-items-center py-16">
-      <Loader2 className="size-6 animate-spin text-muted-foreground" />
-    </div>
-  }
-  if (q.isError || !q.data) {
-    return <p className="rounded-xl border border-border bg-muted/30 px-4 py-8
-      text-center text-sm text-muted-foreground">تقویم بارگذاری نشد</p>
-  }
+  const days = useMemo(() => {
+    if (!q.data) return []
+    const start = new Date(q.data.week_start + 'T00:00:00')
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(start)
+      d.setDate(d.getDate() + i)
+      return d
+    })
+  }, [q.data])
 
-  const start = new Date(q.data.week_start + 'T00:00:00')
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(start)
-    d.setDate(d.getDate() + i)
-    return d
-  })
+  if (q.isPending) {
+    return (
+      <div className="grid place-items-center py-16">
+        <Loader2 className="size-5 animate-spin text-muted-foreground" aria-hidden="true" />
+      </div>
+    )
+  }
+  if (q.isError || !q.data || days.length === 0) {
+    return (
+      <p className="rounded-xl border border-border bg-muted/30 px-4 py-10 text-center
+        text-sm text-muted-foreground">
+        تقویم بارگذاری نشد
+      </p>
+    )
+  }
 
   // Group by local calendar date. `toLocaleDateString('en-CA')` yields
-  // YYYY-MM-DD, which is unambiguous to compare against the group key —
-  // building the key from getMonth()/getDate() by hand gets the zero-pad
-  // wrong exactly once and then silently drops a day.
+  // YYYY-MM-DD, which compares cleanly — hand-built month/day keys get the
+  // zero-pad wrong exactly once and then silently drop a day.
   const byDay = new Map<string, WeekBooking[]>()
   for (const b of q.data.items) {
     const key = new Date(b.preferred_at).toLocaleDateString('en-CA')
@@ -301,58 +489,38 @@ function WeekCalendar({ token, onDecide }: {
     list.push(b)
     byDay.set(key, list)
   }
-
   const todayKey = new Date().toLocaleDateString('en-CA')
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <button
-          type="button"
-          onClick={() => setOffsetWeeks(offsetWeeks - 1)}
-          className="rounded-lg border border-border bg-card p-2
-            text-muted-foreground hover:text-foreground"
-          aria-label="هفتهٔ قبل"
-        >
+        <button type="button" onClick={() => setOffsetWeeks(w => w - 1)}
+                aria-label="هفتهٔ قبل"
+                className="rounded-lg border border-border bg-card p-2
+                  text-muted-foreground hover:text-foreground">
           <ChevronRight className="size-4" aria-hidden="true" />
         </button>
-
         <p className="text-sm font-bold">
-          {new Intl.DateTimeFormat('fa-IR', { day: 'numeric', month: 'long' })
-            .format(days[0])}
-          {' تا '}
-          {new Intl.DateTimeFormat('fa-IR', { day: 'numeric', month: 'long' })
-            .format(days[6])}
+          {FA_MONTH.format(days[0])} تا {FA_MONTH.format(days[6])}
           {offsetWeeks === 0 && (
             <span className="ms-2 rounded-full bg-primary/10 px-2 py-0.5
               text-[10px] font-bold text-primary">این هفته</span>
           )}
         </p>
-
-        <button
-          type="button"
-          onClick={() => setOffsetWeeks(offsetWeeks + 1)}
-          className="rounded-lg border border-border bg-card p-2
-            text-muted-foreground hover:text-foreground"
-          aria-label="هفتهٔ بعد"
-        >
+        <button type="button" onClick={() => setOffsetWeeks(w => w + 1)}
+                aria-label="هفتهٔ بعد"
+                className="rounded-lg border border-border bg-card p-2
+                  text-muted-foreground hover:text-foreground">
           <ChevronLeft className="size-4" aria-hidden="true" />
         </button>
       </div>
 
-      {/*
-        Horizontally scrollable rather than squeezed. Seven columns in a
-        360px phone would give each day ~48px, which cannot hold a service
-        name; a scroll keeps every card readable at its natural width.
-      */}
       <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <div className="grid min-w-[42rem] grid-cols-7 gap-2">
-          {days.map((d, i) => {
-            const key = d.toLocaleDateString('en-CA')
+          {days.map((day, i) => {
+            const key = day.toLocaleDateString('en-CA')
             const list = byDay.get(key) ?? []
             const isToday = key === todayKey
-            // Friday is the weekend in Iran; the column is tinted so a
-            // booking there is visibly unusual rather than merely present.
             const isFriday = i === 6
             return (
               <div key={key} className="min-w-0">
@@ -361,58 +529,20 @@ function WeekCalendar({ token, onDecide }: {
                   : isFriday ? 'bg-muted/60 text-muted-foreground'
                   : 'text-muted-foreground'}`}>
                   <p className="text-[11px] font-bold">{DAY_FA[i]}</p>
-                  <p className="text-[10px] tabular-nums">{faDigits(d.getDate())}</p>
+                  <p className="text-[10px] tabular-nums">{faDigits(day.getDate())}</p>
                 </div>
-
                 <ul className="space-y-1.5">
                   {list.length === 0 && (
                     <li className="rounded-lg border border-dashed border-border/60
-                      px-1.5 py-4 text-center text-[10px] text-muted-foreground/60">
+                      px-1.5 py-4 text-center text-[10px] text-muted-foreground/50">
                       —
                     </li>
                   )}
-                  {list.map(b => {
-                    const at = new Date(b.preferred_at)
-                    return (
-                      <li key={b.id}>
-                        <div className={`rounded-lg border px-1.5 py-1.5 text-[11px]
-                          ${STATUS_TONE[b.status] ?? 'border-border bg-card'}`}>
-                          <p className="font-bold tabular-nums">
-                            {faDigits(at.getHours())}:
-                            {faDigits(String(at.getMinutes()).padStart(2, '0'))}
-                          </p>
-                          <p className="mt-0.5 truncate" title={b.service}>
-                            {b.service}
-                          </p>
-                          <p className="truncate text-[10px] text-muted-foreground">
-                            {b.contact_name}
-                          </p>
-                          {b.status === 'pending' && (
-                            <div className="mt-1 flex gap-1">
-                              <button
-                                type="button"
-                                onClick={() => void onDecide(b.id, 'confirm')}
-                                className="flex-1 rounded bg-primary py-0.5 text-[10px]
-                                  font-bold text-primary-foreground"
-                                aria-label={`تأیید ${b.service} برای ${b.contact_name}`}
-                              >
-                                ✓
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => void onDecide(b.id, 'decline')}
-                                className="flex-1 rounded border border-border py-0.5
-                                  text-[10px] font-bold text-muted-foreground"
-                                aria-label={`رد ${b.service} برای ${b.contact_name}`}
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </li>
-                    )
-                  })}
+                  {list.map(b => (
+                    <li key={b.id}>
+                      <WeekCard b={b} onDecide={onDecide} />
+                    </li>
+                  ))}
                 </ul>
               </div>
             )
@@ -420,7 +550,7 @@ function WeekCalendar({ token, onDecide }: {
         </div>
       </div>
 
-      <p className="text-[11px] text-muted-foreground">
+      <p className="text-[11px] leading-relaxed text-muted-foreground">
         همهٔ وضعیت‌ها نمایش داده می‌شوند؛ یک نوبت لغوشده هم جای خودش را
         نشان می‌دهد تا آن ساعت واقعاً خالی به نظر برسد.
       </p>
@@ -428,14 +558,33 @@ function WeekCalendar({ token, onDecide }: {
   )
 }
 
-function Stat({ label, value, tone }: { label: string; value: number; tone?: 'primary' }) {
+function WeekCard({ b, onDecide }: {
+  b: WeekBooking
+  onDecide: (id: number, action: 'confirm' | 'decline') => Promise<void>
+}) {
+  const at = new Date(b.preferred_at)
   return (
-    <div className={`rounded-2xl border p-3 text-center ${
-      tone === 'primary' ? 'border-primary/30 bg-primary/5' : 'border-border bg-card'}`}>
-      <p className={`text-2xl font-extrabold ${tone === 'primary' ? 'text-primary' : ''}`}>
-        {faDigits(value)}
-      </p>
-      <p className="mt-0.5 text-[11px] text-muted-foreground">{label}</p>
+    <div className={`rounded-lg border px-1.5 py-1.5 text-[11px]
+      ${STATUS_TONE[b.status] ?? 'border-border bg-card'}`}>
+      <p className="font-bold tabular-nums">{FA_TIME(at)}</p>
+      <p className="mt-0.5 truncate" title={b.service}>{b.service}</p>
+      <p className="truncate text-[10px] text-muted-foreground">{b.contact_name}</p>
+      {b.status === 'pending' && (
+        <div className="mt-1 flex gap-1">
+          <button type="button" onClick={() => void onDecide(b.id, 'confirm')}
+                  aria-label={`تأیید ${b.service} برای ${b.contact_name}`}
+                  className="flex-1 rounded bg-primary py-0.5 text-[10px]
+                    font-bold text-primary-foreground">
+            ✓
+          </button>
+          <button type="button" onClick={() => void onDecide(b.id, 'decline')}
+                  aria-label={`رد ${b.service} برای ${b.contact_name}`}
+                  className="flex-1 rounded border border-border py-0.5 text-[10px]
+                    font-bold text-muted-foreground">
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   )
 }
