@@ -2,7 +2,10 @@ import { MapPin, PawPrint, ShieldCheck, Sparkles } from 'lucide-react'
 
 import { QuickFilters } from '@/components/home/QuickFilters'
 import { SearchBar } from '@/components/home/SearchBar'
+import { useQuery } from '@tanstack/react-query'
+
 import { useNearbyListings } from '@/hooks/use-listings'
+import { shopApi } from '@/lib/shop-api'
 import { faDigits } from '@/lib/fa'
 import { asset } from '@/lib/utils'
 
@@ -24,7 +27,16 @@ export function Hero() {
   // آمار واقعی از همان کوئری زنده (کش React Query مشترک — بدون درخواست اضافه)
   const { data } = useNearbyListings()
   const realStores = (data ?? []).filter((l) => l.kind === 'store').length
-  const realListings = (data ?? []).length
+
+  // The shop's own stock, from the endpoint that owns it. `useNearbyListings`
+  // deliberately returns no products — that list is other shops' scraped
+  // inventory — so counting it here would either be zero or a lie.
+  const { data: shop } = useQuery({
+    queryKey: ['hero-product-count'],
+    queryFn: () => shopApi.products('', 1),
+    staleTime: 5 * 60_000,
+  })
+  const productCount = shop?.total ?? 0
 
   return (
     <section className="relative overflow-hidden pb-20 pt-32 sm:pt-40">
@@ -102,17 +114,30 @@ export function Hero() {
             data-motion-item
             className="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium text-foreground/80 lg:justify-start"
           >
+            {/*
+              «موارد ثبت‌شده» removed.
+
+              It counted `realListings` — every row the nearby query
+              returned — and with pets and scraped products both at zero,
+              that number was *only* service centres. So the hero said
+              «۲۲۱ مورد ثبت‌شده در محدوده» next to a second line saying
+              «۷۳ مرکز», and a visitor would read the first as products or
+              animals that do not exist.
+
+              Two true numbers beat one vague one: how many centres are
+              nearby, and how many products the shop actually sells.
+            */}
             <li className="inline-flex items-center gap-1.5">
               <MapPin className="size-4 text-primary" />
-              {realListings > 0
-                ? `${faDigits(realListings)} مورد ثبت‌شده در محدوده`
-                : 'اقلام ثبت‌شده در تهران'}
+              {realStores > 0
+                ? `${faDigits(realStores)} مرکز در محدوده`
+                : 'مراکز فعال در تهران'}
             </li>
             <li className="inline-flex items-center gap-1.5">
               <ShieldCheck className="size-4 text-accent" />
-              {realStores > 0
-                ? `${faDigits(realStores)} مرکز و فروشگاه فعال`
-                : 'فروشگاه‌ها و مراکز فعال'}
+              {productCount > 0
+                ? `${faDigits(productCount)} کالا برای فروش`
+                : 'فروشگاه در حال آماده‌سازی'}
             </li>
             <li className="inline-flex items-center gap-1.5">
               <PawPrint className="size-4 text-tide-500" /> فهرست‌شده بر اساس فاصله
