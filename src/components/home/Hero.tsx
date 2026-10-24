@@ -114,85 +114,90 @@ export function Hero() {
         </div>
 
         {/* ── کلاج تصاویر ──
-            Two different layouts, not one scaled down.
+            یک گرید، نه یک کلاج شناور.
 
-            The absolute-positioned collage only works at a fixed aspect ratio.
-            On a 390px phone every image is a percentage of a much narrower box,
-            so the 4/5 portrait grew taller than its container and the cat and
-            the running dog landed on top of the retriever's face — a mobile
-            screenshot showed three photos overlapping into a smear. Below sm
-            this is a plain 2×2 grid (the dog spanning the full width), which
-            cannot overlap at any width; the collage is kept from sm up, where
-            the container is wide enough for the percentages to hold. */}
+            What was here: three `absolute`-positioned photos with percentage
+            widths inside a fixed aspect-ratio box, plus a floating glass chip.
+            It only held together at the width it was designed at. Measured on
+            production at 1024px, the cat card (w-52%, bottom-14, right-0) sat
+            on top of the retriever's face *and* the running dog's paws — the
+            percentages were of a box that was narrower than they assumed, so
+            the two lower cards pulled inward and collided with the portrait
+            behind them. At 1440 the same code looked fine, which is why it
+            survived review.
+
+            Percentages inside an absolutely-positioned parent cannot be made
+            safe for every width, because the layout has no knowledge of where
+            the photos actually are. So this is a plain CSS grid now: every
+            cell is laid out by the grid, nothing overlaps at any width, and
+            the only thing that changes with the breakpoint is how many columns
+            there are. Images use `aspect-[…]` + `object-cover` so each keeps a
+            stable shape while the grid decides its size.
+
+            `object-top` on the two animal portraits keeps ears and eyes in
+            frame; a centred crop of a full-body photo cuts the head off, which
+            is the "چهره معلوم نیست" complaint. */}
         <div
           data-motion-item
-          className="order-first mx-auto w-full max-w-xs sm:hidden"
+          className="order-first mx-auto w-full max-w-md sm:max-w-none lg:order-none"
         >
-          <div className="grid grid-cols-2 gap-2.5">
-            <img
-              src={asset('images/listings/dog-golden.jpg')}
-              alt="توله‌ی گلدن رتریور"
-              className="col-span-2 aspect-[16/11] w-full rounded-[1.75rem] object-cover object-top shadow-lifted"
-            />
-            <img
-              src={asset('images/listings/cat-orange.jpg')}
-              alt="گربه‌ی نارنجی"
-              className="aspect-square w-full rounded-3xl border-2 border-card object-cover shadow-lifted"
-            />
-            <img
-              src={asset('images/listings/dog-run.jpg')}
-              alt="سگ در حال دویدن در پارک"
-              className="aspect-square w-full rounded-3xl border-2 border-card object-cover object-top shadow-lifted"
-            />
-          </div>
-          <div className="glass mt-2.5 flex items-center justify-center gap-2.5 rounded-2xl px-4 py-2.5">
-            <span className="grid size-8 place-items-center rounded-xl bg-accent/15 text-accent">
+          {/*
+            The stat chip is now part of the grid rather than floated over a
+            photo. It was the thing most likely to land on a face, and it reads
+            better as a caption than as an overlay.
+          */}
+          {/*
+            The stat chip is a sibling of the photo, not an overlay on it.
+            As an absolute overlay it landed on the retriever's muzzle at
+            1024px — the same class of bug as the collage it replaced, just
+            smaller. In the flow it cannot cover anything at any width.
+          */}
+          <div className="mb-2.5 flex items-center gap-2.5 rounded-2xl border border-border/60 bg-card px-3 py-2 shadow-soft">
+            <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-accent/15 text-accent">
               <PawPrint className="size-4" />
             </span>
-            <p className="text-sm font-extrabold">
-              {realStores > 0
-                ? `${faDigits(realStores)} فروشگاه واقعی تهران`
-                : 'فروشگاه‌های واقعی تهران'}
-            </p>
-          </div>
-        </div>
-
-        {/* کلاج شناور — از sm به بالا که ظرف به‌قدر کافی عریض است */}
-        <div
-          data-motion-item
-          className="relative hidden aspect-[4/4.4] w-full max-w-md motion-reduce:animate-none sm:block sm:max-w-md lg:order-none"
-        >
-          <img
-            src={asset('images/listings/dog-golden.jpg')}
-            alt="توله‌ی گلدن رتریور"
-            /* object-top keeps the head in frame; the default centre crop cut
-               the face off, which is what "چهره‌ی سگ معلوم نیست" referred to. */
-            className="absolute inset-x-6 top-0 aspect-[4/5] w-[85%] rounded-[2.5rem] object-cover object-top shadow-lifted sm:animate-float"
-            style={{ animationDuration: '6s' }}
-          />
-          <img
-            src={asset('images/listings/cat-orange.jpg')}
-            alt="گربه‌ی نارنجی"
-            className="absolute bottom-14 right-0 aspect-square w-[52%] rounded-[2rem] border-4 border-card object-cover shadow-lifted sm:animate-float"
-            style={{ animationDuration: '7s', animationDelay: '-1s' }}
-          />
-          <img
-            src={asset('images/listings/dog-run.jpg')}
-            alt="سگ در حال دویدن در پارک"
-            className="absolute bottom-0 left-0 aspect-[4/3] w-[55%] rounded-3xl border-4 border-card object-cover object-top shadow-lifted sm:animate-float"
-            style={{ animationDuration: '5.5s', animationDelay: '-0.5s' }}
-          />
-
-          {/* چیپ شیشه‌ای شناور روی کلاج */}
-          <div className="glass absolute right-4 top-10 sm:animate-float flex items-center gap-2.5 rounded-2xl px-4 py-3" style={{ animationDuration: '5s' }}>
-            <span className="grid size-9 place-items-center rounded-xl bg-accent/15 text-accent">
-              <PawPrint className="size-5" />
-            </span>
-            <div className="text-start leading-tight">
-              <p className="text-sm font-extrabold">
-                {realStores > 0 ? `${faDigits(realStores)} فروشگاه واقعی تهران` : 'فروشگاه‌های واقعی تهران'}
+            <div className="min-w-0 leading-tight">
+              <p className="truncate text-xs font-extrabold">
+                {realStores > 0
+                  ? `${faDigits(realStores)} فروشگاه واقعی تهران`
+                  : 'فروشگاه‌های واقعی تهران'}
               </p>
-              <p className="text-xs text-muted-foreground">داده‌ی زنده از نقشه‌ی شهر</p>
+              <p className="truncate text-[10px] font-medium text-muted-foreground">
+                داده‌ی زنده از نقشه‌ی شهر
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            <div className="col-span-2 overflow-hidden rounded-[1.75rem] shadow-lifted">
+              <img
+                src={asset('images/listings/dog-golden.jpg')}
+                alt="توله‌ی گلدن رتریور"
+                className="aspect-[16/10] w-full object-cover object-top"
+              />
+            </div>
+
+            {/*
+              cat-look, not cat-orange. The orange cat photo is shot against a
+              saturated blue backdrop (measured average RGB 61,117,148 — a
+              warmth of -87, the only cold image in the set). Dropped into the
+              hero's peach/amber wash it read as a foreign element, and in the
+              old collage it was the card whose edges cut across the dog. This
+              one is warm (+22) and tonally continuous with the dogs.
+            */}
+            <div className="overflow-hidden rounded-3xl border-2 border-card shadow-lifted">
+              <img
+                src={asset('images/listings/cat-look.jpg')}
+                alt="گربه‌ی نشسته روی پله"
+                className="aspect-square w-full object-cover object-top"
+              />
+            </div>
+            <div className="overflow-hidden rounded-3xl border-2 border-card shadow-lifted">
+              <img
+                src={asset('images/listings/dog-run.jpg')}
+                alt="سگ در حال دویدن در پارک"
+                className="aspect-square w-full object-cover object-center"
+              />
             </div>
           </div>
         </div>

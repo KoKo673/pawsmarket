@@ -64,9 +64,25 @@ export function Navbar() {
         scrolled || mobileOpen ? 'glass shadow-glass' : 'border-b border-transparent bg-transparent',
       )}
     >
-      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+      {/*
+        The nav must survive every width between the mobile menu (below md)
+        and a comfortably wide desktop. Measured on production: at 768–900px
+        the desktop link group has no shrink strategy, `justify-between`
+        lets it push the action cluster out of the viewport, and «ثبت آگهی»
+        lands at x = -176 — entirely off-screen, not merely clipped. The
+        earlier `nowrap` on the links did nothing about it because the
+        overflow was the flex container's, not the text's.
+
+        Three things fix it together, and each is load-bearing:
+          · `min-w-0` on the link group so it may shrink below its
+            min-content width instead of forcing the row wider
+          · `shrink-0` on brand and actions so only the links give way
+          · tighter link padding and a higher breakpoint for the long
+            «کاوش روی نقشه» label, which is what makes the group wide
+      */}
+      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
         {/* Brand */}
-        <Link to="/" className="group flex items-center gap-2.5" aria-label="پازمارکت — صفحه‌ی اصلی">
+        <Link to="/" className="group flex shrink-0 items-center gap-2.5" aria-label="پازمارکت — صفحه‌ی اصلی">
           <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground shadow-glow transition-transform duration-300 group-hover:rotate-12 group-hover:scale-105">
             <PawPrint className="size-5" />
           </span>
@@ -80,16 +96,24 @@ export function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop links */}
-        <div className="hidden items-center gap-1 md:flex">
+        {/* Desktop links.
+            `min-w-0` lets this group shrink rather than push the actions
+            out; `overflow-hidden` clips a link that still does not fit
+            instead of letting it slide under the buttons. Padding steps
+            down at md and back up at lg, because 6 links at px-4 need
+            ~560px and at 768 there is only ~420px to give. */}
+        <div className="hidden min-w-0 items-center gap-0.5 overflow-hidden md:flex lg:gap-1">
           {NAV_LINKS.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
               end={link.to === '/'}
+              /* `whitespace-nowrap` is what the report asked for, and it is
+                 needed even now: without it «کاوش روی نقشه» breaks at its
+                 spaces and the row grows to two lines of text. */
               className={({ isActive }) =>
                 cn(
-                  'rounded-full px-4 py-2 text-sm font-semibold transition-colors',
+                  'whitespace-nowrap rounded-full px-2.5 py-2 text-sm font-semibold transition-colors lg:px-4',
                   isActive ? 'bg-muted text-foreground shadow-soft' : 'text-muted-foreground hover:text-foreground',
                 )
               }
@@ -99,11 +123,16 @@ export function Navbar() {
           ))}
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-1.5">
+        {/* Actions.
+            `shrink-0`: these are the controls a visitor needs, so they keep
+            their size and the link group gives way instead. Every child that
+            is not a primary action is hidden below lg — at 768 there is room
+            for either four icon buttons or the six links, not both, and a
+            clipped «ثبت آگهی» was the reported symptom. */}
+        <div className="flex shrink-0 items-center gap-1.5">
           {/* فید لحظه‌ها (فقط برای کاربر وارد‌شده) */}
           {authStatus === 'authed' && (
-            <Button asChild variant="ghost" size="icon" className="hidden md:inline-flex" aria-label="فید لحظه‌ها">
+            <Button asChild variant="ghost" size="icon" className="hidden lg:inline-flex" aria-label="فید لحظه‌ها">
               <Link to="/feed">
                 <Newspaper className="size-4" />
               </Link>
@@ -113,7 +142,7 @@ export function Navbar() {
           <Button
             variant="ghost"
             size="icon"
-            className="relative hidden md:inline-flex"
+            className="relative hidden lg:inline-flex"
             aria-label={`آگهی‌های ذخیره‌شده${favCount > 0 ? ` (${faDigits(favCount)} مورد)` : ''}`}
             onClick={openFavorites}
           >
@@ -131,7 +160,7 @@ export function Navbar() {
             asChild
             variant="ghost"
             size="icon"
-            className="relative hidden md:inline-flex"
+            className="relative hidden lg:inline-flex"
           >
             <Link to="/cart" aria-label="سبد خرید">
               <ShoppingCart className="size-4" />
@@ -140,7 +169,7 @@ export function Navbar() {
 
           {/* حساب کاربری */}
           {authStatus === 'authed' ? (
-            <Button asChild variant="ghost" size="icon" aria-label="حساب من" className="hidden md:inline-flex">
+            <Button asChild variant="ghost" size="icon" aria-label="حساب من" className="hidden lg:inline-flex">
               <Link to="/me">
                 {authUser?.avatar_url ? (
                   <img src={mediaUrl(authUser.avatar_url)} alt="" className="size-6 rounded-full object-cover" />
@@ -150,7 +179,7 @@ export function Navbar() {
               </Link>
             </Button>
           ) : authStatus === 'anon' ? (
-            <Button asChild variant="outline" size="sm" className="hidden md:inline-flex gap-1.5">
+            <Button asChild variant="outline" size="sm" className="hidden lg:inline-flex gap-1.5">
               <Link to="/login">
                 <LogIn className="size-4" />
                 ورود
@@ -164,7 +193,7 @@ export function Navbar() {
             same rule the API follows by answering 404 rather than 403.
           */}
           {authStatus === 'authed' && authUser?.is_admin && (
-            <Button asChild variant="outline" size="sm" className="hidden md:inline-flex gap-1.5">
+            <Button asChild variant="outline" size="sm" className="hidden lg:inline-flex gap-1.5">
               <Link to="/admin">
                 <ShieldCheck className="size-4" />
                 مدیریت
