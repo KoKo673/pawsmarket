@@ -66,6 +66,8 @@ const AdminStoresPage = lazy(() =>
   import('@/pages/AdminStoresPage').then((m) => ({ default: m.AdminStoresPage })))
 const SecretAdminPage = lazy(() =>
   import('@/pages/SecretAdminPage').then((m) => ({ default: m.SecretAdminPage })))
+const ForBusinessPage = lazy(() =>
+  import('@/pages/ForBusinessPage').then((m) => ({ default: m.ForBusinessPage })))
 const StoreDashboardPage = lazy(() =>
   import('@/pages/StoreDashboardPage').then((m) => ({ default: m.StoreDashboardPage })))
 const CompleteSignupPage = lazy(() =>
@@ -292,6 +294,14 @@ function AppRoutes() {
               element={
                 <AnimatedPage>
                   <SupportPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/for-business"
+              element={
+                <AnimatedPage>
+                  <ForBusinessPage />
                 </AnimatedPage>
               }
             />

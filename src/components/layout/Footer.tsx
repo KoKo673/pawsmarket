@@ -27,6 +27,10 @@ const FOOTER_LINKS = [
       /* Support had no entry point anywhere - the one page a stuck
          customer needs was reachable only by typing the URL. */
       { label: 'پشتیبانی', to: '/support' },
+      /* The clinic side had no entry point either. Without this, a business
+         that found itself on the map had no way to say so, and access was
+         only ever granted to clinics we already knew by name. */
+      { label: 'مرکز شما در پازمارکت است؟', to: '/for-business' },
     ],
   },
 ]
