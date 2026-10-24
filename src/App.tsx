@@ -60,6 +60,10 @@ const AdminPage = lazy(() =>
   import('@/pages/AdminPage').then((m) => ({ default: m.AdminPage })))
 const AdminSupportPage = lazy(() =>
   import('@/pages/AdminSupportPage').then((m) => ({ default: m.AdminSupportPage })))
+const AdminLoginPage = lazy(() =>
+  import('@/pages/AdminLoginPage').then((m) => ({ default: m.AdminLoginPage })))
+const AdminStoresPage = lazy(() =>
+  import('@/pages/AdminStoresPage').then((m) => ({ default: m.AdminStoresPage })))
 const StoreDashboardPage = lazy(() =>
   import('@/pages/StoreDashboardPage').then((m) => ({ default: m.StoreDashboardPage })))
 const CompleteSignupPage = lazy(() =>
@@ -289,12 +293,32 @@ function AppRoutes() {
                 </AnimatedPage>
               }
             />
+            {/* Public, unguarded on purpose: this is the door, so it must
+                not itself require the thing it grants. */}
+            <Route
+              path="/admin/login"
+              element={
+                <AnimatedPage>
+                  <AdminLoginPage />
+                </AnimatedPage>
+              }
+            />
             <Route
               path="/admin"
               element={
                 <AnimatedPage>
                   <RequireAdmin>
                     <AdminPage />
+                  </RequireAdmin>
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/admin/stores"
+              element={
+                <AnimatedPage>
+                  <RequireAdmin>
+                    <AdminStoresPage />
                   </RequireAdmin>
                 </AnimatedPage>
               }

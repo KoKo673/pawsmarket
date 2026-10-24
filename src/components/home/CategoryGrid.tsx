@@ -34,7 +34,18 @@ export function CategoryGrid() {
               <h3 className="text-base font-extrabold">{group.title}</h3>
               <p className="text-xs text-muted-foreground">{group.blurb}</p>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {/*
+              auto-fit, not a fixed four.
+
+              With `lg:grid-cols-4` and six tiles the second row holds two
+              and leaves two empty cells — measured on production as a 4+2
+              split for «حیوانات» and 4+1 for «محصولات», which reads as a
+              broken row rather than a group. The tile count per group is
+              not a multiple of four and should not have to be, so the
+              track count is left to the content: the browser fits as many
+              `12rem` columns as will go, and the tiles stretch to fill.
+            */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
               {group.tiles.map((tile, i) => {
                 const { label, icon: Icon, tint, preset } = tile
                 const count = counts.get(tile) ?? 0

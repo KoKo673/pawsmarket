@@ -43,14 +43,21 @@ export function Hero() {
       {/* محتوای هیرو — یک «بخش گروهی» با پله‌بندی ۳۳ms طبق قرارداد مشترک */}
       <div
         data-motion-section="group"
-        className="mx-auto grid max-w-7xl items-center gap-14 px-4 sm:px-6 lg:grid-cols-[1.1fr_0.9fr]"
+        /* `items-stretch`, not `items-center`. Centring each column left the
+           text block floating: measured at 1440, the image column ran to
+           ~820px while the copy ended near 740, so the right side finished
+           80px early and the eye fell into the gap below the trust row.
+           Stretching makes both columns the same height, and the copy's own
+           `justify-center` then distributes the slack above and below
+           instead of dumping all of it at the bottom. */
+        className="mx-auto grid max-w-7xl items-stretch gap-14 px-4 sm:px-6 lg:grid-cols-[1.1fr_0.9fr]"
       >
         {/* ── ستون متن ──
             min-w-0: grid itemها نباید min-content (جمع عرض پیل‌های
             اسکرول‌بار) را به ستون grid تحمیل کنند — وگرنه در موبایل
             ستون از viewport عریض‌تر می‌شود و محتوا به‌خاطر overflow-hidden
             والد بریده و غیرقابل‌اسکرول می‌شد (باگ گزارش‌شده). */}
-        <div className="min-w-0 text-center lg:text-start">
+        <div className="flex min-w-0 flex-col justify-center text-center lg:text-start">
           <span
             data-motion-item
             /* paw-800, not primary and not paw-700: --primary measured

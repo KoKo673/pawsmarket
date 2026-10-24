@@ -123,6 +123,15 @@ export interface SyncRun {
   sources_failed: unknown
 }
 
+export interface StoreRow {
+  id: number
+  name: string
+  address: string
+  category: string
+  has_dashboard: boolean
+  bookings: number
+}
+
 export interface Ticket {
   id: number
   subject: string
@@ -172,6 +181,15 @@ export const adminApi = {
 
   syncRuns: (limit = 20) =>
     call<{ items: SyncRun[] }>(`/api/admin/sync-runs?limit=${limit}`),
+
+  stores: (q = '', limit = 30) =>
+    call<{ total: number; with_dashboard: number; items: StoreRow[] }>(
+      `/api/admin/stores?q=${encodeURIComponent(q)}&limit=${limit}`),
+
+  /** Returns the raw URL once. The server keeps only its hash. */
+  dashboardLink: (storeId: number) =>
+    call<{ store_id: number; name: string; url: string }>(
+      `/api/store/${storeId}/dashboard-link`, { method: 'POST', body: '{}' }),
 
   tickets: (status = 'open') =>
     call<{ status: string; items: Ticket[] }>(

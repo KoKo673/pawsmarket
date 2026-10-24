@@ -33,7 +33,11 @@ export function RequireAdmin({ children }: PropsWithChildren) {
   const location = useLocation()
 
   if (status === 'anon') {
-    return <Navigate to={`/login?next=${encodeURIComponent(location.pathname)}`} replace />
+    // The admin door, not the customer one. Sending an operator to the
+    // shopper login lands them on a phone/OTP tab that says nothing about
+    // the panel, and the two paths then look like one feature that is
+    // broken rather than two doors that are different.
+    return <Navigate to={`/admin/login?next=${encodeURIComponent(location.pathname)}`} replace />
   }
 
   // Nothing drawn until the flag is known. `min-h` keeps the page from

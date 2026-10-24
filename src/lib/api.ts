@@ -156,7 +156,14 @@ const isProductCategory = (v: unknown): v is ProductCategory =>
 const PET_IMAGES: Record<Species, string[]> = {
   dog: ['dog-shiba.jpg', 'dog-jack.jpg', 'dog-corgi.jpg', 'dog-pug.jpg'].map(
     (f) => asset('images/listings/' + f)),
-  cat: ['cat-white.jpg', 'cat-grey.jpg', 'cat-look.jpg'].map(
+  /* Four, not three. cat-orange was removed from this pool when the hero
+     stopped using it, which quietly left three photos for the four cats in
+     the seed data — `id % 3` then guaranteed a repeat, and the live page
+     showed cat-look three times out of nine images. Its saturated blue
+     backdrop is wrong *in the warm hero*, which is where it failed before;
+     inside a listing card, against a neutral surface, it is simply a fourth
+     distinct cat. */
+  cat: ['cat-white.jpg', 'cat-grey.jpg', 'cat-look.jpg', 'cat-orange.jpg'].map(
     (f) => asset('images/listings/' + f)),
   rabbit: ['rabbit2.jpg', 'rabbit.jpg'].map((f) => asset('images/listings/' + f)),
   bird: ['parrot.jpg'].map((f) => asset('images/listings/' + f)),
@@ -166,12 +173,30 @@ const PET_IMAGES: Record<Species, string[]> = {
 }
 
 /**
- * Pick a species photo, rotating by the listing id so two cats side by side
- * do not show the same picture. `seed` is the row's id when it has one.
+ * Which photo has already been handed out to this species, per page load.
+ *
+ * `id % pool.length` is not "rotation", it is a hash — and a hash collides
+ * as soon as the modulus is smaller than the number of rows. Measured on
+ * the live homepage: nine images, six unique, cat-look three times.
+ *
+ * This keeps a cursor per species instead, so consecutive listings of one
+ * species always take the next photo. When the pool runs out it wraps,
+ * which is unavoidable with more animals than photographs — but the repeat
+ * is then spread across the whole page instead of landing twice in the
+ * first row.
+ *
+ * Keyed by species and reset never: the function is called once per listing
+ * during the same map, so the order is stable for a given render.
  */
+const speciesCursor: Partial<Record<Species, number>> = {}
+
 function petFallback(species: Species, seed: number): string {
   const pool = PET_IMAGES[species] ?? PET_IMAGES.other
-  return pool[Math.abs(Math.trunc(seed)) % pool.length]
+  if (pool.length <= 1) return pool[0]
+  // Seeded start so the first cat is not always cat-white, then advance.
+  const start = speciesCursor[species] ?? Math.abs(Math.trunc(seed)) % pool.length
+  speciesCursor[species] = start + 1
+  return pool[start % pool.length]
 }
 
 /**
