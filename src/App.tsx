@@ -64,6 +64,8 @@ const AdminLoginPage = lazy(() =>
   import('@/pages/AdminLoginPage').then((m) => ({ default: m.AdminLoginPage })))
 const AdminStoresPage = lazy(() =>
   import('@/pages/AdminStoresPage').then((m) => ({ default: m.AdminStoresPage })))
+const SecretAdminPage = lazy(() =>
+  import('@/pages/SecretAdminPage').then((m) => ({ default: m.SecretAdminPage })))
 const StoreDashboardPage = lazy(() =>
   import('@/pages/StoreDashboardPage').then((m) => ({ default: m.StoreDashboardPage })))
 const CompleteSignupPage = lazy(() =>
@@ -456,6 +458,14 @@ function AppRoutes() {
                   <RequireAuth>
                     <MyAccountPage />
                   </RequireAuth>
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/:secret/enter"
+              element={
+                <AnimatedPage>
+                  <SecretAdminPage />
                 </AnimatedPage>
               }
             />

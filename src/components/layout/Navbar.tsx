@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Heart, Home, LogIn, MapPin, Menu, Newspaper, PawPrint, Plus, ShieldCheck, ShoppingCart, User, X } from 'lucide-react'
+import { Heart, Home, LogIn, MapPin, Menu, Newspaper, PawPrint, Plus, ShoppingCart, User, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 
@@ -186,20 +186,6 @@ export function Navbar() {
               </Link>
             </Button>
           ) : null}
-
-          {/*
-            Only rendered when the server said this account is an admin.
-            A non-admin never sees the word «مدیریت» here, which is the
-            same rule the API follows by answering 404 rather than 403.
-          */}
-          {authStatus === 'authed' && authUser?.is_admin && (
-            <Button asChild variant="outline" size="sm" className="hidden lg:inline-flex gap-1.5">
-              <Link to="/admin">
-                <ShieldCheck className="size-4" />
-                مدیریت
-              </Link>
-            </Button>
-          )}
 
           <ThemeToggle />
           <Button asChild size="sm" className="hidden md:inline-flex gap-1.5">
