@@ -48,7 +48,7 @@ export function SecretAdminPage() {
     setError(null)
     setBusy(true)
     try {
-      const res = await fetch(`${API}/${secret}/enter`, {
+      const res = await fetch(`${API}/api/${secret}/enter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, passphrase }),

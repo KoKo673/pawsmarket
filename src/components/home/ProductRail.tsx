@@ -1,66 +1,53 @@
 import { ChevronDown, ChevronLeft, Loader2, ShoppingBasket } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 
-import { ListingCard } from '@/components/explore/ListingCard'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useNearbyListings } from '@/hooks/use-listings'
 import { faDigits } from '@/lib/fa'
+import { shopApi, type ShopProduct } from '@/lib/shop-api'
 
 /**
- * «پیشنهاد محصولات» — شبکه‌ی معمولی محصولات با دکمه‌ی «بیشتر».
+ * «کالاهای موجود» — محصولات واقعی فروشگاه.
  *
- * The first version was a horizontal rail whose «بیشتر» appended another row
- * of cards off the right edge, so pressing it produced no visible change at
- * all: the new items were already outside the viewport and the page never
- * moved. The button now grows the list DOWNWARD in the ordinary document flow
- * and scrolls the first new row into view, so the press has a visible result.
+ * This rail used to read `useNearbyListings()`, which by design returns
+ * `products: []`: the catalogue snapshot is a scrape of other shops'
+ * inventory and this marketplace sells only its own stock. So the filter
+ * `l.kind === 'product'` could never match, the guard below returned null
+ * on every load, and **the section never rendered at all** — while 251 real
+ * products sat in `marketplace_products` behind `/api/shop/products`.
+ *
+ * Measured on the live page: four `<section>` elements, and neither this
+ * rail nor the adoption rail among them.
+ *
+ * It now reads the shop API, which is the endpoint that actually has the
+ * stock, and draws its own card rather than reusing `ListingCard` — that
+ * component renders pets and shops (distance, species, adoptable) and has
+ * no shape for a product with a price and a source.
  */
 const STEP = 8
 
 export function ProductRail() {
-  const { data, isLoading, isError } = useNearbyListings()
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['home-products'],
+    queryFn: () => shopApi.products('', 40),
+  })
+
   const [extra, setExtra] = useState(0)
   const gridRef = useRef<HTMLUListElement | null>(null)
-  // How many cards were on screen last time — 0 meaning "none yet".
-  //
-  // This ref is the whole of the "the page jumps down to the products by
-  // itself" report. The effect below exists for «بیشتر»: after the button
-  // adds a row, bring the first new card into view. Its guard has to answer
-  // "did the USER ask for more?", and the way to answer that is by looking
-  // at the previous count — a previous count of zero means the page is still
-  // filling in, not that anyone pressed anything.
-  //
-  // It used to start at STEP and compare only `shown.length > previous`.
-  // That fails on a cold mount: the first render has no data, so the effect
-  // recorded 0, and the render after the query resolved looked like an
-  // increase from 0 to 8. It scrolled children[0] — the first card — as if
-  // the button had been pressed.
-  //
-  // Measured on the live site: that card sits at document top 2889 with
-  // height 333, and centring it computes 2889 - (808-333)/2 = 2652 — exactly
-  // where a cold load came to rest, with the hero h1 at top -1965. A stack
-  // captured in the page confirmed this effect was the caller.
   const prevShown = useRef(0)
 
-  const products = useMemo(
-    () => (data ?? []).filter((l) => l.kind === 'product'),
-    [data],
-  )
+  const products = data?.items ?? []
   const shown = products.slice(0, STEP + extra)
   const remaining = products.length - shown.length
 
-  // Bring the first newly-added card into view, so pressing «بیشتر» reads as
-  // "here is the next row" rather than as a button that did nothing.
+  // Bring the first newly-added row into view, so pressing «بیشتر» reads as
+  // "here is the next row" rather than as a button that did nothing. The
+  // `> 0` guard is what keeps the initial load from scrolling the page.
   useEffect(() => {
-    // `> 0` and not `>= 0`: an empty previous row means this is the first
-    // data arriving, not the user asking for more. Without that, the load
-    // itself scrolls.
     if (prevShown.current > 0 && shown.length > prevShown.current && gridRef.current) {
-      const next = gridRef.current.children[prevShown.current] as
-        | HTMLElement
-        | undefined
+      const next = gridRef.current.children[prevShown.current] as HTMLElement | undefined
       next?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
     prevShown.current = shown.length
@@ -72,12 +59,9 @@ export function ProductRail() {
     <section data-motion-section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
       <div data-motion-item className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          {/* tide-800 for the same reason as the booking badges: tide-600 on
-              its own 10% wash is 2.94:1. Dark theme already cleared AA at
-              tide-400, so only the light shade moves. */}
           <span className="inline-flex items-center gap-1.5 rounded-full bg-tide-500/10 px-3 py-1 text-xs font-bold text-tide-800 dark:text-tide-400">
             <ShoppingBasket className="size-3.5" />
-            خرید از فروشگاه‌های محدوده
+            موجودی خود پازمارکت
           </span>
           <h2 className="mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl">
             کالاهای موجود
@@ -85,11 +69,11 @@ export function ProductRail() {
           <p className="mt-1.5 text-sm text-muted-foreground">
             {isLoading
               ? 'در حال بارگذاری کالاها…'
-              : `${faDigits(products.length)} کالا با قیمت روز و موجودی`}
+              : `${faDigits(data?.total ?? products.length)} کالا با قیمت روز`}
           </p>
         </div>
         <Button asChild variant="outline" className="gap-2">
-          <Link to="/explore?preset=food">
+          <Link to="/shop">
             <ChevronLeft className="size-4" />
             مشاهده‌ی همه‌ی کالاها
           </Link>
@@ -97,10 +81,10 @@ export function ProductRail() {
       </div>
 
       {isLoading ? (
-        <div className="flex gap-4 overflow-hidden">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="w-[240px] shrink-0 space-y-3 rounded-2xl">
-              <Skeleton className="aspect-[4/3] w-full rounded-2xl" />
+            <div key={i} className="space-y-3 rounded-2xl">
+              <Skeleton className="aspect-square w-full rounded-2xl" />
               <Skeleton className="h-4 w-3/4" />
               <Skeleton className="h-3 w-1/2" />
             </div>
@@ -108,16 +92,13 @@ export function ProductRail() {
         </div>
       ) : (
         <>
-          {/* شبکه‌ی عمودی: هر «بیشتر» یک ردیف واقعی به پایین اضافه می‌کند و
-              صفحه همان‌جا اسکرول می‌شود — برخلاف ریل افقی قبلی که آیتم‌های
-              تازه بیرون از دید می‌افتادند و دکمه بی‌اثر به‌نظر می‌رسید. */}
           <ul
             ref={gridRef}
             className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
           >
-            {shown.map((item, i) => (
-              <li key={item.id}>
-                <ListingCard item={item} index={i} />
+            {shown.map((p) => (
+              <li key={p.id}>
+                <ProductCard product={p} />
               </li>
             ))}
           </ul>
@@ -129,17 +110,62 @@ export function ProductRail() {
                 className="gap-2 px-8"
                 onClick={() => setExtra((e) => e + STEP)}
               >
-                {isLoading ? <Loader2 className="size-4 animate-spin" /> : null}
                 بیشتر
                 <ChevronDown className="size-4" />
               </Button>
               <p className="text-xs text-muted-foreground">
-                {faDigits(remaining)} کالای دیگر در این دسته
+                {faDigits(remaining)} کالای دیگر
               </p>
             </div>
           )}
         </>
       )}
     </section>
+  )
+}
+
+/**
+ * یک کالا — تصویر مربع، نام دو خط، قیمت.
+ *
+ * Square frame, not 4:3: supplier pack shots are square and a wide box left
+ * empty margins on both sides of every item. `object-contain` on a soft
+ * ground keeps the whole pack visible — cropping a bag of food to its middle
+ * band loses the label a shopper is matching against.
+ */
+function ProductCard({ product }: { product: ShopProduct }) {
+  const price = new Intl.NumberFormat('fa-IR').format(product.price_toman)
+
+  return (
+    <Link
+      to={`/shop/${product.id}`}
+      className="group flex h-full flex-col overflow-hidden rounded-2xl
+        border border-border/60 bg-card shadow-soft transition-all duration-300
+        hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lifted
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <div className="relative aspect-square overflow-hidden bg-muted/40">
+        {product.image ? (
+          <img
+            src={product.image}
+            alt=""
+            loading="lazy"
+            className="size-full object-contain p-2 transition-transform duration-500
+              group-hover:scale-105"
+          />
+        ) : (
+          <div className="grid size-full place-items-center text-3xl opacity-40" aria-hidden="true">
+            🐾
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-1 flex-col gap-1.5 p-3">
+        <p className="line-clamp-2 text-sm font-bold leading-snug">{product.name}</p>
+        <p className="mt-auto text-sm font-extrabold tabular-nums text-primary">
+          {price}
+          <span className="ms-1 text-[11px] font-medium text-muted-foreground">تومان</span>
+        </p>
+      </div>
+    </Link>
   )
 }
