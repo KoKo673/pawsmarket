@@ -169,11 +169,23 @@ export function Hero() {
           </div>
 
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            {/*
+              The wide cell is 16:10 (ratio 1.60), so it needs a landscape
+              photograph. dog-golden is 511×820 — ratio 0.62, a portrait —
+              and `object-cover` inside a 1.60 box therefore kept only ~39%
+              of its height. With `object-top` that 39% was the top of the
+              frame: the dog's head and nothing else, which is exactly what
+              «فقط کله به بالاش معلومه» described. The photo was never the
+              problem; the frame never matched it.
+
+              dog-shiba is 820×547, ratio 1.50, warm and face-on — within
+              7% of the cell's shape, so cover crops almost nothing.
+            */}
             <div className="col-span-2 overflow-hidden rounded-[1.75rem] shadow-lifted">
               <img
-                src={asset('images/listings/dog-golden.jpg')}
-                alt="توله‌ی گلدن رتریور"
-                className="aspect-[16/10] w-full object-cover object-top"
+                src={asset('images/listings/dog-shiba.jpg')}
+                alt="سگ با زبان بیرون، در نور غروب"
+                className="aspect-[16/10] w-full object-cover object-center"
               />
             </div>
 
