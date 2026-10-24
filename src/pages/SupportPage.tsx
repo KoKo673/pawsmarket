@@ -268,12 +268,17 @@ function NewTicket({ signedIn, onCreated }: { signedIn: boolean; onCreated: () =
   })
   const [done, setDone] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Anonymous tickets come back with a one-time access token. Without it
+  // there is no way to read the reply — the create endpoint used to return
+  // only the ticket, and reading required a session the person does not
+  // have.
+  const [access, setAccess] = useState<string | null>(null)
 
   const create = useMutation({
-    mutationFn: () => api('/api/support/tickets', {
+    mutationFn: () => api<{ access: string | null }>('/api/support/tickets', {
       method: 'POST', body: JSON.stringify(form),
     }),
-    onSuccess: () => { setDone(true); onCreated() },
+    onSuccess: (r) => { setAccess(r?.access ?? null); setDone(true); onCreated() },
     onError: (e: unknown) => setError(e instanceof Error ? e.message : 'ثبت انجام نشد'),
   })
 
@@ -283,6 +288,23 @@ function NewTicket({ signedIn, onCreated }: { signedIn: boolean; onCreated: () =
         <MessageSquare className="mx-auto size-7 text-accent" />
         <p className="mt-3 text-sm font-bold">پیام شما ثبت شد</p>
         <p className="mt-1 text-xs text-muted-foreground">در اولین فرصت پاسخ می‌دهیم.</p>
+
+        {access && (
+          <div className="mt-4 rounded-xl bg-muted/60 p-3 text-start">
+            <p className="text-xs font-bold">این لینک را نگه دارید</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+              حساب ندارید، پس تنها راه دیدن پاسخ همین لینک است.
+            </p>
+            <a
+              href={`/support/ticket/${access}`}
+              className="mt-2 block break-all rounded-lg bg-background px-3 py-2
+                text-[11px] font-semibold text-primary underline"
+              dir="ltr"
+            >
+              {window.location.origin}/support/ticket/{access}
+            </a>
+          </div>
+        )}
       </div>
     )
   }

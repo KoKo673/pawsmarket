@@ -68,6 +68,8 @@ const SecretAdminPage = lazy(() =>
   import('@/pages/SecretAdminPage').then((m) => ({ default: m.SecretAdminPage })))
 const ForBusinessPage = lazy(() =>
   import('@/pages/ForBusinessPage').then((m) => ({ default: m.ForBusinessPage })))
+const TicketAccessPage = lazy(() =>
+  import('@/pages/TicketAccessPage').then((m) => ({ default: m.TicketAccessPage })))
 const StoreDashboardPage = lazy(() =>
   import('@/pages/StoreDashboardPage').then((m) => ({ default: m.StoreDashboardPage })))
 const CompleteSignupPage = lazy(() =>
@@ -302,6 +304,14 @@ function AppRoutes() {
               element={
                 <AnimatedPage>
                   <ForBusinessPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/support/ticket/:access"
+              element={
+                <AnimatedPage>
+                  <TicketAccessPage />
                 </AnimatedPage>
               }
             />

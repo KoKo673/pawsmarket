@@ -276,29 +276,35 @@ function BookingRow({ b, onDecide }: {
           </p>
         </div>
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 basis-0">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <span className="font-extrabold">{b.service}</span>
-            <span className="text-xs text-muted-foreground">
+            <span className="whitespace-nowrap text-xs text-muted-foreground">
               {FA_MONTH.format(at)} · {faDigits(b.window_minutes)} دقیقه
             </span>
           </div>
 
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm
-            text-muted-foreground">
-            <span className="inline-flex items-center gap-1">
-              <User className="size-3.5" aria-hidden="true" />
-              {b.contact_name}
-            </span>
-            <a href={`tel:${b.contact_phone.replace(/[^+\d]/g, '')}`}
-               className="inline-flex items-center gap-1 font-semibold text-primary">
-              <Phone className="size-3.5" aria-hidden="true" />
-              {faDigits(b.contact_phone)}
-            </a>
+          {/*
+            Two rows, not one wrapping row.
+
+            Measured: with name + phone + pet in a single `flex-wrap` row,
+            the phone's LTR digit run laid itself over the Persian name at
+            this width. The number is the one thing a clinic taps first, so
+            it gets its own line rather than competing for space.
+          */}
+          <div className="mt-1.5 flex items-center gap-1 text-sm text-muted-foreground">
+            <User className="size-3.5 shrink-0" aria-hidden="true" />
+            <span className="min-w-0 truncate">{b.contact_name}</span>
             {b.pet_name && (
-              <span className="text-xs">برای {b.pet_name}</span>
+              <span className="shrink-0 text-xs">· برای {b.pet_name}</span>
             )}
           </div>
+          <a href={`tel:${b.contact_phone.replace(/[^+\d]/g, '')}`}
+             className="mt-1 inline-flex items-center gap-1 text-sm font-semibold
+               text-primary">
+            <Phone className="size-3.5" aria-hidden="true" />
+            <span dir="ltr" className="whitespace-nowrap">{faDigits(b.contact_phone)}</span>
+          </a>
 
           {b.note && (
             <p className="mt-2 rounded-lg bg-muted/50 px-2.5 py-1.5 text-xs leading-relaxed">
