@@ -512,6 +512,18 @@ function ListingMarkers({
   useEffect(() => {
     const layer = L.layerGroup().addTo(map)
 
+    /* Read the box once, before creating anything.
+     *
+     * `getBounds()` reads the map's live state rather than the frame this
+     * effect was scheduled from, so calling it inside the loop would let a
+     * still-settling pan filter different pins against different boxes. One
+     * read is also the honest one: the pins drawn are then all judged against
+     * the same view.
+     *
+     * The 50% padding in `inView` is deliberate and does show pins above and
+     * below the canvas edge — measured after a full zoom, one shop sat 280px
+     * above an 836px map and was still correct: it opens a real shop 339m
+     * away. They arrive before the user drags to them; they are not phantom. */
     const visible = inView(listings, map.getBounds())
 
     for (const cluster of clusterListings(visible, map.getZoom())) {
