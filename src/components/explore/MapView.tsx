@@ -260,8 +260,48 @@ interface MapViewProps {
 interface Cluster {
   lat: number
   lng: number
+  /** Centre of the grid cell, used to pick which member the pin sits on. */
+  cellLat: number
+  cellLng: number
   items: ListingWithDistance[]
 }
+
+/**
+ * Only the listings the current viewport can show.
+ *
+ * The map holds the whole 10 km result set — 447 shops — while a zoomed-in
+ * screen covers a few hundred metres. Clustering all of them put most pins
+ * outside the canvas: measured at max zoom, 86 pins drawn and 85 of them off
+ * screen, so the user saw one location dot and an empty map however far they
+ * zoomed. The pins were there; they were somewhere else.
+ *
+ * Bounds are padded by half a screen so a pin arrives before it is needed and
+ * dragging does not pop them in at the edge.
+ */
+function inView(listings: ListingWithDistance[], bounds: L.LatLngBounds): ListingWithDistance[] {
+  const pad = 0.5
+  const latSpan = bounds.getNorth() - bounds.getSouth()
+  const lngSpan = bounds.getEast() - bounds.getWest()
+  const south = bounds.getSouth() - latSpan * pad
+  const north = bounds.getNorth() + latSpan * pad
+  const west = bounds.getWest() - lngSpan * pad
+  const east = bounds.getEast() + lngSpan * pad
+  return listings.filter((l) => {
+    const { lat, lng } = l.location
+    return lat >= south && lat <= north && lng >= west && lng <= east
+  })
+}
+
+/**
+ * How many pins may be drawn at once.
+ *
+ * This is the bound that replaced the cell-size floor, and it only bites at
+ * city zoom, where many listings share a cell and the groups are large. Once
+ * the viewport filter is in place a wide view still holds the whole city, so
+ * the cap stays — but it drops the smallest groups rather than merging
+ * unrelated ones, and the count it hides is bounded by `MAX_PINS` itself.
+ */
+const MAX_PINS = 140
 
 /**
  * Grid clustering sized to the current zoom.
@@ -286,11 +326,21 @@ function clusterListings(
   const cellDeg = (156543.03392 * Math.cos((35.7 * Math.PI) / 180)) /
     (2 ** zoom * CELL_PX)
 
-  // Zoomed out, the city has far more listings than pixels. A floor on the
-  // cell size keeps the number of bubbles bounded at every scale, so panning
-  // never turns the map into a solid sheet of orange.
-  const minDeg = 0.0102   // ~1.1 km — about what a 1000px viewport can show
-  const step = Math.max(cellDeg, minDeg)
+  /* No floor on the cell size.
+   *
+   * There used to be one: `minDeg = 0.0102`, meant to stop a zoomed-out city
+   * from becoming a sheet of orange. But it is a FLOOR, so it also applied at
+   * maximum zoom, where it is backwards — the cell stopped shrinking while the
+   * map kept growing. Measured: at zoom 18 the cell covered 135px of a screen
+   * that had 80px of ground per cell, and at 19 it covered 269px. Pins that
+   * sat in one cell could never separate no matter how far the user zoomed, so
+   * a cluster stayed a cluster forever — «هرچه زوم می‌کنی بهش نمی‌رسی».
+   *
+   * The bound the floor was protecting is still needed, but it belongs where
+   * the count is: cell size stays honest at every zoom, and the number of
+   * bubbles is capped by `MAX_PINS` at render time, dropping the smallest
+   * groups rather than merging unrelated ones. */
+  const step = cellDeg
 
   const grid = new Map<string, Cluster>()
   for (const item of listings) {
@@ -300,20 +350,47 @@ function clusterListings(
     const at = grid.get(key)
     if (at) {
       at.items.push(item)
-      // keep the mean so a cell of shops sits at its centre, not at whichever
-      // member happened to be inserted first
-      const n = at.items.length
-      at.lat = (at.lat * (n - 1) + item.location.lat) / n
-      at.lng = (at.lng * (n - 1) + item.location.lng) / n
+      /* The pin sits on a REAL member, not on the cell's mean.
+       *
+       * The mean pulled the bubble off every actual shop: a cell spanning
+       * 1.1 km put its centre in a gap between streets, and the more the map
+       * zoomed the further that invented point drifted from the listings it
+       * stood for. Measured at max zoom: 86 pins rendered, 85 of them outside
+       * the viewport, so the map showed one grey location dot and nothing
+       * else — «هرچه زوم می‌کنی بهش نمی‌رسی».
+       *
+       * Keeping the member whose position is closest to the cell centre means
+       * the pin always sits where a listing actually is, and clicking it opens
+       * something that exists.
+       */
+      const curD = (at.lat - at.cellLat) ** 2 + (at.lng - at.cellLng) ** 2
+      const newD = (item.location.lat - at.cellLat) ** 2 +
+                   (item.location.lng - at.cellLng) ** 2
+      if (newD < curD) {
+        at.lat = item.location.lat
+        at.lng = item.location.lng
+      }
     } else {
       grid.set(key, {
+        cellLat: (Math.round(item.location.lat / step) + 0.5) * step,
+        cellLng: (Math.round(item.location.lng / step) + 0.5) * step,
         lat: item.location.lat,
         lng: item.location.lng,
         items: [item],
       })
     }
   }
-  return [...grid.values()]
+  /* Largest groups first, then cap.
+   *
+   * Ordering by count rather than by position keeps the decision stable while
+   * panning: an alphabetical or insertion-order cut would make pins flicker in
+   * and out as the user drags. Groups of one go last, so at a busy zoom the
+   * map keeps the dense cells and drops the singletons. */
+  const all = [...grid.values()]
+  if (all.length <= MAX_PINS) return all
+  return all
+    .sort((a, b) => b.items.length - a.items.length)
+    .slice(0, MAX_PINS)
 }
 
 /**
@@ -405,27 +482,39 @@ function ListingMarkers({
   const clusterRef = useRef(onCluster)
   clusterRef.current = onCluster
 
-  // Clusters are zoom-dependent, so the layer rebuilds on zoomend as well as
-  // when the result set changes. Debounced because Leaflet fires zoomend
-  // repeatedly during a pinch or a scroll-wheel run.
-  const [zoom, setZoom] = useState(() => map.getZoom())
+  /* One counter, bumped when either the zoom or the visible box changes.
+   *
+   * Before this, only `zoomend` rebuilt the layer, so panning kept the pins of
+   * wherever the user had been — and because clustering used the whole result
+   * set rather than the visible part, most of those pins were off screen. The
+   * map looked empty at high zoom while holding 86 markers.
+   *
+   * `moveend` covers the pan; debounced because Leaflet fires both during a
+   * pinch or a wheel run. */
+  const [view, setView] = useState(0)
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined
-    const onZoomEnd = () => {
+    const bump = () => {
       clearTimeout(timer)
-      timer = setTimeout(() => setZoom(map.getZoom()), 160)
+      timer = setTimeout(() => setView((v) => v + 1), 160)
     }
-    map.on('zoomend', onZoomEnd)
+    map.on('zoomend', bump)
+    map.on('moveend', bump)
     return () => {
       clearTimeout(timer)
-      map.off('zoomend', onZoomEnd)
+      map.off('zoomend', bump)
+      map.off('moveend', bump)
     }
   }, [map])
 
+  // `view` is a rebuild trigger, not a value read below — referencing it in the
+  // dependency list is the point.
   useEffect(() => {
     const layer = L.layerGroup().addTo(map)
 
-    for (const cluster of clusterListings(listings, zoom)) {
+    const visible = inView(listings, map.getBounds())
+
+    for (const cluster of clusterListings(visible, map.getZoom())) {
       const clustered = cluster.items.length > 1
       const icon = clustered
         ? clusterIcon(cluster.items.length)
@@ -502,7 +591,7 @@ function ListingMarkers({
     return () => {
       layer.remove()
     }
-  }, [map, listings, zoom])
+  }, [map, listings, view])
 
   return null
 }
