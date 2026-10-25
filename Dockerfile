@@ -35,8 +35,18 @@ WORKDIR /app
 #
 # `--no-audit --no-fund` exist to keep the build log readable; they change
 # nothing about the output.
+#
+# NPM_REGISTRY exists because the VPS cannot reach registry.npmjs.org at all:
+# measured from the server, every request to it timed out at 15-25s, and the
+# build died with ECONNRESET partway through `npm ci`. registry.npmmirror.com
+# answered the same request in 2.1s. The default stays npmjs so a build
+# anywhere else is unaffected; the VPS passes the mirror explicitly. The
+# lockfile's `resolved` URLs point at npmjs, so npm still needs to rewrite
+# them — `npm config set registry` in the same layer does that.
+ARG NPM_REGISTRY=https://registry.npmjs.org
 COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund
+RUN npm config set registry "$NPM_REGISTRY" \
+ && npm ci --no-audit --no-fund
 
 # Everything else, minus what .dockerignore removes. Copied after npm ci on
 # purpose: dependencies change far less often than source, so this keeps the

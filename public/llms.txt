@@ -1,0 +1,23 @@
+# پازمارکت — PawsMarket
+
+> بازار مکان‌محور حیوانات خانگی در ایران: مراکز خدمات (دامپزشکی، آرایشگاه،
+> پانسیون، پناهگاه)، حیوانات در انتظار سرپرستی، و فروشگاه کالا.
+
+## صفحات
+
+- [/](https://pawsmarket.ir/): صفحهٔ اول — جست‌وجو، دسته‌بندی‌ها، کالاهای موجود، مراکز نزدیک
+- [/shop](https://pawsmarket.ir/shop): فهرست کالاهای فروشگاه پازمارکت
+- [/adoption](https://pawsmarket.ir/adoption): حیوانات در انتظار سرپرستی
+- [/explore](https://pawsmarket.ir/explore): مراکز و آگهی‌ها روی نقشه
+- [/for-business](https://pawsmarket.ir/for-business): ثبت ادعای مالکیت یک مرکز
+- [/support](https://pawsmarket.ir/support): پشتیبانی
+
+## API
+
+- `GET /api/shop/products` — کالاهای فروشگاه
+- `GET /api/stores/nearby?lat=&lng=&max_distance=` — مراکز نزدیک
+- `GET /api/pets/nearby?lat=&lng=` — حیوانات نزدیک
+
+## یادداشت
+
+قیمت‌ها به تومان است. محتوای صفحات با JavaScript رندر می‌شود.

@@ -47,10 +47,21 @@ export function Hero() {
         <div className="absolute bottom-0 left-0 size-[22rem] rounded-full bg-paw-200/40 blur-3xl dark:bg-paw-900/20" />
       </div>
 
-      {/* Floating paws */}
-      <FloatingPaw className="absolute left-[8%] top-28 size-10 text-primary" />
-      <FloatingPaw className="absolute right-[12%] top-24 size-14 text-tide-500" />
-      <FloatingPaw className="absolute bottom-24 left-[22%] size-8 text-paw-500" />
+      {/*
+        Floating paws — all three inside the ambient layer.
+
+        As siblings of the grid, the bottom-left paw was positioned against the
+        whole hero and landed *on* the running-dog photograph: measured at
+        1440px its centre sat inside dog-run.jpg's box. In the decorative
+        `-z-10` layer with `-translate-y` taken off they sit behind the content
+        and can never overlap a face. Position is unchanged; only the stacking
+        context is.
+      */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+        <FloatingPaw className="absolute left-[8%] top-28 size-10 text-primary" />
+        <FloatingPaw className="absolute right-[12%] top-24 size-14 text-tide-500" />
+        <FloatingPaw className="absolute right-[46%] top-24 size-8 text-paw-500" />
+      </div>
 
       {/* محتوای هیرو — یک «بخش گروهی» با پله‌بندی ۳۳ms طبق قرارداد مشترک */}
       <div
@@ -70,6 +81,16 @@ export function Hero() {
             ستون از viewport عریض‌تر می‌شود و محتوا به‌خاطر overflow-hidden
             والد بریده و غیرقابل‌اسکرول می‌شد (باگ گزارش‌شده). */}
         <div className="flex min-w-0 flex-col justify-center text-center lg:text-start">
+          {/*
+            `self-center` (and `lg:self-start`) is not decoration.
+
+            The column is `flex flex-col`, whose default `align-items: stretch`
+            makes every child full width — the parent stretches a flex item
+            regardless of the child's own `display: inline-flex`. Measured on
+            production at 1440px: the chip carried a 281px-wide label inside a
+            647px pill, a thin empty outline running the whole column beside
+            the headline. `inline-flex` cannot fix that; only `align-self` can.
+          */}
           <span
             data-motion-item
             /* paw-800, not primary and not paw-700: --primary measured
@@ -78,7 +99,7 @@ export function Hero() {
                card — the same shade that passes elsewhere falls short on the
                tint. paw-800 gives 5.82:1 on the wash and 4.43:1 against its
                own border. */
-            className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1.5 text-xs font-bold text-paw-800 dark:text-paw-300"
+            className="inline-flex items-center gap-1.5 self-center rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1.5 text-xs font-bold text-paw-800 dark:text-paw-300 lg:self-start"
           >
             <Sparkles className="size-3.5" />
             فروشگاه، خدمات دامپزشکی و سرپرستی — یک‌جا

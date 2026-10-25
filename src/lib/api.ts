@@ -506,11 +506,42 @@ function okRows(result: PromiseSettledResult<RawRow[]>): RawRow[] {
  *
  * Never replaces an existing row: the snapshot's is the enriched one, and the
  * filter depends on the fields enrichment adds.
+ *
+ * ── What the id alone got wrong ──────────────────────────────────────────
+ * `catalog.json` is a build-time export; the database keeps growing. The
+ * snapshot holds ids 1-761 from a 447-store era, while /stores/nearby returns
+ * the same businesses with ids like 10102. Matching only on `id` therefore
+ * found no overlap at all and appended a second copy of every one of them:
+ * measured, 431 of 447 stores rendered twice — «بیمارستان تخصصی دانشکده
+ * دامپزشکی دانشگاه تهران» twice on the home page, at the same distance.
+ *
+ * A business is identified by what it *is*, not by the row it happens to sit
+ * in: the same name at the same coordinates is the same shop. Coordinates are
+ * rounded to 4 decimals (~11 m), which absorbs the float drift between the
+ * export and a fresh read without merging two neighbours on one street.
  */
+function businessKey(row: RawRow): string {
+  const name = String(row.name ?? '').trim().replace(/\s+/g, ' ')
+  const lat = Number(row.lat ?? 0).toFixed(4)
+  const lng = Number(row.lng ?? 0).toFixed(4)
+  return `${name}|${lat}|${lng}`
+}
+
 function appendNew(snapshot: RawRow[], live: RawRow[]): RawRow[] {
   if (live.length === 0) return snapshot
   const known = new Set(snapshot.map((r) => String(r.id)))
-  const extra = live.filter((r) => !known.has(String(r.id)))
+  const seen = new Set(snapshot.map(businessKey))
+  const extra = live.filter((r) => {
+    if (known.has(String(r.id))) return false
+    // Pets and products carry no name+coords pair that means "same thing" —
+    // two puppies called «پشمک» in one building are still two listings. The
+    // identity check applies to stores only.
+    if (r.name && r.lat != null && r.lng != null) {
+      if (seen.has(businessKey(r))) return false
+      seen.add(businessKey(r))
+    }
+    return true
+  })
   return extra.length === 0 ? snapshot : [...snapshot, ...extra]
 }
 

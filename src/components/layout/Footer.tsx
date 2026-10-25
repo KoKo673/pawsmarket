@@ -56,7 +56,12 @@ export function Footer() {
 
         {FOOTER_LINKS.map((col) => (
           <div key={col.title}>
-            <h4 className="text-sm font-bold">{col.title}</h4>
+            {/* A heading, not a styled div — a screen reader's heading list is
+                how these columns are navigated. `h3`, not `h4`: the footer
+                follows `<h1>` and `<h2>` sections, so starting at `h4` skipped
+                a level and Lighthouse flagged the whole page's order. The
+                class is unchanged; only the level was wrong. */}
+            <h3 className="text-sm font-bold">{col.title}</h3>
             <ul className="mt-4 space-y-2.5">
               {col.links.map((link) => (
                 <li key={link.label}>

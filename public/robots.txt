@@ -1,0 +1,21 @@
+# pawsmarket.ir
+#
+# The site is a single-page app: every unknown path is served index.html by
+# nginx. Without this file, /robots.txt was answered with that HTML too, so a
+# crawler received a page instead of rules and Lighthouse counted 36 parse
+# errors.
+
+User-agent: *
+Allow: /
+
+# Not content: the API, uploaded media served raw, and the two door paths.
+Disallow: /api/
+Disallow: /media/
+Disallow: /admin
+
+# Feeds and filters create the same listings at many URLs.
+Disallow: /*?preset=
+Disallow: /*?favorites=
+Disallow: /*?view=
+
+Sitemap: https://pawsmarket.ir/sitemap.xml
