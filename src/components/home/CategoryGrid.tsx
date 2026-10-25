@@ -17,14 +17,10 @@ export function CategoryGrid() {
 
   return (
     <section data-motion-section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-      <div className="mb-8">
+      <div className="mb-6">
         <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
           دسته‌بندی‌ها
         </h2>
-        <p className="mt-1.5 text-sm text-muted-foreground">
-          سه گروه اصلی: حیوانات، محصولات و خدمات — تعدادها با جستجوی شما
-          به‌روز می‌شوند
-        </p>
       </div>
 
       <div className="space-y-9">

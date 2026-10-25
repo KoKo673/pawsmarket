@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { faDigits } from '@/lib/fa'
 import {
-  adminApi, type AdminOrder, type AdminOrderDetail, type AdminUser,
-  type Overview, type SyncRun,
+  adminApi, type AdminOrderDetail, type AdminUser, type SyncRun,
 } from '@/lib/admin-api'
 
 /**

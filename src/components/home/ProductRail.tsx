@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronLeft, Loader2, ShoppingBasket } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ShoppingBasket } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'

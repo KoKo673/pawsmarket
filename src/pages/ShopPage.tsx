@@ -39,10 +39,6 @@ export function ShopPage() {
         <h1 className="mt-3 text-3xl font-extrabold tracking-tight">
           محصولات حیوان خانگی
         </h1>
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-          قیمت‌ها هر روز از فروشگاه‌های معتبر به‌روز می‌شوند. سفارش را ما
-          تأمین و ارسال می‌کنیم.
-        </p>
       </header>
 
       <form

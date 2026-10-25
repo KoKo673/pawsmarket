@@ -12,9 +12,15 @@ import { getToken } from '@/lib/social-api'
 
 const API = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '')
 
+/* A parameter property (`constructor(public status: number, …)`) is not
+   erasable syntax: it emits an assignment, and this project compiles with
+   `erasableSyntaxOnly` so nothing the type-checker runs has to be rewritten
+   by a transpiler that only strips types. Declared and assigned explicitly. */
 export class AdminError extends Error {
-  constructor(public status: number, message: string) {
+  status: number
+  constructor(status: number, message: string) {
     super(message)
+    this.status = status
     this.name = 'AdminError'
   }
 }

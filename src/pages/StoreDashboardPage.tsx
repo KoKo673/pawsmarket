@@ -162,7 +162,7 @@ export function StoreDashboardPage() {
           <Tile
             label="منتظر تأیید"
             value={d.counts.pending}
-            tone={needsAttention ? 'warn' : 'plain'}
+            tone={needsAttention ? 'warn' : undefined}
             hint={needsAttention ? 'نیاز به اقدام' : 'چیزی نیست'}
           />
           <Tile label="نوبت امروز" value={d.counts.today} tone="primary" />

@@ -86,7 +86,10 @@ export function MyAccountPage() {
           </span>
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-xl font-extrabold">{user?.display_name ?? user?.username}</h1>
-            <p className="text-xs text-muted-foreground" dir="ltr">
+            {/* `dir="auto"`, not `ltr`. The handle may now be Persian, and a
+                hardcoded LTR layout puts the `@` on the wrong side of
+                «@علی» — it reads as an e-mail address rather than a handle. */}
+            <p className="text-xs text-muted-foreground" dir="auto">
               @{user?.username}
             </p>
           </div>
@@ -102,6 +105,30 @@ export function MyAccountPage() {
             خروج
           </Button>
         </div>
+
+        {/*
+          حسابی که هنوز نام انتخاب نکرده.
+
+          A phone signup names the account `user_09123456789`. /welcome is
+          where that gets fixed, but it was reachable only in the seconds
+          right after the SMS — a user who navigated away, reloaded, or came
+          back later had no link to it and kept the phone number as their
+          public name forever. The server allows the rename exactly once
+          while the name still starts with `user_`, so this link only
+          appears in that window.
+        */}
+        {user?.username.startsWith('user_') && (
+          <div data-motion-item className="mt-4 flex flex-wrap items-center gap-3
+            rounded-2xl border border-primary/25 bg-primary/10 px-4 py-3">
+            <p className="min-w-0 flex-1 text-xs leading-relaxed">
+              نام کاربری شما موقتی است و شمارهٔ موبایلتان را نشان می‌دهد.
+              یک نام برای خودتان انتخاب کنید.
+            </p>
+            <Button size="sm" onClick={() => navigate('/welcome')}>
+              انتخاب نام کاربری
+            </Button>
+          </div>
+        )}
       </section>
 
       {/* حیوانات من */}
