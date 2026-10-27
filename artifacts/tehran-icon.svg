@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="60 0 80 400" width="80" height="400">
+  <!--
+    Milad Tower, drawn from photographs rather than from a description.
+
+    The lesson from four failed Azadi attempts: a written description of a
+    landmark is silent about its silhouette, and anything drawn from the
+    description alone comes out plausible and wrong. The shape below was
+    measured off artifacts/ref/milad-1.jpg (dusk silhouette, clean against the
+    sky) and artifacts/ref/milad-3.jpg (daylight, against a pale sky).
+
+    Every number the geometry is built on, off milad-1.jpg:
+
+        antenna, tip to flare          111 px
+        head, flare to cone tip         72 px
+          of which dome/flare           22 px   (31%)
+                   saucer               25 px   (35%)
+                   lattice cone         20 px   (28%)
+        saucer, widest                  44 px
+        shaft, just under the head      18 px
+        saucer : shaft                 2.4 : 1
+
+    Two earlier drafts of this file were wrong in ways the render exposed:
+
+      * The first claimed a 2:1 shaft taper and a 4:1 saucer. Neither is in
+        the photograph; both were invented, and the shaft came out a cone.
+      * The second made the dome and the saucer one continuous curve. It
+        rendered as a VASE — a single bulb with a lip — because the two forms
+        melted into each other. They are separate objects on the real tower:
+        a small rounded turret standing on a much wider, much flatter dish,
+        with a hard step between them.
+
+    What the photographs show, top to bottom:
+
+      * The antenna is not a finial. It is the longest single element, just
+        over a quarter of the structure, tapering to a needle, with one small
+        collar two thirds up.
+      * Under it a small ROUNDED TURRET — a bell maybe a third the width of
+        the dish. Not a cone, and not tall.
+      * Then a hard horizontal step out to the SAUCER: wide, flat, its rim the
+        widest point on the whole building.
+      * Below the rim the dish tapers back in to the lattice cone.
+      * The lattice cone narrows steeply to the shaft, and is what stops the
+        head reading as something balanced on a pole.
+      * The shaft is a plain tube, slightly wider at the foot.
+
+    One deliberate departure, recorded so it is not later "corrected" back:
+    the dish is drawn at 18% of total height where the real building is near
+    14%. At the ~150 px the caption renders this at, a faithful dish is 21 px
+    wide and the head turns to mush; 18% is the smallest stretch that keeps
+    the silhouette legible. An earlier draft used 24%, which rendered as a
+    lampshade.
+
+    The viewBox is cropped tight to the artwork. With a 200-wide box half the
+    width was empty margin, so the tower rendered at 55% of the space it was
+    given and the head dissolved at caption size.
+  -->
+
+  <g fill="#F7F3EC">
+    <!-- antenna: a needle, very slightly wider toward the flare -->
+    <path d="M100 0 L102.5 104 L97.5 104 Z"/>
+
+    <!-- the single collar, two thirds up the mast -->
+    <rect x="97.5" y="68" width="5.0" height="4.4" rx="1"/>
+
+    <!-- rounded turret: a bell about a third the width of the dish -->
+    <path d="M97.5 104
+             C96.8 111.0 94.6 116.0 91.6 119.8
+             C89.2 122.8 87.6 126.2 86.8 129.8
+             L113.2 129.8
+             C112.4 126.2 110.8 122.8 108.4 119.8
+             C105.4 116.0 103.2 111.0 102.5 104 Z"/>
+
+    <!-- hard step out to the dish: flat top plane, widest at the rim -->
+    <path d="M86.8 129.8
+             L113.2 129.8
+             C121.0 131.4 128.0 133.8 134.4 136.8
+             L136.2 144.4
+             L63.8 144.4
+             L65.6 136.8
+             C72.0 133.8 79.0 131.4 86.8 129.8 Z"/>
+
+    <!-- the dish tapers back in under the rim -->
+    <path d="M63.8 144.4 L136.2 144.4 L129.4 155.6 L70.6 155.6 Z"/>
+
+    <!-- lattice cone, narrowing steeply back to the shaft -->
+    <path d="M70.6 155.6 L129.4 155.6 L111.6 180.0 L88.4 180.0 Z"/>
+
+    <!-- shaft: plain tube, slightly wider at the foot -->
+    <path d="M88.4 180.0 L111.6 180.0 L114.0 392.0 L86.0 392.0 Z"/>
+
+    <!-- base slab -->
+    <rect x="79" y="392" width="42" height="8" rx="1.5"/>
+  </g>
+
+  <!-- window band under the dish rim -->
+  <rect x="66.4" y="146.4" width="67.2" height="2.6" fill="#2b2620" opacity="0.48"/>
+
+  <!-- ribs on the lattice cone -->
+  <g stroke="#DED6C8" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.85">
+    <path d="M74.5 156.0 L94.5 179.2"/>
+    <path d="M86.0 156.0 L97.0 179.2"/>
+    <path d="M100.0 156.0 L100.0 179.2"/>
+    <path d="M114.0 156.0 L103.0 179.2"/>
+    <path d="M125.5 156.0 L105.5 179.2"/>
+  </g>
+</svg>
