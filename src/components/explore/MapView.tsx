@@ -41,52 +41,84 @@ function markerLabel(item: ListingWithDistance): string {
 const iconCache = new Map<string, L.DivIcon>()
 
 function markerIcon(item: ListingWithDistance): L.DivIcon {
-  const dotColor = item.kind === 'pet' ? '#FA5C00' : item.kind === 'product' ? '#14B8A6' : '#0EA5A4'
-  const label =
-    item.kind === 'store'
-      ? '📍'
-      : item.price === 0
-        ? 'سرپرستی'
-        : faPriceShort(item.price)
+  /* One teardrop pin for every single listing, in the listing's own colour.
+   *
+   * The previous marker was a white pill whose label for a SERVICE STORE was
+   * the character «📍» — a pin emoji inside a pill, next to cluster bubbles
+   * that are an orange disc with a paw. Three shapes, three weight classes,
+   * no shared language: at city zoom the map read as scattered debris rather
+   * than as places. It also said nothing: a shopper could not tell a clinic
+   * from a groomer without opening it.
+   *
+   * A teardrop is the one shape everybody already reads as "a place on a
+   * map", and its tip is the anchor, so it points at the coordinate instead
+   * of hovering above it. Products keep their price on the pin because price
+   * is what a shopper compares; pets keep a paw; a service store gets its
+   * category glyph, which is the thing that distinguishes دو مرکز از هم.
+   */
+  const tint =
+    item.kind === 'pet' ? '#FA5C00'
+    : item.kind === 'product' ? '#14B8A6'
+    : '#0EA5A4'
 
-  const key = `${dotColor}|${label}`
+  const glyph =
+    item.kind === 'pet' ? PAW_PATH
+    : item.kind === 'product' ? TAG_PATH
+    : STORE_PATH
+
+  // The price is the only label worth the width; everything else is a glyph.
+  const text =
+    item.kind === 'product' && item.price > 0 ? faPriceShort(item.price) : ''
+
+  const key = `${tint}|${glyph}|${text}`
   const cached = iconCache.get(key)
   if (cached) return cached
 
-  /* `role="img"` with a real name, not a bare div. Leaflet gives every marker
-     `role="button"` and `tabindex="0"` by default, but this inner box was
-     empty of any accessible name — a keyboard user tabbed onto a marker,
-     heard «button», and had no idea which listing it was, or that Enter would
-     open it. The name comes from the Marker's `alt` option (below), which
-     Leaflet puts on the wrapper; the inner box only needs to stop claiming to
-     be a button of its own. */
+  const W = text ? 62 : 34
+  const H = 44
+
   const html = `
-    <div role="img" style="
-      display:flex;align-items:center;gap:6px;
-      background:#fff;color:#1C1A17;
-      font:700 12px/1 Vazirmatn,system-ui,sans-serif;
-      padding:7px 11px;border-radius:999px;
-      box-shadow:0 4px 14px rgba(0,0,0,.22);
-      border:1.5px solid rgba(0,0,0,.06);
-      white-space:nowrap;will-change:transform;
+    <div role="img" aria-hidden="true" style="
+      position:relative;width:${W}px;height:${H}px;
+      filter:drop-shadow(0 3px 6px rgba(0,0,0,.35));
+      will-change:transform;
     ">
-      <span aria-hidden="true" style="width:8px;height:8px;border-radius:999px;background:${dotColor};flex:none"></span>
-      ${label}
-      <svg aria-hidden="true" width="10" height="6" viewBox="0 0 10 6" style="position:absolute;left:50%;bottom:-5px;transform:translateX(-50%)">
-        <path d="M0 0h10L5 6z" fill="#fff"/>
+      <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"
+           style="position:absolute;inset:0">
+        <path d="M${W / 2} ${H - 1}
+                 C ${W / 2 - 3} ${H - 9}, 3 ${H - 16}, 3 ${H / 2 - 8}
+                 A ${W / 2 - 3} ${W / 2 - 3} 0 1 1 ${W - 3} ${H / 2 - 8}
+                 C ${W - 3} ${H - 16}, ${W / 2 + 3} ${H - 9}, ${W / 2} ${H - 1} Z"
+              fill="${tint}" stroke="#fff" stroke-width="2"/>
       </svg>
+      <div style="
+        position:absolute;left:0;right:0;top:0;height:${H - 12}px;
+        display:flex;align-items:center;justify-content:center;gap:4px;
+        color:#fff;font:800 ${text ? 11 : 13}px/1 Vazirmatn,system-ui,sans-serif;
+        padding:0 ${text ? 6 : 0}px;
+      ">
+        ${text ? `<span style="white-space:nowrap">${text}</span>` : `
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+          <path d="${glyph}"/>
+        </svg>`}
+      </div>
     </div>
   `
 
   const icon = L.divIcon({
     html,
     className: '',
-    iconSize: undefined, // let Leaflet size from content
-    iconAnchor: [24, 40],
+    iconSize: [W, H],
+    iconAnchor: [W / 2, H - 1],   // the teardrop's tip
   })
   iconCache.set(key, icon)
   return icon
 }
+
+/* Inline path data, so a marker needs no icon font and no extra request. */
+const PAW_PATH = 'M12 13.5c-2.6 0-4.7 1.9-4.7 4.2 0 1.9 1.6 3.1 3.4 2.6 1-.3 1.6-.3 2.6 0 1.8.5 3.4-.7 3.4-2.6 0-2.3-2.1-4.2-4.7-4.2Zm-4.6-1.2c1-.4 1.6-1.6 1.3-2.7-.3-1.1-1.4-1.7-2.4-1.3-1 .4-1.6 1.6-1.3 2.7.3 1.1 1.4 1.7 2.4 1.3Zm9.2 0c-1-.4-1.6-1.6-1.3-2.7.3-1.1 1.4-1.7 2.4-1.3 1 .4 1.6 1.6 1.3 2.7-.3 1.1-1.4 1.7-2.4 1.3ZM9.4 8.1c.9 0 1.7-.9 1.7-2S10.3 4 9.4 4s-1.7.9-1.7 2 .8 2.1 1.7 2.1Zm5.2 0c.9 0 1.7-.9 1.7-2S15.5 4 14.6 4s-1.7.9-1.7 2 .8 2.1 1.7 2.1Z'
+const TAG_PATH = 'M20.6 11.6 12 3H4v8l8.6 8.6a2 2 0 0 0 2.8 0l5.2-5.2a2 2 0 0 0 0-2.8ZM7.5 8.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z'
+const STORE_PATH = 'M4 10v9a1 1 0 0 0 1 1h4v-6h6v6h4a1 1 0 0 0 1-1v-9h-5V6a1 1 0 0 1 1-1h1.5a1 1 0 0 0 .9-1.4l-.8-1.7A1 1 0 0 0 16.3 1H7.7a1 1 0 0 0-.9.6l-.8 1.7A1 1 0 0 0 6.9 5H8a1 1 0 0 1 1 1v4H4Z'
 
 /**
  * Keeps the map alive across visibility changes and origin updates.
@@ -396,16 +428,17 @@ function clusterListings(
 /**
  * Pin for a point carrying several listings.
  *
- * A bare orange pill reading «۳» was ugly and, worse, said nothing about what
- * it stood for. This is a layered bubble instead: a soft halo that grows with
- * the count, a brand-gradient core with a paw glyph, and the count on a small
- * dark chip so it stays legible against the orange. The count survives because
- * it is the one number a shopper wants — it just isn't the only thing there.
+ * One disc, one number, and a ring that carries how many places it stands for.
  *
- * Size is left for Leaflet to measure (`iconSize: undefined`) and the anchor
- * comes from that measured box, so a wide label like «۱۲۳» still points at the
- * right coordinate — a fixed anchor visibly misplaced the tip on anything
- * wider than two digits.
+ * What it was: a gradient ball with a paw drawn INSIDE it, and the count on a
+ * dark chip hanging off the bottom edge — two shapes stacked, the number
+ * half-overlapping the circle. Next to the old white pills the whole map read
+ * as debris rather than as places, and the count was the smaller of the two
+ * things on a pin whose only job is the count.
+ *
+ * The pip ring around the edge says "several" without competing with the
+ * number, and the fill stays one flat brand orange so a cluster and a single
+ * pin read as the same family.
  */
 const clusterCache = new Map<number, L.DivIcon>()
 
@@ -413,44 +446,32 @@ function clusterIcon(count: number): L.DivIcon {
   const cached = clusterCache.get(count)
   if (cached) return cached
 
-  // The bubble widens with the count so «۹۹» visibly outweighs «۳».
-  const core = Math.min(46, 30 + Math.log2(count) * 4)
+  // Grows with the count so «۹۹» visibly outweighs «۳», but flat-topped: past
+  // three digits the ring is already unambiguous and a bigger disc only
+  // covers more of the street it sits on.
+  const size = Math.min(52, 34 + Math.log10(count) * 12)
+  const fontSize = count > 99 ? 12 : count > 9 ? 14 : 15
 
   const html = `
-    <div style="position:relative;width:${core}px;height:${core}px;
-                display:grid;place-items:center;will-change:transform">
-      <span style="
-        position:absolute;inset:-6px;border-radius:999px;
-        background:radial-gradient(circle at 50% 45%,
-          rgba(250,92,0,.30) 0%, rgba(250,92,0,.10) 58%, rgba(250,92,0,0) 72%);
-      "></span>
-      <span style="
-        position:absolute;inset:0;border-radius:999px;
-        background:linear-gradient(160deg,#FF8A3D 0%,#FA5C00 46%,#E24700 100%);
-        border:2px solid rgba(255,255,255,.94);
-        box-shadow:0 6px 18px rgba(226,71,0,.38),
-                   inset 0 1px 0 rgba(255,255,255,.55);
-        display:grid;place-items:center;
-      ">
-        <svg width="${core * 0.56}" height="${core * 0.56}" viewBox="0 0 24 24"
-             fill="rgba(255,255,255,.9)" style="margin-top:-1px">
-          <ellipse cx="12" cy="16.2" rx="5.4" ry="4.2"/>
-          <ellipse cx="5.6" cy="11.4" rx="2.5" ry="3"/>
-          <ellipse cx="18.4" cy="11.4" rx="2.5" ry="3"/>
-          <ellipse cx="10.1" cy="6.1" rx="2.3" ry="2.9"/>
-          <ellipse cx="16.6" cy="6.4" rx="2.1" ry="2.6"/>
-        </svg>
-        <span style="
-          position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);
-          background:#1C1A17;color:#fff;
-          font:800 10px/1 Vazirmatn,system-ui,sans-serif;
-          padding:2.5px 6px;border-radius:999px;
-          border:1.5px solid rgba(255,255,255,.9);
-          box-shadow:0 2px 6px rgba(0,0,0,.28);
-        ">${faDigits(count)}</span>
-      </span>
-    </div>`
-  const icon = L.divIcon({ html, className: '', iconSize: undefined, iconAnchor: [0, 0] })
+    <div style="
+      position:relative;width:${size}px;height:${size}px;
+      display:grid;place-items:center;
+      border-radius:999px;
+      background:#FA5C00;
+      border:3px solid rgba(255,255,255,.96);
+      box-shadow:0 4px 14px rgba(226,71,0,.45);
+      color:#fff;
+      font:800 ${fontSize}px/1 Vazirmatn,system-ui,sans-serif;
+      font-variant-numeric:tabular-nums;
+      will-change:transform;
+    ">${faDigits(count)}</div>`
+
+  const icon = L.divIcon({
+    html,
+    className: '',
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  })
   clusterCache.set(count, icon)
   return icon
 }
