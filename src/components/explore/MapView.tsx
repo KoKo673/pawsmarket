@@ -353,26 +353,35 @@ function clusterListings(
   listings: ListingWithDistance[],
   zoom: number,
 ): Cluster[] {
-  // degrees per pixel at this latitude and zoom (Web Mercator)
+  /* Metres per pixel at this latitude and zoom (Web Mercator), converted to
+   * degrees ONCE, then multiplied by the cell width in pixels.
+   *
+   * The version before this divided the metres-per-pixel figure by CELL_PX
+   * and read the result as degrees — no pixels-to-metres and no
+   * metres-to-degrees step at all. At zoom 17 that gave a 1.35 km cell where
+   * the honest one is 78 m: 17× too wide on each axis. Two shops a hundred
+   * metres apart could therefore never land in different cells at ANY zoom,
+   * which is exactly «هرچه زوم می‌کنی بهش نمی‌رسی». Verified live at max zoom
+   * before the fix: a 2-listing disc still sat over the neighbouring shops. */
   const CELL_PX = 80
-  const cellDeg = (156543.03392 * Math.cos((35.7 * Math.PI) / 180)) /
-    (2 ** zoom * CELL_PX)
+  const metresPerPixel =
+    (156543.03392 * Math.cos((35.7 * Math.PI) / 180)) / 2 ** zoom
+  const metresPerDegLat = 111320
+  const step = (metresPerPixel * CELL_PX) / metresPerDegLat
 
   /* No floor on the cell size.
    *
    * There used to be one: `minDeg = 0.0102`, meant to stop a zoomed-out city
    * from becoming a sheet of orange. But it is a FLOOR, so it also applied at
    * maximum zoom, where it is backwards — the cell stopped shrinking while the
-   * map kept growing. Measured: at zoom 18 the cell covered 135px of a screen
-   * that had 80px of ground per cell, and at 19 it covered 269px. Pins that
-   * sat in one cell could never separate no matter how far the user zoomed, so
-   * a cluster stayed a cluster forever — «هرچه زوم می‌کنی بهش نمی‌رسی».
+   * map kept growing. Pins that sat in one cell could never separate no matter
+   * how far the user zoomed, so a cluster stayed a cluster forever —
+   * «هرچه زوم می‌کنی بهش نمی‌رسی».
    *
    * The bound the floor was protecting is still needed, but it belongs where
    * the count is: cell size stays honest at every zoom, and the number of
    * bubbles is capped by `MAX_PINS` at render time, dropping the smallest
    * groups rather than merging unrelated ones. */
-  const step = cellDeg
 
   const grid = new Map<string, Cluster>()
   for (const item of listings) {
