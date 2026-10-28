@@ -28,5 +28,8 @@
       "@/*": ["./src/*"]
     }
   },
+  // Tests need Node types (node:test, node:assert); the app build
+  // must not have them, or `process` and friends leak into browser code.
+  "exclude": ["src/**/*.test.ts"],
   "include": ["src"]
 }

@@ -19,5 +19,9 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts"]
+  /* Unit tests live beside the code but this is the only project in the
+     build that carries `types: ["node"]`, which `node:test` needs. The app
+     project excludes them so `process`, `Buffer` and friends cannot leak
+     into browser code. */
+  "include": ["vite.config.ts", "src/**/*.test.ts"]
 }

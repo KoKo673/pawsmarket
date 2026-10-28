@@ -3,6 +3,12 @@ import { storeLabel } from '@/lib/store-labels'
 import { SHOP_ENRICHMENT, type ShopMeta } from '@/data/shops'
 import { applyFilters } from '@/lib/search'
 import { asset } from '@/lib/utils'
+
+// businessKey moved to ./business-key.ts so it can be tested without
+// dragging eleven imports (half of them path-aliased) into the test run.
+// Re-exported here so every existing caller keeps one import path.
+import { businessKey } from './business-key'
+export { businessKey }
 import type {
   Filters,
   GeoPoint,
@@ -499,32 +505,6 @@ async function getStoresRaw(origin: GeoPoint, filters: Filters): Promise<RawRow[
 /** Rows from a settled leg, or nothing when that leg failed. */
 function okRows(result: PromiseSettledResult<RawRow[]>): RawRow[] {
   return result.status === 'fulfilled' ? result.value : []
-}
-
-/**
- * Append the live rows the snapshot does not already contain.
- *
- * Never replaces an existing row: the snapshot's is the enriched one, and the
- * filter depends on the fields enrichment adds.
- *
- * ── What the id alone got wrong ──────────────────────────────────────────
- * `catalog.json` is a build-time export; the database keeps growing. The
- * snapshot holds ids 1-761 from a 447-store era, while /stores/nearby returns
- * the same businesses with ids like 10102. Matching only on `id` therefore
- * found no overlap at all and appended a second copy of every one of them:
- * measured, 431 of 447 stores rendered twice — «بیمارستان تخصصی دانشکده
- * دامپزشکی دانشگاه تهران» twice on the home page, at the same distance.
- *
- * A business is identified by what it *is*, not by the row it happens to sit
- * in: the same name at the same coordinates is the same shop. Coordinates are
- * rounded to 4 decimals (~11 m), which absorbs the float drift between the
- * export and a fresh read without merging two neighbours on one street.
- */
-function businessKey(row: RawRow): string {
-  const name = String(row.name ?? '').trim().replace(/\s+/g, ' ')
-  const lat = Number(row.lat ?? 0).toFixed(4)
-  const lng = Number(row.lng ?? 0).toFixed(4)
-  return `${name}|${lat}|${lng}`
 }
 
 function appendNew(snapshot: RawRow[], live: RawRow[]): RawRow[] {

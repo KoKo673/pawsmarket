@@ -43,3 +43,12 @@ __pycache__/
 # Database dumps: contain password hashes and live session tokens.
 *.dump
 backups/
+
+# Virtualenvs. A venv writes its own `.gitignore` containing `*`, so an
+# unmodified one is already invisible to git (verified with
+# `git add --dry-run .`, which selected only _args.json). This rule is for
+# the case that bypasses that: a venv created at a path that already had
+# files, or one whose own .gitignore was deleted. 65 MB of Windows binaries
+# in history is not recoverable by deleting the file later.
+.venv*/
+venv/

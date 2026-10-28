@@ -11,7 +11,8 @@
     "audit:a11y": "node scripts/a11y_audit.mjs",
     "audit:lh": "node scripts/lighthouse_audit.mjs",
     "audit:serve": "node scripts/serve_dist.mjs",
-    "audit:build": "vite build --mode audit --outDir dist-audit"
+    "audit:build": "vite build --mode audit --outDir dist-audit",
+    "test": "node --test src/lib/*.test.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",

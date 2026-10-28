@@ -13,7 +13,12 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # 22, not 20. Vite 8 declares `^20.19.0 || >=22.12.0`, so the old
+          # pin was already below the floor — it worked only because
+          # ubuntu-latest happened to carry a new enough 20.x. Node 22 also
+          # runs `.ts` files directly, which is what `npm test` needs; on 20
+          # the unit tests would need a runner as a dependency.
+          node-version: 22
           cache: npm
 
       - uses: actions/setup-python@v5
@@ -28,6 +33,16 @@ jobs:
 
       - name: Lint (src only)
         run: npx oxlint src
+
+      # The first unit tests this frontend has ever had. `businessKey` is the
+      # rule whose absence rendered 431 of 447 stores twice and sent booking
+      # buttons to the wrong clinic (REVIEW-CATALOG-DB-MISMATCH-2026-10-19);
+      # until now only `booking_guard_audit` guarded it, and that checks the
+      # rendered page, not the function.
+      #
+      # No new dependency: node:test is built in.
+      - name: Unit tests
+        run: npm test
 
       - name: Catalog data QC
         run: python scripts/qc_catalog.py
