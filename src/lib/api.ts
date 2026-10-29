@@ -462,9 +462,24 @@ async function getPetsRaw(origin: GeoPoint, filters: Filters): Promise<RawRow[]>
   return expectArray(path, await request<unknown>(path))
 }
 
-async function getProductsRaw(origin: GeoPoint, filters: Filters): Promise<RawRow[]> {
-  const path = `/api/products?${geoParams(origin, filters)}`
-  return expectArray(path, await request<unknown>(path))
+/**
+ * Retired endpoint — returns nothing, on purpose.
+ *
+ * `/api/products` answers 410 Gone. Its table is the legacy directory of
+ * other shops' inventory; what this shop sells lives in `marketplace_products`
+ * and comes from `/api/shop` (see the note further down about not mixing the
+ * two). This used to call it anyway, inside a Promise.allSettled, so the site
+ * worked while every single page load sent a request that was guaranteed to
+ * fail and logged a console error.
+ *
+ * Marked `@deprecated` rather than deleted because fetchNearbyListings still
+ * destructures three arrays by position; removing the slot is a wider change
+ * than this fix needs.
+ *
+ * @deprecated always resolves to [] — use /api/shop for products
+ */
+async function getProductsRaw(_origin: GeoPoint, _filters: Filters): Promise<RawRow[]> {
+  return []
 }
 
 /* ── last-good response, so a blip does not empty the map ─────────
