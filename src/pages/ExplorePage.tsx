@@ -45,6 +45,7 @@ export function ExplorePage() {
   const favoritesOnly = useFiltersStore((s) => s.favoritesOnly)
   const setFavoritesOnly = useFiltersStore((s) => s.setFavoritesOnly)
   const applyPreset = useFiltersStore((s) => s.applyPreset)
+  const setQuery = useFiltersStore((s) => s.setQuery)
   const favorites = useFavoritesStore((s) => s.ids)
   const [searchParams] = useSearchParams()
 
@@ -75,6 +76,13 @@ export function ExplorePage() {
     // «مشاهده‌ی نقشه» روی صفحه‌ی خانه به /explore?view=map می‌رود. بدون این،
     // موبایل با لیست باز می‌شد و دکمه اشتباه به‌نظر می‌رسید.
     if (searchParams.get('view') === 'map') setMobileView('map')
+    // `?q=` arrives from the home search bar. Without this the query was in
+    // the URL, the server filtered on it, and the page rendered the filtered
+    // set for a moment — then the store's empty `query` re-fetched the whole
+    // catalogue on the next render, because every fetch is driven by the
+    // store, not by the URL.
+    const q = searchParams.get('q')
+    if (q) setQuery(q)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
