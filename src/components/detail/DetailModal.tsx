@@ -7,8 +7,6 @@ import { StatsGrid } from '@/components/detail/StatsGrid'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { SHOP_DETAIL } from '@/data/shops-detail'
-import { SHOP_ENRICHMENT } from '@/data/shops'
 import { BOOKING_ENABLED, isBookableCategory } from '@/lib/booking-rules'
 import { faDecimal, faDigits, faPrice, faTimeRange } from '@/lib/fa'
 import { formatDistance } from '@/lib/geo'
@@ -96,14 +94,13 @@ export function DetailModal() {
           {/* آمار کلیدی */}
           <StatsGrid item={item} />
 
-          {/* توضیحات — the full text for a shop comes from shops-detail, which
-              the list never loads; other kinds already carry their own. */}
+          {/* توضیحات — carried on the listing itself since migration 0020 put
+              the description in the database; the per-name lookup into
+              shops-detail.ts is gone with that file. */}
           <div>
             <h4 className="text-sm font-extrabold">درباره</h4>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {item.kind === 'store'
-                ? SHOP_DETAIL[item.name]?.description || item.description
-                : item.description}
+              {item.description}
             </p>
           </div>
 
@@ -189,52 +186,31 @@ export function DetailModal() {
                       فروشگاه
                     </Button>
                   )}
-                  {item.storeName && SHOP_ENRICHMENT[item.storeName]?.phone ? (
-                    <Button asChild size="lg" className="min-w-0 flex-1 gap-1.5 sm:min-w-44 sm:flex-none">
-                      <a
-                        href={`tel:${SHOP_ENRICHMENT[item.storeName].phone!.replace(/[^+\d]/g, '')}`}
-                        title={`تماس با ${item.storeName} برای خرید`}
-                      >
-                        <Phone className="size-4" />
-                        {item.inStock ? 'تماس برای خرید' : 'استعلام قیمت'}
-                      </a>
-                    </Button>
-                  ) : (
-                    <Button
-                      size="lg"
-                      disabled
-                      className="min-w-0 flex-1 sm:min-w-44 sm:flex-none"
-                      title="شماره‌ی تماس این فروشگاه هنوز ثبت نشده است"
-                    >
-                      {item.inStock ? 'خرید' : 'ناموجود'}
-                    </Button>
-                  )}
+                  {/* The store's phone is not on a product listing, and the
+                      lookup that used to stand in for it (SHOP_ENRICHMENT by
+                      store name) is gone. It was only ever populated when a
+                      product's store name happened to match a row in that
+                      file, so this button was usually disabled anyway. The
+                      store's own page is the way to reach it now. */}
+                  <Button
+                    size="lg"
+                    disabled
+                    className="min-w-0 flex-1 sm:min-w-44 sm:flex-none"
+                    title="شماره‌ی تماس این فروشگاه در صفحه‌ی فروشگاه است"
+                  >
+                    {item.inStock ? 'خرید' : 'ناموجود'}
+                  </Button>
                 </>
               ) : (
-                (() => {
-                  // شماره‌ی مالک/پناهگاه در صورت وجود در داده‌ی واقعی فروشگاه‌ها
-                  const ownerPhone =
-                    item.kind === 'pet' && item.ownerName
-                      ? (SHOP_ENRICHMENT[item.ownerName]?.phone ?? '')
-                      : ''
-                  const label = item.adoptable ? 'تماس با پناهگاه' : 'تماس با مالک'
-                  if (ownerPhone) {
-                    return (
-                      <Button asChild size="lg" className="min-w-0 flex-1 gap-1.5 sm:min-w-44 sm:flex-none">
-                        <a href={`tel:${ownerPhone.replace(/[^+\d]/g, '')}`}>
-                          <Phone className="size-4" />
-                          {label}
-                        </a>
-                      </Button>
-                    )
-                  }
-                  return (
-                    <Button size="lg" disabled className="min-w-0 flex-1 gap-1.5 sm:min-w-44 sm:flex-none" title="شماره‌ی تماس ثبت نشده است">
-                      <Phone className="size-4" />
-                      {label}
-                    </Button>
-                  )
-                })()
+                // A pet listing carries no owner phone, and the lookup that
+                // used to supply one (SHOP_ENRICHMENT by owner name) is gone —
+                // it only resolved when an owner's display name happened to
+                // equal a shop name, which is not a real relationship. The
+                // adoption request is the intended way to reach them.
+                <Button size="lg" disabled className="min-w-0 flex-1 gap-1.5 sm:min-w-44 sm:flex-none" title="شماره‌ی تماس ثبت نشده است">
+                  <Phone className="size-4" />
+                  {item.adoptable ? 'تماس با پناهگاه' : 'تماس با مالک'}
+                </Button>
               )}
             </div>
           </div>

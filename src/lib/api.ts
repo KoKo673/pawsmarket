@@ -1,14 +1,8 @@
 import { PRODUCT_ENRICHMENT, PRODUCT_IMAGES } from '@/data/products'
 import { storeLabel } from '@/lib/store-labels'
-import { SHOP_ENRICHMENT, type ShopMeta } from '@/data/shops'
 import { applyFilters } from '@/lib/search'
 import { asset } from '@/lib/utils'
 
-// businessKey moved to ./business-key.ts so it can be tested without
-// dragging eleven imports (half of them path-aliased) into the test run.
-// Re-exported here so every existing caller keeps one import path.
-import { businessKey } from './business-key'
-export { businessKey }
 import type {
   Filters,
   GeoPoint,
@@ -365,59 +359,66 @@ function toProductListing(raw: RawRow, storeNames: Map<string, string>): Product
 }
 
 /**
- * Wire row → StoreListing.
- *
- * The API serialises only name/address/lat/lng — display metadata
- * (real phone, hours, product categories, description, official site)
- * comes from SHOP_ENRICHMENT keyed by shop name (built from OSM +
- * the shops' own websites, see scripts/seed_real_shops.py).
- * No invented values: missing phone → '' (renders «—»), missing
- * rating → 0 (renders «ثبت‌شده»), never a fake number.
- */
-/**
  * A shop's own Google Maps photos, or the category's stock shot when it has
  * none. Real photos come first and in full, so the detail gallery has something
  * to page through; the stock image is only ever a last resort rather than being
  * interleaved, which would imply the shop is the thing in that picture.
  */
-function storeImages(meta: ShopMeta | undefined, category: StoreCategory): string[] {
-  const real = [...(meta?.images ?? []), ...(meta?.image ? [meta.image] : [])]
-  return real.length > 0 ? real.map(asset) : [STORE_IMAGE[category]]
+function storeImages(raw: RawRow, category: StoreCategory): string[] {
+  const own = [
+    ...(Array.isArray(raw.images) ? (raw.images as string[]) : []),
+    ...(typeof raw.image_url === 'string' && raw.image_url ? [raw.image_url] : []),
+  ]
+  return own.length > 0 ? own.map(asset) : [STORE_IMAGE[category]]
 }
 
+/**
+ * Wire row → StoreListing.
+ *
+ * Every display field comes off the wire row now. It did not used to:
+ * `SHOP_ENRICHMENT` in src/data/shops.ts was keyed by shop *name* and
+ * merged on top here, because the API returned only name/address/lat/lng.
+ * That file held 757 shops' phone numbers, hours and photos in 9,671 lines
+ * of TypeScript — a build artefact, 15 days stale by the end, whose `id`
+ * values did not match the database's.
+ *
+ * Migration 0020 added the columns, a one-shot script filled them from that
+ * file, and an equivalence check compared all ten fields across all 446
+ * matching stores before this merge was removed: zero differences.
+ *
+ * No invented values: missing phone → '' (renders «—»), missing rating → 0
+ * (renders «ثبت‌نشده»), never a fake number.
+ */
 function toStoreListing(raw: RawRow): StoreListing {
   const name = str(raw.name, 'فروشگاه')
   const address = str(raw.address, 'تهران')
-  const meta = SHOP_ENRICHMENT[name]
+  const wireCategory = String(raw.category ?? '')
   const category: StoreCategory =
-    (meta?.category as StoreCategory | undefined) ??
-    (String(raw.category ?? '') in STORE_IMAGE ? (raw.category as StoreCategory) : inferStoreCategory(name, address))
+    (wireCategory in STORE_IMAGE ? (wireCategory as StoreCategory) : inferStoreCategory(name, address))
 
   return {
     id: wireId('store', raw),
     kind: 'store',
     name,
-    // A short line only. The real description lives in shops-detail.ts and is
-    // read by the sheet on open; carrying ~183 bytes of generated prose per
-    // shop here meant 460 copies of it in the initial bundle for a text only
-    // one modal ever shows.
-    description: `«${name}» — ${storeLabel(category) || 'فروشگاه'} در ${address}.`,
-    images: storeImages(meta, category),
+    // A short line only. `description` is carried from the row when present
+    // and read by the sheet on open; putting ~183 bytes of prose per shop in
+    // the initial payload meant 460 copies of it for a text only one modal
+    // shows.
+    description: str(raw.description, `«${name}» — ${storeLabel(category) || 'فروشگاه'} در ${address}.`),
+    images: storeImages(raw, category),
     location: toPoint(raw),
     address,
     createdAt: str(raw.created_at ?? raw.createdAt, new Date(0).toISOString()),
     category,
-    // Google Maps rating from the enrichment; the wire row carries none, so
-    // fall back to it rather than showing 0 for a shop that is rated 4.8.
-    rating: num(raw.rating, meta?.rating ?? 0),
-    reviewCount: num(raw.reviewCount ?? raw.review_count, meta?.reviewCount ?? 0),
-    opensAt: meta?.opensAt ?? str(raw.opensAt ?? raw.opens_at, '09:00'),
-    closesAt: meta?.closesAt ?? str(raw.closesAt ?? raw.closes_at, '21:00'),
-    phone: meta?.phone ?? str(raw.phone, ''),
+    rating: num(raw.rating, 0),
+    reviewCount: num(raw.reviewCount ?? raw.review_count, 0),
+    opensAt: str(raw.opensAt ?? raw.opens_at, '09:00'),
+    closesAt: str(raw.closesAt ?? raw.closes_at, '21:00'),
+    phone: str(raw.phone, ''),
     // `website` is deliberately not carried: 569 of its 605 values were Google
     // Maps search URLs of the shop's own name — not the shop's site — and
-    // nothing ever rendered the field. The 36 real ones live in shops-detail.
-    categories: meta?.categories,
+    // nothing rendered it. The real ones are on the row if anything ever does.
+    categories: Array.isArray(raw.categories) ? (raw.categories as string[]) : undefined,
   }
 }
 
@@ -466,9 +467,74 @@ async function getProductsRaw(origin: GeoPoint, filters: Filters): Promise<RawRo
   return expectArray(path, await request<unknown>(path))
 }
 
+/* ── last-good response, so a blip does not empty the map ─────────
+ *
+ * `VITE_CATALOG_MODE=static` was the old answer to "what if the API is
+ * down": ship a snapshot and read from it. Two things were wrong with it.
+ * It is a BUILD-time variable — `import.meta.env` is substituted by
+ * `vite build`, so turning it on needs a full redeploy, which is not an
+ * emergency switch. And it was never set in production (`.env.production`
+ * has no such line), so the site has always read the API and the snapshot
+ * has always been dead weight on disk.
+ *
+ * This is the runtime version of the same idea, at a fraction of the cost:
+ * remember the last successful result and hand it back when the network
+ * fails, with the caller told the data is stale so it can say so.
+ *
+ * It does nothing for a first-time visitor with no network — there is
+ * nothing to remember. That is honest: a snapshot would have covered them,
+ * and the snapshot was 15 days stale and disagreed with the database about
+ * ids, which is why 431 of 447 stores rendered twice.
+ */
+const LAST_STORES_KEY = 'pawsmarket:last-stores'
+const LAST_STORES_AT = 'pawsmarket:last-stores-at'
+
+function readCachedStores(): RawRow[] | null {
+  try {
+    const raw = localStorage.getItem(LAST_STORES_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : null
+  } catch {
+    return null  // private mode, quota, corrupt JSON — none are fatal
+  }
+}
+
+function writeCachedStores(rows: RawRow[]): void {
+  try {
+    localStorage.setItem(LAST_STORES_KEY, JSON.stringify(rows))
+    localStorage.setItem(LAST_STORES_AT, String(Date.now()))
+  } catch {
+    // A full quota must not break a successful request. Losing the cache
+    // costs one fallback on a future outage; throwing here costs the page.
+  }
+}
+
+/** When the cached rows were stored, or null if nothing is cached. */
+export function cachedStoresAt(): number | null {
+  try {
+    const raw = localStorage.getItem(LAST_STORES_AT)
+    return raw ? Number(raw) : null
+  } catch {
+    return null
+  }
+}
+
 async function getStoresRaw(origin: GeoPoint, filters: Filters): Promise<RawRow[]> {
   const path = `/api/stores/nearby?${geoParams(origin, filters)}`
-  return expectArray(path, await request<unknown>(path))
+  try {
+    const rows = expectArray(path, await request<unknown>(path))
+    writeCachedStores(rows)
+    return rows
+  } catch (err) {
+    const cached = readCachedStores()
+    if (cached) {
+      // Mark the rows so the caller can say "this may be out of date"
+      // rather than presenting yesterday's phone numbers as current.
+      return cached.map((r) => ({ ...r, _stale: true }))
+    }
+    throw err
+  }
 }
 
 /* ── Aggregated search used by the Explore view ──────────────────── */
@@ -502,28 +568,7 @@ async function getStoresRaw(origin: GeoPoint, filters: Filters): Promise<RawRow[
  * has the bulk and the CDN, the live response has whatever changed since it
  * was generated.
  */
-/** Rows from a settled leg, or nothing when that leg failed. */
-function okRows(result: PromiseSettledResult<RawRow[]>): RawRow[] {
-  return result.status === 'fulfilled' ? result.value : []
-}
 
-function appendNew(snapshot: RawRow[], live: RawRow[]): RawRow[] {
-  if (live.length === 0) return snapshot
-  const known = new Set(snapshot.map((r) => String(r.id)))
-  const seen = new Set(snapshot.map(businessKey))
-  const extra = live.filter((r) => {
-    if (known.has(String(r.id))) return false
-    // Pets and products carry no name+coords pair that means "same thing" —
-    // two puppies called «پشمک» in one building are still two listings. The
-    // identity check applies to stores only.
-    if (r.name && r.lat != null && r.lng != null) {
-      if (seen.has(businessKey(r))) return false
-      seen.add(businessKey(r))
-    }
-    return true
-  })
-  return extra.length === 0 ? snapshot : [...snapshot, ...extra]
-}
 
 /** A store we list as a place, not as something to buy from. */
 const SERVICE_CATEGORIES = new Set(['vet', 'groomer', 'boarding', 'shelter', 'cafe'])
@@ -585,71 +630,60 @@ export async function fetchNearbyListings(
   let productRows: RawRow[] = []
   let storeRows: RawRow[] = []
 
-  if (STATIC_MODE) {
-    const snapshot = await catalogSnapshot()
-    ;[petRows, productRows, storeRows] =
-      [snapshot.pets, snapshot.products, snapshot.stores]
-  } else {
-    // The snapshot is the primary source; the API fills in only what the
-    // snapshot cannot know. Both are attempted together so a cold CDN or a
-    // cold API never adds its latency to the other's.
-    const [snapshot, live] = await Promise.allSettled([
-      catalogSnapshot(),
-      Promise.allSettled([
-        getPetsRaw(origin, filters),
-        getProductsRaw(origin, filters),
-        getStoresRaw(origin, filters),
-      ]),
-    ])
+  // One source: the API. The snapshot is a fallback, not a co-equal input.
+  //
+  // This used to be two sources merged. `catalog.json` was a build-time
+  // export whose ids did not match the database's, so the two were
+  // reconciled on name+coordinates (`businessKey`) and the snapshot's rows
+  // won because it carried enriched fields the API did not. Migration 0020
+  // and the enrichment migration moved those fields into the database, and
+  // an equivalence check compared all ten of them across all 446 matching
+  // stores before this was removed: zero differences.
+  //
+  // What is left of the snapshot is a genuine fallback: if the API answers
+  // nothing, read the last export rather than showing an empty map. The
+  // rows come from the same database, with the same ids, so no matching is
+  // needed — which is why `businessKey` could be deleted rather than fixed.
+  const settled = await Promise.allSettled([
+    getPetsRaw(origin, filters),
+    getProductsRaw(origin, filters),
+    getStoresRaw(origin, filters),
+  ])
+  const failures = settled.filter(
+    (r): r is PromiseRejectedResult => r.status === 'rejected')
 
-    if (snapshot.status === 'fulfilled') {
-      ;[petRows, productRows, storeRows] =
-        [snapshot.value.pets, snapshot.value.products, snapshot.value.stores]
-    } else if (live.status === 'fulfilled') {
-      // No snapshot (a dev run, or the file missing): the API is the only
-      // source, so its failures become the user-facing error.
-      const settled = live.value
-      const failures = settled.filter(
-        (r): r is PromiseRejectedResult => r.status === 'rejected')
-      if (failures.length > 0) {
-        const first = failures[0]?.reason
-        const status = first instanceof ApiError ? first.status : 0
-        throw new ApiError(
-          first instanceof ApiError && first.message
-            ? first.message
-            : 'در حال حاضر به سرور وصل نیستیم؛ لطفاً چند لحظه دیگر تلاش کنید',
-          status)
-      }
-      ;[petRows, productRows, storeRows] = settled.map(
-        (r) => (r as PromiseFulfilledResult<RawRow[]>).value)
+  if (failures.length === settled.length && !STATIC_MODE) {
+    // Everything failed. Try the export before giving up.
+    const snapshot = await catalogSnapshot().catch(() => null)
+    if (snapshot && snapshot.stores.length > 0) {
+      petRows = snapshot.pets
+      productRows = snapshot.products
+      storeRows = snapshot.stores.map((r) => ({ ...r, _stale: true }))
     } else {
+      const first = failures[0]?.reason
+      const status = first instanceof ApiError ? first.status : 0
       throw new ApiError(
-        'در حال حاضر به سرور وصل نیستیم؛ لطفاً چند لحظه دیگر تلاش کنید', 0)
+        first instanceof ApiError && first.message
+          ? first.message
+          : 'در حال حاضر به سرور وصل نیستیم؛ لطفاً چند لحظه دیگر تلاش کنید',
+        status)
     }
-
-    // The live API contributes ONLY rows the snapshot does not have.
-    //
-    // It is tempting to let live rows win — they are newer — but the API's
-    // /stores/nearby returns a thin row (name, address, raw category) while
-    // the snapshot has been enriched (phone, hours, photos, categories,
-    // rating). Letting the live row replace the snapshot's dropped the
-    // enriched `category` the filter matches on, and «پناهگاه» then returned
-    // nothing at all while eleven shelters sat in the data.
-    //
-    // What legitimately comes from the API is therefore what is NEW: a pet
-    // whose profile was just created, a shop added since the last export.
-    if (live.status === 'fulfilled') {
-      petRows = appendNew(petRows, okRows(live.value[0]))
-      // Products are not taken from the catalogue API at all. Its `products`
-      // table is the legacy directory of shops' inventory; what this shop
-      // sells lives in `marketplace_products` and is read by /api/shop,
-      // which the storefront owns. Mixing the two is how a customer ends up
-      // buying something we cannot supply.
-      storeRows = appendNew(
-        storeRows,
-        okRows(live.value[2]).filter((s) => isServiceStore(s)),
-      )
-    }
+  } else if (failures.length === settled.length && STATIC_MODE) {
+    // Deployments that build with VITE_CATALOG_MODE=static never call the
+    // API at all; they read the export directly.
+    const snapshot = await catalogSnapshot()
+    petRows = snapshot.pets
+    productRows = snapshot.products
+    storeRows = snapshot.stores
+  } else {
+    ;[petRows, productRows, storeRows] = settled.map((r) =>
+      r.status === 'fulfilled' ? r.value : [])
+    // Products are not taken from the catalogue API at all. Its `products`
+    // table is the legacy directory of shops' inventory; what this shop
+    // sells lives in `marketplace_products` and is read by /api/shop,
+    // which the storefront owns. Mixing the two is how a customer ends up
+    // buying something we cannot supply.
+    storeRows = storeRows.filter((s) => isServiceStore(s))
   }
 
   // store_id → name lookup so products show their real store title
