@@ -1,3 +1,4 @@
+import { normaliseFa } from '@/lib/fa-normalise'
 import { haversineKm } from '@/lib/geo'
 import { storeLabel } from '@/lib/store-labels'
 import type { Filters, GeoPoint, Listing, ListingWithDistance } from '@/types'
@@ -10,7 +11,7 @@ import type { Filters, GeoPoint, Listing, ListingWithDistance } from '@/types'
  * distance → drop outside the radius → apply keyword/kind/species/price → sort.
  */
 export function applyFilters(listings: Listing[], origin: GeoPoint, filters: Filters): ListingWithDistance[] {
-  const query = filters.query.trim().toLowerCase()
+  const query = normaliseFa(filters.query).toLowerCase()
   const [priceMin, priceMax] = filters.priceRange
 
   const withDistance = listings.map((listing) => ({
@@ -60,7 +61,7 @@ export function applyFilters(listings: Listing[], origin: GeoPoint, filters: Fil
             ? `${item.name} ${item.brand} ${item.category} ${item.storeName} ${item.description}`
             : `${item.name} ${storeLabel(item.category)} ${item.address} ` +
               `${(item.categories ?? []).join(' ')}`
-      if (!haystack.toLowerCase().includes(query)) return false
+      if (!normaliseFa(haystack).toLowerCase().includes(query)) return false
     }
 
     return true
