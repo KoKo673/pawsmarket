@@ -27,7 +27,27 @@ export const BOOKABLE = ['vet', 'groomer', 'boarding', 'shelter'] as const
  *
  * Turn this back on in the commit that makes the ids agree — not before.
  */
-export const BOOKING_ENABLED = false
+/*
+ * Turned back on 2026-10-29, in the commit that made the ids agree.
+ *
+ * The condition this waited for is now met and measured: catalog.json is
+ * generated from the database by app/export_catalog.py, and a live check
+ * compared the two:
+ *
+ *     catalog ids 447 · api ids 447 · intersection 447
+ *     only in catalog 0 · only in api 0
+ *
+ * Before that the snapshot held ids 1-761 from an October export while
+ * /stores/nearby returned ids like 10102 for the same businesses, so 0 of
+ * 218 shared ids named the same business — a booking could land on an
+ * unrelated clinic. That is why the whole route was shut, not just the
+ * button: a hidden button with a live URL is not a closed door.
+ *
+ * The guard in BookingPage stays. It now protects against the id-mismatch
+ * class returning (a stale snapshot shipped by mistake), which is still
+ * possible even with one source today.
+ */
+export const BOOKING_ENABLED = true
 
 /** True when this category may be booked at all. */
 export function isBookableCategory(category: string | undefined): boolean {
