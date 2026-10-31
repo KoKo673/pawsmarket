@@ -51,6 +51,8 @@ const ForgotPasswordPage = lazy(() =>
 const SetPasswordPage = lazy(() =>
   import('@/pages/SetPasswordPage')
     .then((m) => ({ default: m.SetPasswordPage })))
+const StorePage = lazy(() =>
+  import('@/pages/StorePage').then((m) => ({ default: m.StorePage })))
 const BookingPage = lazy(() =>
   import('@/pages/BookingPage').then((m) => ({ default: m.BookingPage })))
 const ShopPage = lazy(() =>
@@ -291,6 +293,20 @@ function AppRoutes() {
               element={
                 <AnimatedPage>
                   <StoreDashboardPage />
+                </AnimatedPage>
+              }
+            />
+            {/*
+              The public page a clinic puts in its Instagram bio. It sits
+              after the dashboard route on purpose: both are `/store/…`, and
+              a static segment wins over a dynamic one in React Router, so
+              `/store/dashboard/abc` still opens the dashboard.
+            */}
+            <Route
+              path="/store/:slug"
+              element={
+                <AnimatedPage>
+                  <StorePage />
                 </AnimatedPage>
               }
             />
