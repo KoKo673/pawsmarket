@@ -256,6 +256,40 @@ function ClaimForm({ store, onBack }: { store: StoreHit; onBack: () => void }) {
         </p>
       </div>
 
+      {/* ── شاهد ──────────────────────────────────────────────────
+          `proof` was in the form state from the day this page was written
+          and had NO input, so every claim was stored with `proof: ""`.
+          The admin queue in AdminClaimsPage shows a red «هیچ شاهدی ثبت نشده
+          — این درخواست را تأیید نکنید» when it is empty — on *every* claim.
+          The reviewer was told to reject everything, and the field the
+          roadmap introduced in migration 0017 as the third piece of
+          evidence was never once collected.
+
+          Optional in the schema, so not `required`: a claimant with a
+          licence number already has the strongest evidence. But it is the
+          only place to say "the phone on your listing is our old one",
+          which is exactly the case a reviewer cannot resolve alone. */}
+      <div className="space-y-1.5">
+        <Label htmlFor="c-proof">شاهد (اختیاری)</Label>
+        <textarea id="c-proof" rows={3} value={form.proof}
+                  onChange={(e) => setForm({ ...form, proof: e.target.value })}
+                  placeholder="مثلاً: صفحهٔ اینستاگرام مرکز با همین شماره، یا شماره‌ای که روی نقشه ثبت شده"
+                  className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm" />
+        <p className="text-[11px] text-muted-foreground">
+          هر چیزی که بررسی‌کننده بتواند با آن تطبیق بدهد. اجباری نیست، ولی
+          درخواست را سریع‌تر تأیید می‌کند.
+        </p>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="c-email">ایمیل (اختیاری)</Label>
+        <Input id="c-email" value={form.email} dir="ltr" type="email"
+               onChange={(e) => setForm({ ...form, email: e.target.value })} />
+        <p className="text-[11px] text-muted-foreground">
+          اگر داوطلباید لینک داشبورد را این‌جا هم بفرستیم.
+        </p>
+      </div>
+
       <div className="space-y-1.5">
         <Label htmlFor="c-note">توضیح (اختیاری)</Label>
         <textarea id="c-note" rows={3} value={form.note}

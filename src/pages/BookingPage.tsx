@@ -171,8 +171,19 @@ export function BookingPage() {
   }
 
   if (done) {
+    // ── The `#` that made this link useless ──────────────────────────
+    // This was `${origin}${BASE_URL}#/booking/manage/${token}` — a HASH
+    // URL. Production sets VITE_HASH_ROUTER=false (see .env.production and
+    // App.tsx:571), so the router sees path "/" and never reads the
+    // fragment: anyone opening the "send this to the clinic" link landed on
+    // the home page. The one link whose entire purpose is being handed to
+    // another person did not reach the booking.
+    //
+    // It is the only hash URL in src/, which is how it survived — every
+    // other link goes through `<Link to>`, and only this one is assembled
+    // by hand from a token.
     const link = done.token
-      ? `${window.location.origin}${import.meta.env.BASE_URL}#/booking/manage/${done.token}`
+      ? `${window.location.origin}${import.meta.env.BASE_URL}booking/manage/${done.token}`
       : null
     return (
       <div className="mx-auto max-w-lg px-4 pb-24 pt-28 sm:px-6">

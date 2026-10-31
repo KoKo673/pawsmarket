@@ -117,29 +117,71 @@ function jsonLd(store, url) {
   }
   if (store.image_url) data.image = `${API}/${String(store.image_url).replace(/^\//, '')}`
   return JSON.stringify(data, null, 2)
+    // ── Why this is escaped at all ───────────────────────────────────
+    // A JSON string can contain `</script>`, and the HTML parser ends a
+    // <script> element at that sequence regardless of the JSON around it.
+    // A store name of `x</script><img src=… onerror=…>` would therefore
+    // become live markup in 447 prerendered files — stored XSS by way of a
+    // business name.
+    //
+    // `<\/` is the same string in JSON ('\/' is an escaped solidus) and the
+    // parser never sees `</script>`, so the data survives and the tag does
+    // not close early. Escaping `<` alone would also work but changes the
+    // value for anyone reading the JSON; this changes nothing but the bytes.
+    .replace(/<\//g, '<\\/')
 }
 
 function page(store, shell, url) {
   const title = `${store.name} — پازمارکت`
   const desc = (store.description || `${store.name} در پازمارکت`).slice(0, 155)
 
+  // ── Every replacement is checked ─────────────────────────────────
+  // These are regexes against the built shell, and an unmatched one is
+  // silent: the page is still written, still has a correct store title, and
+  // its body is the generic shell — a crawler-visible page that says
+  // nothing about the store, produced by a build that reports success.
+  // Measured before this check: all four patterns DO match today, so the
+  // failure mode was purely about a future change to index.html.
+  //
+  // `apply` throws instead of returning the input, which turns a silent SEO
+  // regression into a build failure at the one moment someone can see it.
+  // The block is caught at the call site so a shell change does not take
+  // the whole build with it, but it does stop writing page files.
   let html = shell
-    // Swap the generic title and description for this store's.
-    .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
-    .replace(
-      /<meta\s+name="description"\s+content="[^"]*"\s*\/?>/,
-      `<meta name="description" content="${esc(desc)}" />`,
-    )
-    // Canonical, so the slug is the address even if someone links an id.
-    .replace(
-      /<\/head>/,
-      `  <link rel="canonical" href="${esc(url)}" />\n` +
-      `  <script type="application/ld+json">\n${jsonLd(store, url)}\n  </script>\n</head>`,
-    )
-    // Real content inside #root; the client replaces it on hydration.
-    .replace(/<div id="root">\s*<\/div>/, `<div id="root">\n      ${contentFor(store)}\n    </div>`)
+  const misses = []
+  function apply(re, replacement, label) {
+    if (!re.test(html)) { misses.push(label); return }
+    // A replacement string is not a template: `$&`, `` $` `` and `$'` in a
+    // store's own name would be substituted by String.replace. A function
+    // is the only form where the text is used literally.
+    html = html.replace(re, () => replacement)
+  }
 
-  return html
+  // Swap the generic title and description for this store's.
+  apply(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`, 'title')
+  apply(
+    /<meta\s+name="description"\s+content="[^"]*"\s*\/?>/,
+    `<meta name="description" content="${esc(desc)}" />`,
+    'description',
+  )
+  // Canonical, so the slug is the address even if someone links an id.
+  apply(
+    /<\/head>/,
+    `  <link rel="canonical" href="${esc(url)}" />\n` +
+    `  <script type="application/ld+json">\n${jsonLd(store, url)}\n  </script>\n</head>`,
+    'canonical+jsonld',
+  )
+  // Real content inside #root; the client replaces it on hydration.
+  apply(
+    /<div id="root">\s*<\/div>/,
+    `<div id="root">\n      ${contentFor(store)}\n    </div>`,
+    'root-content',
+  )
+
+  if (misses.length) {
+    return { html: null, misses }
+  }
+  return { html, misses }
 }
 
 async function main() {
@@ -177,7 +219,18 @@ async function main() {
   for (const s of stores) {
     if (!s.slug) continue
     const url = `${API}/store/${s.slug}`
-    const html = page(s, shell, url)
+    const { html, misses } = page(s, shell, url)
+    if (!html) {
+      // The shell changed shape. Writing this page would publish a file
+      // that looks prerendered and says nothing about the store, and the
+      // sitemap would point crawlers at it. Stopping is the only honest
+      // outcome — the previous build's pages stay in dist.
+      console.error(
+        `[prerender] index.html no longer matches: ${misses.join(', ')} — ` +
+        'no pages written. Fix the patterns in page() or the shell.')
+      process.exitCode = 1
+      return
+    }
     const target = join(OUT, 'store', s.slug, 'index.html')
     await mkdir(dirname(target), { recursive: true })
     await writeFile(target, html, 'utf8')
