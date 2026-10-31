@@ -268,7 +268,17 @@ function AppRoutes() {
               path="/add"
               element={
                 <AnimatedPage>
-                  <AddPage />
+                  {/*
+                    Signing in first is not just a gate: a listing now
+                    records its owner, so the account is what makes the pet
+                    editable afterwards. Before this, the wizard filled in
+                    four steps and then failed at the last one with
+                    «نشست شما منقضی شده» — which is untrue for someone who
+                    never signed in.
+                  */}
+                  <RequireAuth>
+                    <AddPage />
+                  </RequireAuth>
                 </AnimatedPage>
               }
             />
