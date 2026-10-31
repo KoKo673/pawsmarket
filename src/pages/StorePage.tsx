@@ -19,6 +19,20 @@ async function getJson<T>(path: string): Promise<T> {
 }
 
 /**
+ * `image_url` in the database is a bare path with no leading slash —
+ * `images/stores/real/abc.jpg`. Put straight into `src`, the browser
+ * resolves it against the *current page*, so it became
+ * `/store/images/stores/…` and 404'd: measured on the deployed page, the
+ * box rendered empty with naturalWidth 0. `mediaUrl` does not cover this
+ * because it only rewrites paths that start with `/`.
+ */
+function storeImage(path: string | null): string | undefined {
+  if (!path) return undefined
+  if (/^https?:\/\//i.test(path)) return path
+  return `${API}/${path.replace(/^\//, '')}`
+}
+
+/**
  * صفحهٔ عمومی یک مرکز — `/store/:slug`.
  *
  * ── Why this page is the growth channel ──────────────────────────────
@@ -116,7 +130,7 @@ export function StorePage() {
       <article className="glass overflow-hidden rounded-3xl shadow-lifted">
         {s.image_url && (
           <div className="aspect-[16/9] w-full overflow-hidden bg-muted">
-            <img src={s.image_url} alt=""
+            <img src={storeImage(s.image_url)} alt=""
                  className="size-full object-cover" loading="eager" />
           </div>
         )}
