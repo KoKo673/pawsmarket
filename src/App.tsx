@@ -48,6 +48,9 @@ const DetailModal = lazy(() =>
 const ForgotPasswordPage = lazy(() =>
   import('@/pages/ForgotPasswordPage')
     .then((m) => ({ default: m.ForgotPasswordPage })))
+const SetPasswordPage = lazy(() =>
+  import('@/pages/SetPasswordPage')
+    .then((m) => ({ default: m.SetPasswordPage })))
 const BookingPage = lazy(() =>
   import('@/pages/BookingPage').then((m) => ({ default: m.BookingPage })))
 const ShopPage = lazy(() =>
@@ -426,6 +429,14 @@ function AppRoutes() {
               element={
                 <AnimatedPage>
                   <ForgotPasswordPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/set-password"
+              element={
+                <AnimatedPage>
+                  <SetPasswordPage />
                 </AnimatedPage>
               }
             />

@@ -253,6 +253,18 @@ export const authApi = {
       body: JSON.stringify({ current_password: currentPassword,
                              new_password: newPassword }),
     }),
+  /**
+   * اولین رمز برای حسابی که با کد یک‌بارمصرف ساخته شده.
+   *
+   * Separate from changePassword because that one demands the current
+   * password, and a phone-signup account has none to give. The server
+   * answers 409 once a password exists, so this is only ever a first set.
+   */
+  setPassword: (newPassword: string) =>
+    request<{ ok: boolean; message: string }>('/api/auth/set-password', {
+      method: 'POST',
+      body: JSON.stringify({ new_password: newPassword }),
+    }),
 
   /**
    * کد یک‌بارمصرف پیامکی.
