@@ -91,6 +91,38 @@ jobs:
       - name: Verify a browser is available
         run: google-chrome --version || chromium --version
 
+      # ── The production build, not only the audit one ────────────────
+      # CI used to stop at `audit:build`, which writes dist-audit and skips
+      # the prerender step entirely. So the thing that actually ships was
+      # never built here: a change that broke `npm run build` — the
+      # prerender script, the sitemap writer, the post-build hook — would
+      # have been merged green and found on the server.
+      #
+      # PRERENDER_API points at production. It is a read of public store
+      # data, and the script exits 0 without writing anything if the API is
+      # unreachable — so a network blip cannot fail this job. What it does
+      # catch is a real failure: a crash in the script, a broken template,
+      # or an empty output directory.
+      - name: Build for production (includes prerender + sitemap)
+        run: npm run build
+        env:
+          PRERENDER_API: https://pawsmarket.ir
+
+      - name: The build produced what a crawler needs
+        run: |
+          set -euo pipefail
+          # Count the pages rather than checking one: a prerender that
+          # silently rendered a single store would pass a spot check.
+          pages=$(find dist/store -name index.html 2>/dev/null | wc -l)
+          echo "prerendered store pages: $pages"
+          [ "$pages" -gt 100 ] || { echo "::error::only $pages store pages were prerendered"; exit 1; }
+
+          [ -f dist/sitemap.xml ] || { echo "::error::no sitemap.xml"; exit 1; }
+          grep -q '<urlset' dist/sitemap.xml || { echo "::error::sitemap is not XML"; exit 1; }
+          locs=$(grep -c '<loc>' dist/sitemap.xml)
+          echo "sitemap URLs: $locs"
+          [ "$locs" -gt 100 ] || { echo "::error::sitemap has only $locs URLs"; exit 1; }
+
       - name: Build for audit
         run: npm run audit:build
 
