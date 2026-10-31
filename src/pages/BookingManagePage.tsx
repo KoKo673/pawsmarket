@@ -34,7 +34,7 @@ export function BookingManagePage() {
     ? (query.error instanceof Error ? query.error.message : 'این لینک باز نشد')
     : null)
 
-  async function decide(action: 'confirm' | 'decline') {
+  async function decide(action: 'confirm' | 'decline' | 'done' | 'cancel') {
     if (!token) return
     setBusy(true)
     setActionError(null)

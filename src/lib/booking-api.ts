@@ -109,7 +109,8 @@ export const bookingApi = {
   viewForBusiness: (token: string) =>
     request<Booking>(`/api/bookings/manage/${encodeURIComponent(token)}`),
 
-  decide: (token: string, action: 'confirm' | 'decline',
+  /** چهار تصمیم: تأیید، رد، انجام‌شدن، لغو. */
+  decide: (token: string, action: 'confirm' | 'decline' | 'done' | 'cancel',
            decisionNote?: string) =>
     request<{ ok: boolean; status: string }>(
       `/api/bookings/manage/${encodeURIComponent(token)}/decision`,

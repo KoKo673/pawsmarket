@@ -88,7 +88,7 @@ export function StoreDashboardPage() {
     retry: false,
   })
 
-  async function decide(id: number, action: 'confirm' | 'decline') {
+  async function decide(id: number, action: DecisionAction) {
     await getJson(`/api/store/dashboard/${token}/booking/${id}/decision`, {
       method: 'POST',
       body: JSON.stringify({ action }),
@@ -247,15 +247,25 @@ export function StoreDashboardPage() {
 
 /* ── یک نوبت ───────────────────────────────────────────────── */
 
+/**
+ * چهار کاری که یک کلینیک با یک نوبت می‌کند.
+ *
+ * Two were missing and both left the clinic stuck: `done` — the dashboard
+ * counts an «انجام‌شده» column that no route could write, so a served
+ * customer stayed «تأییدشده» forever — and `cancel` — a confirmed slot
+ * could not be freed when the clinic had to close.
+ */
+type DecisionAction = 'confirm' | 'decline' | 'done' | 'cancel'
+
 function BookingRow({ b, onDecide }: {
   b: DashboardBooking
-  onDecide: (id: number, action: 'confirm' | 'decline') => Promise<void>
+  onDecide: (id: number, action: DecisionAction) => Promise<void>
 }) {
-  const [busy, setBusy] = useState<'confirm' | 'decline' | null>(null)
+  const [busy, setBusy] = useState<DecisionAction | null>(null)
   const at = new Date(b.preferred_at)
   const today = new Date().toDateString() === at.toDateString()
 
-  async function run(action: 'confirm' | 'decline') {
+  async function run(action: DecisionAction) {
     setBusy(action)
     try { await onDecide(b.id, action) } finally { setBusy(null) }
   }
@@ -329,6 +339,33 @@ function BookingRow({ b, onDecide }: {
                   ? <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
                   : <X className="size-3.5" aria-hidden="true" />}
                 رد
+              </Button>
+            </div>
+          )}
+
+          {/*
+            Once the clinic has accepted, the only two things left are what
+            actually happened: the customer came, or they did not. Without
+            these the row stayed «تأییدشده» forever and the dashboard's
+            «انجام‌شده» counter could never move.
+          */}
+          {b.status === 'confirmed' && (
+            <div className="mt-3 flex gap-2">
+              <Button size="sm" className="flex-1 gap-1.5 sm:flex-none"
+                      disabled={busy !== null}
+                      onClick={() => void run('done')}>
+                {busy === 'done'
+                  ? <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                  : <Check className="size-3.5" aria-hidden="true" />}
+                انجام شد
+              </Button>
+              <Button size="sm" variant="ghost" className="flex-1 gap-1.5 sm:flex-none"
+                      disabled={busy !== null}
+                      onClick={() => void run('cancel')}>
+                {busy === 'cancel'
+                  ? <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                  : <X className="size-3.5" aria-hidden="true" />}
+                لغو نوبت
               </Button>
             </div>
           )}
@@ -441,7 +478,7 @@ const STATUS_TONE: Record<string, string> = {
 
 function WeekCalendar({ token, onDecide }: {
   token: string
-  onDecide: (id: number, action: 'confirm' | 'decline') => Promise<void>
+  onDecide: (id: number, action: DecisionAction) => Promise<void>
 }) {
   const [offsetWeeks, setOffsetWeeks] = useState(0)
 
@@ -566,7 +603,7 @@ function WeekCalendar({ token, onDecide }: {
 
 function WeekCard({ b, onDecide }: {
   b: WeekBooking
-  onDecide: (id: number, action: 'confirm' | 'decline') => Promise<void>
+  onDecide: (id: number, action: DecisionAction) => Promise<void>
 }) {
   const at = new Date(b.preferred_at)
   return (
