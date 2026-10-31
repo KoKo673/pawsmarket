@@ -57,11 +57,11 @@ interface StoreDetail {
 
 const FA = new Intl.NumberFormat('fa-IR')
 
-/** `09:00:00` → «۹:۰۰» — the colon and the digits both. */
+/** `09:00:00` → «۹:۰۰» — both sides in Persian digits, not just the hour. */
 function faTime(value: string | null): string {
   if (!value) return ''
   const [h, m] = value.split(':')
-  return `${FA.format(Number(h))}:${(m ?? '00').padStart(2, '0')}`
+  return `${FA.format(Number(h))}:${FA.format(Number(m ?? '00')).padStart(2, '۰')}`
 }
 
 export function StorePage() {
