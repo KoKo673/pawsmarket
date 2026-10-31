@@ -59,7 +59,12 @@ function detailOf(status: number, body: unknown, retryAfter?: string | null): st
   }
   if (status === 401) return 'نشست شما منقضی شده؛ دوباره وارد شوید'
   if (status === 409) return 'این نام کاربری قبلاً گرفته شده'
-  if (status === 403) return 'این عملیات فقط برای صاحب این پروفایل است'
+  // 403 covers two different situations, and saying the wrong one sends
+  // the reader looking in the wrong place: a profile action by a
+  // non-owner, and an operator-only route (product writes) hit by a
+  // normal account. The server's own `detail` wins when it sends one —
+  // this is the fallback for a 403 that carries none.
+  if (status === 403) return 'اجازهٔ این کار را ندارید'
   if (status === 503)
     return 'در حال حاضر به سرور وصل نیستیم؛ لطفاً چند لحظه دیگر تلاش کنید'
   if (status === 429) {
