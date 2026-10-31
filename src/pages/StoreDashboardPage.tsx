@@ -3,7 +3,7 @@ import {
   Clock, Loader2, List, Phone, TrendingUp, User, X,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
@@ -81,20 +81,54 @@ export function StoreDashboardPage() {
   const [view, setView] = useState<'queue' | 'week'>('queue')
   const qc = useQueryClient()
 
+  /**
+   * The clinic keeps this page open all day, so it has to keep asking.
+   *
+   * ── What was wrong before ────────────────────────────────────────────
+   * There was no `refetchInterval` at all: the page fetched once on mount
+   * and then never again. A clinic that opened the dashboard in the morning
+   * would sit in front of «نوبت جدیدی نیست» while bookings piled up behind
+   * it in the database. The only ways to see one were to reload the tab or
+   * to guess and press a tab button.
+   *
+   * A customer picking a time expects an answer that day, and the person who
+   * has to give it would have been looking at a stale screen the whole time.
+   *
+   * ── Why 60 seconds ─────────────────────────────────────────────────
+   * The queue endpoint is one grouped SELECT on an indexed `store_id`; at
+   * one request a minute per open dashboard it costs nothing. Thirty seconds
+   * was the alternative, and it doubles the requests to make a wait that is
+   * already measured in hours feel thirty seconds shorter — not a trade
+   * worth making.
+   *
+   * `refetchIntervalInBackground: false` (the default) stops the timer when
+   * the tab is hidden, so a clinic with ten tabs open is not ten pollers.
+   */
   const q = useQuery({
     queryKey: ['store-dashboard', token, tab],
     queryFn: () => getJson<Dashboard>(`/api/store/dashboard/${token}?status=${tab}`),
     enabled: !!token,
     retry: false,
+    refetchInterval: 60_000,
+    // A dashboard left open overnight should be fresh when someone comes
+    // back to the machine, not up to a minute stale.
+    refetchOnWindowFocus: true,
   })
 
-  async function decide(id: number, action: DecisionAction) {
-    await getJson(`/api/store/dashboard/${token}/booking/${id}/decision`, {
-      method: 'POST',
-      body: JSON.stringify({ action }),
-    })
-    await qc.invalidateQueries({ queryKey: ['store-dashboard', token] })
-    await qc.invalidateQueries({ queryKey: ['store-week', token] })
+  const decide = useMutation({
+    mutationFn: ({ id, action }: { id: number; action: DecisionAction }) =>
+      getJson(`/api/store/dashboard/${token}/booking/${id}/decision`, {
+        method: 'POST',
+        body: JSON.stringify({ action }),
+      }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['store-dashboard', token] })
+      await qc.invalidateQueries({ queryKey: ['store-week', token] })
+    },
+  })
+
+  async function decideBooking(id: number, action: DecisionAction) {
+    await decide.mutateAsync({ id, action }).catch(() => undefined)
   }
 
   if (q.isPending) {
@@ -232,13 +266,13 @@ export function StoreDashboardPage() {
             ) : (
               <ul className="space-y-2.5">
                 {d.items.map(b => (
-                  <BookingRow key={b.id} b={b} onDecide={decide} />
+                  <BookingRow key={b.id} b={b} onDecide={decideBooking} />
                 ))}
               </ul>
             )}
           </>
         ) : (
-          <WeekCalendar token={token!} onDecide={decide} />
+          <WeekCalendar token={token!} onDecide={decideBooking} />
         )}
       </section>
     </Shell>
@@ -262,12 +296,25 @@ function BookingRow({ b, onDecide }: {
   onDecide: (id: number, action: DecisionAction) => Promise<void>
 }) {
   const [busy, setBusy] = useState<DecisionAction | null>(null)
+  // A decision that failed used to leave the button spinning and then stop:
+  // `try { await onDecide } finally { setBusy(null) }` with no catch. The
+  // clinic pressed «تأیید», nothing happened, and the booking stayed pending
+  // with no explanation — the worst outcome for the one screen whose whole
+  // job is answering a customer.
+  const [failed, setFailed] = useState(false)
   const at = new Date(b.preferred_at)
   const today = new Date().toDateString() === at.toDateString()
 
   async function run(action: DecisionAction) {
     setBusy(action)
-    try { await onDecide(b.id, action) } finally { setBusy(null) }
+    setFailed(false)
+    try {
+      await onDecide(b.id, action)
+    } catch {
+      setFailed(true)
+    } finally {
+      setBusy(null)
+    }
   }
 
   return (
@@ -319,6 +366,14 @@ function BookingRow({ b, onDecide }: {
           {b.note && (
             <p className="mt-2 rounded-lg bg-muted/50 px-2.5 py-1.5 text-xs leading-relaxed">
               {b.note}
+            </p>
+          )}
+
+          {failed && (
+            <p role="alert" className="mt-2 rounded-lg bg-destructive/10 px-3 py-2
+              text-[11px] font-semibold text-destructive">
+              تصمیم ثبت نشد. اتصال را بررسی کنید و دوباره بزنید — نوبت هنوز
+              «در انتظار» است.
             </p>
           )}
 
