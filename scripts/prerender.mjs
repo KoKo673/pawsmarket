@@ -184,6 +184,43 @@ async function main() {
     written += 1
   }
 
+  // ── sitemap.xml ────────────────────────────────────────────────────
+  // `robots.txt` has pointed at this file all along, and it did not exist:
+  // nginx fell through to the SPA and answered with index.html and a 200.
+  // A crawler fetched "the sitemap", got HTML, and reported a parse error —
+  // the same trap robots.txt itself documents having been in.
+  //
+  // Generated from the same rows as the pages, so the two cannot drift: a
+  // store that has a page is in the sitemap, and one that does not is not.
+  // Only URLs that actually got a prerendered file are listed, because
+  // sending Google to a 301 or an empty shell is worse than omission.
+  const urls = stores.filter((s) => s.slug).map((s) => {
+    const loc = `${API}/store/${s.slug}`
+    // lastmod is when the row itself last changed, not build time: a build
+    // timestamp on every URL tells a crawler nothing and gets ignored.
+    const stamp = s.enriched_at || s.updated_at || null
+    return { loc, lastmod: stamp ? String(stamp).slice(0, 10) : null }
+  })
+  const staticPages = [
+    { loc: `${API}/`, lastmod: null },
+    { loc: `${API}/explore`, lastmod: null },
+    { loc: `${API}/shop`, lastmod: null },
+  ]
+  const body = [...staticPages, ...urls]
+    .map((u) => (
+      '  <url>\n' +
+      `    <loc>${esc(u.loc)}</loc>\n` +
+      (u.lastmod ? `    <lastmod>${esc(u.lastmod)}</lastmod>\n` : '') +
+      '  </url>'
+    ))
+    .join('\n')
+  const sitemap =
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    body + '\n</urlset>\n'
+  await writeFile(join(OUT, 'sitemap.xml'), sitemap, 'utf8')
+  console.log(`[prerender] sitemap.xml with ${urls.length + staticPages.length} URLs`)
+
   // The list page and the root get a title that says what the site is,
   // which they already have — but the root should also carry the
   // organisation JSON-LD so the site itself can be a result.
