@@ -4,6 +4,7 @@ import {
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { AdminNav } from '@/components/AdminNav'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { faDigits } from '@/lib/fa'
@@ -64,6 +65,8 @@ export function AdminSupportPage() {
           یک تصمیم جداگانه است.
         </p>
       </header>
+
+      <AdminNav />
 
       <div role="tablist" aria-label="وضعیت تیکت"
            className="mb-5 flex gap-1 overflow-x-auto rounded-xl border border-border p-1">

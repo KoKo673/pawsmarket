@@ -2,6 +2,7 @@ import { AlertCircle, Copy, ExternalLink, Link2, Loader2, Search, Store } from '
 import { useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 
+import { AdminNav } from '@/components/AdminNav'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { faDigits } from '@/lib/fa'
@@ -72,6 +73,8 @@ export function AdminStoresPage() {
           می‌کند؛ خودِ لینک دسترسی است.
         </p>
       </header>
+
+      <AdminNav />
 
       <form
         onSubmit={(e) => { e.preventDefault(); setSubmitted(term.trim()) }}

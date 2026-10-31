@@ -5,6 +5,7 @@ import {
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
+import { AdminNav } from '@/components/AdminNav'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { faDigits } from '@/lib/fa'
@@ -59,6 +60,8 @@ export function AdminPage() {
           نیستند.
         </p>
       </header>
+
+      <AdminNav />
 
       <div
         role="tablist"

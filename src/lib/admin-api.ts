@@ -138,6 +138,69 @@ export interface StoreRow {
   bookings: number
 }
 
+/**
+ * یک درخواست دسترسی به داشبورد، با شواهدی که می‌شود بررسی کرد.
+ *
+ * `national_id`, `licence_no` and `proof` are what make this a
+ * *verification* rather than a name-and-phone claim — migration 0017 added
+ * them so the reviewer decides from this list. A type without them would
+ * have produced a screen that approves on a name alone, which is exactly
+ * the hole 0017 was written to close.
+ */
+export interface Claim {
+  id: number
+  store_id: number
+  store_name: string
+  address: string
+  category: string
+  name: string
+  role: string
+  phone: string
+  email: string | null
+  national_id: string | null
+  licence_no: string | null
+  proof: string | null
+  note: string | null
+  status: string
+  review_note: string | null
+  reviewed_at: string | null
+  created_at: string
+}
+
+/**
+ * The three empty states, kept apart on purpose.
+ *
+ *   no_id         sent before ids were kept — nothing to ask about
+ *   never_asked   has an id and was never polled — the reconciler is dead
+ *   processing    asked, telecom has not reported yet — wait
+ *
+ * Collapsing them into one number is how a broken reconciler looks like a
+ * working one.
+ */
+export interface SmsDelivery {
+  announced: number
+  no_id: number
+  never_asked: number
+  delivered: number
+  undelivered: number
+  processing: number
+  unknown: number
+  blacklisted: number
+  last_checked: string | null
+  reconciler_stalled: boolean
+  items: Array<{
+    id: number
+    store_id: number
+    status: string
+    contact_phone: string
+    notified_at: string
+    sms_message_id: number | null
+    sms_delivery_state: number | null
+    sms_checked_at: string | null
+    delivery_fa: string | null
+  }>
+}
+
 export interface Ticket {
   id: number
   subject: string
@@ -215,5 +278,39 @@ export const adminApi = {
       `/api/support/admin/tickets/${id}/status`, {
         method: 'POST',
         body: JSON.stringify({ status }),
+      }),
+
+  /* ── درخواست‌های دسترسی ─────────────────────────────────────
+   *
+   * Approving mints the dashboard link in the same transaction that flips
+   * the claim — a claim marked approved with no link is a business that was
+   * told yes and never heard from us again. So the URL comes back on the
+   * approve call and must be shown once: the server keeps only its hash.
+   */
+  claims: (status = 'pending') =>
+    call<{ status: string; items: Claim[] }>(
+      `/api/admin/claims?status=${encodeURIComponent(status)}`),
+
+  approveClaim: (id: number) =>
+    call<{ ok: boolean; store: string; url: string }>(
+      `/api/admin/claims/${id}/approve`, { method: 'POST', body: '{}' }),
+
+  rejectClaim: (id: number) =>
+    call<{ ok: boolean }>(
+      `/api/admin/claims/${id}/reject`, { method: 'POST', body: '{}' }),
+
+  /* ── تحویل پیامک ─────────────────────────────────────────────
+   *
+   * Read is the honest count of all three empty states; the POST asks the
+   * gateway about every row that has an id and no final answer yet.
+   */
+  smsDelivery: () => call<SmsDelivery>('/api/admin/sms-delivery'),
+
+  reconcileSms: (limit = 100) =>
+    call<{ asked: number; updated: number; still_unknown: number
+           failed: number; no_provider: boolean
+           states: Record<string, number> }>(
+      `/api/admin/sms-delivery/reconcile?limit=${limit}`, {
+        method: 'POST', body: '{}',
       }),
 }

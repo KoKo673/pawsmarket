@@ -65,6 +65,8 @@ const AdminPage = lazy(() =>
   import('@/pages/AdminPage').then((m) => ({ default: m.AdminPage })))
 const AdminSupportPage = lazy(() =>
   import('@/pages/AdminSupportPage').then((m) => ({ default: m.AdminSupportPage })))
+const AdminClaimsPage = lazy(() =>
+  import('@/pages/AdminClaimsPage').then((m) => ({ default: m.AdminClaimsPage })))
 const AdminLoginPage = lazy(() =>
   import('@/pages/AdminLoginPage').then((m) => ({ default: m.AdminLoginPage })))
 const AdminStoresPage = lazy(() =>
@@ -380,6 +382,16 @@ function AppRoutes() {
                 <AnimatedPage>
                   <RequireAdmin>
                     <AdminSupportPage />
+                  </RequireAdmin>
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/admin/claims"
+              element={
+                <AnimatedPage>
+                  <RequireAdmin>
+                    <AdminClaimsPage />
                   </RequireAdmin>
                 </AnimatedPage>
               }
