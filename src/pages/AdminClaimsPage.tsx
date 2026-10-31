@@ -74,8 +74,29 @@ export function AdminClaimsPage() {
     queryFn: () => adminApi.claims(status),
   })
 
+  /**
+   * Refetch the queue — and keep the row on screen while it happens.
+   *
+   * ── The bug this replaces ────────────────────────────────────────────
+   * This used to call `invalidateQueries`, which marks the cached list
+   * stale and then refetches. Between those two moments TanStack Query has
+   * no data for the active query, so the component unmounts every row —
+   * including the one that was just approved, and with it the only copy of
+   * the dashboard URL the server will ever show.
+   *
+   * Measured 2026-10-31 on production: approving a claim wrote `approved`
+   * and a live `dashboard_hash` to the database, the row disappeared before
+   * `issuedUrl` could render, and the link was gone. The store had a working
+   * dashboard and nobody could open it — the exact failure this page was
+   * written to end, reintroduced by a refetch.
+   *
+   * `refetchQueries` keeps the previous data in place while the request is
+   * in flight, so the list re-renders in place instead of emptying. It
+   * matters more here than anywhere else in the app: the URL is a secret
+   * shown once, and a flash of empty state is not a cosmetic problem.
+   */
   function refresh() {
-    void qc.invalidateQueries({ queryKey: ['admin', 'claims'] })
+    void qc.refetchQueries({ queryKey: ['admin', 'claims'], type: 'active' })
     void qc.invalidateQueries({ queryKey: ['admin', 'overview'] })
   }
 
@@ -111,6 +132,36 @@ export function AdminClaimsPage() {
           </button>
         ))}
       </div>
+
+      {/* ── لینک‌هایی که همین حالا ساخته شدند ──────────────────────
+          Above the list, and outside it, because approving a pending claim
+          removes that claim from this list on the next refetch. If the only
+          place the URL lived was inside the row, it vanished with the row —
+          which is exactly what happened on production on 2026-10-31: the
+          dashboard hash was written, the link was never seen, and nothing
+          can show it again.
+
+          The server keeps only a sha256, so this panel is the last chance.
+          It survives tab switches and refetches because it is its own state
+          at the page level, not a field on a row that comes and goes. */}
+      {Object.keys(issued).length > 0 && (
+        <section aria-labelledby="issued-h"
+                 className="mb-5 rounded-2xl border border-primary/30 bg-primary/5 p-4">
+          <h2 id="issued-h" className="flex items-center gap-1.5 text-xs font-bold">
+            <BadgeCheck className="size-3.5" aria-hidden="true" />
+            لینک‌های ساخته‌شده در این نشست
+          </h2>
+          <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+            فقط همین یک بار. با رفتن از این صفحه، دیگر قابل بازیابی نیست —
+            همین حالا رونوشت کنید.
+          </p>
+          <ul className="mt-3 space-y-2">
+            {Object.entries(issued).map(([id, url]) => (
+              <IssuedLink key={id} url={url} />
+            ))}
+          </ul>
+        </section>
+      )}
 
       {q.isPending && (
         <div className="grid place-items-center py-16">
@@ -353,5 +404,48 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <dt className="text-[11px] font-bold text-muted-foreground">{label}</dt>
       <dd className="mt-0.5">{children}</dd>
     </div>
+  )
+}
+
+/**
+ * یک لینک ساخته‌شده — با رونوشت، و بدون وابستگی به ردیفی که رفته است.
+ *
+ * Its own component so the "copied" state belongs to one URL rather than to
+ * the page: two claims approved in a row would otherwise share one flag and
+ * flash the tick on the wrong line.
+ */
+function IssuedLink({ url }: { url: string }) {
+  const [copied, setCopied] = useState(false)
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    } catch {
+      // Clipboard blocked: the URL is selectable on screen, which is the
+      // fallback that matters.
+    }
+  }
+
+  return (
+    <li className="flex gap-2">
+      <code dir="ltr"
+            className="min-w-0 flex-1 select-all overflow-x-auto rounded-md
+              bg-card px-2 py-1.5 font-mono text-[11px]">
+        {url}
+      </code>
+      <Button type="button" size="icon-sm" variant="outline"
+              onClick={copy} aria-label="رونوشت لینک">
+        {copied
+          ? <Check className="size-3.5" aria-hidden="true" />
+          : <Copy className="size-3.5" aria-hidden="true" />}
+      </Button>
+      <Button asChild size="icon-sm" variant="outline">
+        <a href={url} target="_blank" rel="noreferrer" aria-label="باز کردن داشبورد">
+          <ExternalLink className="size-3.5" aria-hidden="true" />
+        </a>
+      </Button>
+    </li>
   )
 }
