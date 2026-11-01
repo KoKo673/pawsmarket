@@ -166,6 +166,12 @@ export function StatsGrid({ item }: { item: ListingWithDistance }) {
               value={
                 // every item, in full, on its own row: 4–5 scopes do not fit a
                 // third-width cell, and slicing used to cut a word in half
+                // '—' is the "no value" placeholder, not prose punctuation:
+                // it is the same glyph a printed table uses for an empty
+                // cell, and it is the one em dash shape the anti-slop rule
+                // allows to stay. There are 12 of these across the app, all
+                // in this sense. Replacing them with a hyphen makes an empty
+                // field read as broken text rather than as empty.
                 item.categories?.length ? item.categories.join('، ') : '—'
               }
             />
