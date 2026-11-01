@@ -118,15 +118,46 @@ function collectTextContrast() {
     return [0, 1, 2].map((i) => fg[i] * a + bg[i] * (1 - a))
   }
 
+  /* Every colour in a gradient, so the check can use the worst one.
+     A linear-gradient over an opaque colour is readable: the text sits on
+     SOME stop, and the reader's position is not ours to choose. Testing
+     every stop and taking the worst is what a reader at the bad end sees.
+     `none` for images and anything this cannot parse. */
+  const gradientColours = (img) => {
+    if (!img || img === 'none' || !/linear-gradient/.test(img)) return null
+    const stops = []
+    const re = /rgba?\(([^)]+)\)/g
+    let m
+    while ((m = re.exec(img))) {
+      const p = m[1].split(/[,\s/]+/).filter(Boolean).map(Number)
+      if (p.length >= 3 && !p.some(Number.isNaN)) stops.push([p[0], p[1], p[2]])
+    }
+    return stops.length ? stops : null
+  }
+
   /* Walk up compositing every translucent layer until an opaque one. Returns
-     null when a gradient or an image is in the way: those paint something this
-     cannot read, and guessing the page background underneath would be a lie. */
+     null when an image is in the way, or a gradient whose stops cannot be
+     read: those paint something this cannot measure, and guessing the page
+     background underneath would be a lie.
+
+     A gradient over an opaque colour is NOT such a case. It used to be
+     skipped, and that is exactly where a real defect hid: the CTA banner
+     ran rgb(250,104,30) under white text, 2.97:1, and appeared in no
+     failing count for months because the audit called the node "unresolved".
+     Unresolved is a blind spot, and a blind spot that reports itself as
+     clean is worse than a failure. */
   const bgOf = (el) => {
     const stack = []
     let opaque = null
+    let grad = null
     for (let n = el; n; n = n.parentElement) {
       const cs = getComputedStyle(n)
-      if (cs.backgroundImage && cs.backgroundImage !== 'none') return null
+      if (cs.backgroundImage && cs.backgroundImage !== 'none') {
+        const stops = gradientColours(cs.backgroundImage)
+        if (!stops) return null
+        grad = stops
+        break
+      }
       const c = parse(cs.backgroundColor)
       if (c && c[3] > 0.001) {
         stack.push(c)
@@ -136,6 +167,17 @@ function collectTextContrast() {
     if (!opaque) stack.push([255, 255, 255, 1])
     let acc = stack.pop().slice(0, 3)
     while (stack.length) acc = over(stack.pop(), acc)
+    // On a gradient, return the worst stop against the folded background —
+    // every element this function returns is compared the same way, so the
+    // caller needs no special case.
+    if (grad) {
+      let worst = grad[0], worstRatio = Infinity
+      for (const stop of grad) {
+        const r = ratio(over([...stop, 1], acc), acc)
+        if (r < worstRatio) { worstRatio = r; worst = stop }
+      }
+      return worst
+    }
     return acc
   }
 
