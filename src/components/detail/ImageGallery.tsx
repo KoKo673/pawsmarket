@@ -63,11 +63,21 @@ export function ImageGallery({
         {count > 1 && (
           <>
             {/* قبلی — سمت راست در RTL */}
+            {/* ── bg-card, not bg-white/90 ─────────────────────────────
+                A white plate with `text-foreground` on it inverts in dark
+                mode: foreground goes near-white and so does the plate, so
+                the arrows measured 1.11:1 — present in the DOM, invisible
+                to a reader. `bg-card text-card-foreground` is the pair that
+                stays a pair in both themes.
+
+                `min-h-11 min-w-11` rather than `size-9`: 36px was under
+                R-03's 44px minimum for the two controls that are the only
+                way to page through a gallery on a phone. */}
             <button
               type="button"
               onClick={() => go(-1)}
               aria-label="عکس قبلی"
-              className="absolute right-3 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-foreground shadow-soft transition hover:scale-105 active:scale-95"
+              className="absolute right-3 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-card text-card-foreground shadow-soft min-h-11 min-w-11 transition hover:scale-105 active:scale-95"
             >
               <ChevronRight className="size-5" />
             </button>
@@ -76,7 +86,7 @@ export function ImageGallery({
               type="button"
               onClick={() => go(1)}
               aria-label="عکس بعدی"
-              className="absolute left-3 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-foreground shadow-soft transition hover:scale-105 active:scale-95"
+              className="absolute left-3 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-card text-card-foreground shadow-soft min-h-11 min-w-11 transition hover:scale-105 active:scale-95"
             >
               <ChevronLeft className="size-5" />
             </button>

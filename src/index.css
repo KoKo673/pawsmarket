@@ -159,6 +159,30 @@
     background-color: hsl(var(--primary) / 0.25);
   }
 
+  /* ── A control should look pressable ─────────────────────────────
+     R-39 asks for `cursor: pointer` on every enabled interactive element,
+     set once in the base layer. Tailwind's preflight does not do it, and the
+     browser default for `<button>` is `default`, so every button in the app
+     was showing the arrow a paragraph shows. Native links get pointer from
+     the UA stylesheet; buttons, summaries and selects do not.
+
+     Disabled controls say `not-allowed` rather than falling back to the
+     arrow: "you cannot press this" is information, and it is the same
+     distinction button.tsx makes for its own disabled state. */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  summary,
+  select:not(:disabled),
+  input[type='checkbox']:not(:disabled),
+  input[type='radio']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+
   /* Coordinates must never bidi-scramble inside RTL paragraphs */
   .ltr-inline {
     direction: ltr;

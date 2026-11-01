@@ -39,7 +39,21 @@ export function AdoptionRail() {
     [data],
   )
 
-  if (isError) return null
+  // Same reason as ProductRail: vanishing on failure looks like a design
+  // decision. "No animals available" and "we could not ask" are not the same
+  // sentence, and only one of them is our fault.
+  if (isError) {
+    return (
+      <section data-motion-section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
+        <div className="rounded-2xl border border-destructive/25 bg-destructive/5 px-6 py-8 text-center">
+          <p className="text-sm font-extrabold">فهرست حیوانات بارگذاری نشد</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            اتصال به سرور برقرار نشد. کمی بعد دوباره سر بزنید.
+          </p>
+        </div>
+      </section>
+    )
+  }
   if (!isLoading && adoptables.length === 0) return null
 
   return (

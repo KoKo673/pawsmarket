@@ -26,7 +26,12 @@ const buttonVariants = cva(
        — «I cannot press this yet» is information to read, not to squint at.
        So the filled variants change colour instead of fading, and only the
        text-on-background variants keep the 70%. */
-    'disabled:pointer-events-none active:scale-[0.97]',
+    /* `pointer-events-none` removes the element from hit-testing, so the
+       cursor falls through to the parent and a disabled button shows the
+       default arrow. `not-allowed` is what says "this is here and you
+       cannot press it". `pointer-events-none` is kept for the click, the
+       cursor rule is what the reader sees. */
+    'disabled:pointer-events-none disabled:cursor-not-allowed active:scale-[0.97]',
     '[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   ],
   {

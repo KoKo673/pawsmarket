@@ -138,7 +138,7 @@ export function CartPage() {
                 <div className="flex flex-col items-end gap-2">
                   <div className="flex items-center gap-1 rounded-xl border border-border">
                     <Button
-                      type="button" size="icon" variant="ghost" className="size-8"
+                      type="button" size="icon" variant="ghost" className="size-11"
                       aria-label="کم کردن"
                       disabled={it.qty <= 1 || setQty.isPending}
                       onClick={() => setQty.mutate({ id: it.id, qty: it.qty - 1 })}
@@ -147,7 +147,7 @@ export function CartPage() {
                     </Button>
                     <span className="min-w-6 text-center text-sm font-bold">{it.qty}</span>
                     <Button
-                      type="button" size="icon" variant="ghost" className="size-8"
+                      type="button" size="icon" variant="ghost" className="size-11"
                       aria-label="زیاد کردن"
                       disabled={it.qty >= 20 || setQty.isPending}
                       onClick={() => setQty.mutate({ id: it.id, qty: it.qty + 1 })}

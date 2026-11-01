@@ -53,7 +53,24 @@ export function ProductRail() {
     prevShown.current = shown.length
   }, [shown.length])
 
-  if (isError || (!isLoading && products.length === 0)) return null
+  // An error used to return null, which removed this entire section from
+  // the homepage — a backend outage looked like a page that was designed
+  // without products. An empty list legitimately renders nothing; a failure
+  // says so. The two are different facts and the reader deserves the one
+  // that is true.
+  if (isError) {
+    return (
+      <section data-motion-section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
+        <div className="rounded-2xl border border-destructive/25 bg-destructive/5 px-6 py-8 text-center">
+          <p className="text-sm font-extrabold">محصولات همین حالا بارگذاری نشد</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            مشکل از اتصال است، نه از نبودِ کالا. صفحه را دوباره باز کنید.
+          </p>
+        </div>
+      </section>
+    )
+  }
+  if (!isLoading && products.length === 0) return null
 
   return (
     <section data-motion-section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
