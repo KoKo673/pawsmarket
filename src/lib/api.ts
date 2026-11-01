@@ -327,7 +327,7 @@ function toProductListing(raw: RawRow, storeNames: Map<string, string>): Product
     id: wireId('product', raw),
     kind: 'product',
     name,
-    description: str(raw.description, `«${name}» — توضیحات از سمت فروشگاه ارائه نشده است.`),
+    description: str(raw.description, `«${name}»، توضیحات از سمت فروشگاه ارائه نشده است.`),
     images:
       Array.isArray(raw.images) && raw.images.length > 0
         ? (raw.images as string[])
@@ -404,7 +404,7 @@ function toStoreListing(raw: RawRow): StoreListing {
     // and read by the sheet on open; putting ~183 bytes of prose per shop in
     // the initial payload meant 460 copies of it for a text only one modal
     // shows.
-    description: str(raw.description, `«${name}» — ${storeLabel(category) || 'فروشگاه'} در ${address}.`),
+    description: str(raw.description, `«${name}»، ${storeLabel(category) || 'فروشگاه'} در ${address}.`),
     images: storeImages(raw, category),
     location: toPoint(raw),
     address,

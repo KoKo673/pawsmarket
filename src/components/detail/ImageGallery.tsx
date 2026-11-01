@@ -43,7 +43,7 @@ export function ImageGallery({
         <img
           key={images[active]}
           src={images[active]}
-          alt={`${alt} — عکس ${faDigits(active + 1)} از ${faDigits(count)}`}
+          alt={`${alt}، عکس ${faDigits(active + 1)} از ${faDigits(count)}`}
           className={cn(
             'size-full transition-opacity',
             fit === 'contain' ? 'object-contain bg-muted/40 p-3' : 'object-cover',

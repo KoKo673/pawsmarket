@@ -61,7 +61,7 @@ export function FeedPage() {
           </Button>
         </div>
       ) : items.length === 0 ? (
-        <EmptyFeed message="فید شما خالی است — چند حیوان را دنبال کنید تا لحظه‌هایشان اینجا بیاید." />
+        <EmptyFeed message="فید شما خالی است، چند حیوان را دنبال کنید تا لحظه‌هایشان اینجا بیاید." />
       ) : (
         <>
           <div data-motion-section="group" className="space-y-5">

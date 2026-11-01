@@ -73,7 +73,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     if (typeof window !== 'undefined' && !window.isSecureContext) {
       setStatus('insecure')
       console.info(
-        '[PawsMarket] Geolocation needs a secure context — open the site via https:// (HTTPS_DEV=1) or localhost.',
+        '[PawsMarket] Geolocation needs a secure context، open the site via https:// (HTTPS_DEV=1) or localhost.',
       )
       return
     }
@@ -95,7 +95,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
         if (!isInsideIran(latitude, longitude)) {
           setStatus('out-of-region')
           console.info(
-            '[PawsMarket] Geolocation returned a point outside Iran — a VPN/proxy is likely active. Keeping the Tehran origin.',
+            '[PawsMarket] Geolocation returned a point outside Iran، a VPN/proxy is likely active. Keeping the Tehran origin.',
             { latitude, longitude },
           )
           return
@@ -112,7 +112,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
           setStatus('approximate')
           console.info(
             '[PawsMarket] Geolocation fix is too coarse or outside the service '
-            + 'area — keeping the Tehran origin.',
+            + 'area، keeping the Tehran origin.',
             { latitude, longitude, accuracy, inArea },
           )
           return
@@ -124,7 +124,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
         // Permission denied vs. timeout/unavailable — both fall back to Tehran
         setStatus(error.code === error.PERMISSION_DENIED ? 'denied' : 'default')
         console.info(
-          '[PawsMarket] Geolocation unavailable — keeping Tehran fallback.',
+          '[PawsMarket] Geolocation unavailable، keeping Tehran fallback.',
           error.message,
         )
       },

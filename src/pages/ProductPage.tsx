@@ -162,7 +162,7 @@ export function ProductPage() {
                   تأمین
                 </dt>
                 <dd className="flex-1 text-muted-foreground">
-                  از {p.source} — قیمت روزانه به‌روز می‌شود.
+                  از {p.source}، قیمت روزانه به‌روز می‌شود.
                 </dd>
               </div>
             )}

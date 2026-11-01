@@ -73,7 +73,7 @@ export function PetsDiscoverPage() {
           </span>
           <p className="mt-4 text-sm font-extrabold">هنوز پروفایلی در این محدوده نیست</p>
           <p className="mt-1 max-w-xs text-xs leading-relaxed text-muted-foreground">
-            اولین نفر باشید — برای حیوان‌تان پروفایل بسازید.
+            اولین نفر باشید، برای حیوان‌تان پروفایل بسازید.
           </p>
           <Link to="/me" className="mt-5 text-sm font-bold text-primary hover:underline">
             ساخت پروفایل حیوان

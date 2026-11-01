@@ -63,7 +63,7 @@ export function CreateMomentDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {asStory ? 'استوری ۲۴ ساعته' : 'لحظه‌ی تازه'} — {petName}
+            {asStory ? 'استوری ۲۴ ساعته' : 'لحظه‌ی تازه'}، {petName}
           </DialogTitle>
         </DialogHeader>
 

@@ -372,7 +372,7 @@ function BookingRow({ b, onDecide }: {
           {failed && (
             <p role="alert" className="mt-2 rounded-lg bg-destructive/10 px-3 py-2
               text-[11px] font-semibold text-destructive">
-              تصمیم ثبت نشد. اتصال را بررسی کنید و دوباره بزنید — نوبت هنوز
+              تصمیم ثبت نشد. اتصال را بررسی کنید و دوباره بزنید، نوبت هنوز
               «در انتظار» است.
             </p>
           )}

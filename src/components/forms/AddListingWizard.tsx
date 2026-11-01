@@ -145,7 +145,7 @@ export function AddListingWizard() {
         </span>
         <h2 className="mt-6 text-2xl font-extrabold tracking-tight">آگهی منتشر شد!</h2>
         <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
-          «{draft.name}» داخل شعاع شما فعال شد — پاسخ از بک‌اند پازمارکت دریافت شد.
+          «{draft.name}» داخل شعاع شما فعال شد؛ پاسخ از بک‌اند پازمارکت دریافت شد.
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <Button asChild size="lg">

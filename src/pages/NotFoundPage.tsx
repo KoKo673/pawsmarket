@@ -12,7 +12,7 @@ export function NotFoundPage() {
       </span>
       <h1 className="mt-8 text-5xl font-extrabold tracking-tight">۴۰۴</h1>
       <p className="mt-3 max-w-sm text-balance text-sm leading-relaxed text-muted-foreground">
-        این مسیر به بن‌بست رسیده — صفحه‌ای که دنبالش بودید از روی نقشه پاک شده.
+        این مسیر به بن‌بست رسیده، صفحه‌ای که دنبالش بودید از روی نقشه پاک شده.
       </p>
       <Button asChild size="lg" className="mt-7 gap-2">
         <Link to="/">

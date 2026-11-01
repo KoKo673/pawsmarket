@@ -158,7 +158,7 @@ export function PhoneAuthForm() {
               onClick={() => { setStage('phone'); setError(null); setNotice(null) }}
               className="text-sm font-bold text-primary hover:underline"
             >
-              {formatPhoneForDisplay(normalised)} — تغییر شماره
+              {formatPhoneForDisplay(normalised)}، تغییر شماره
             </button>
           </div>
 

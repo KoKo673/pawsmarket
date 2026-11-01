@@ -215,7 +215,7 @@ export function BookingPage() {
               </p>
               <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
                 اگر با این مرکز تماس گرفتید و خواستید خودتان هم تأییدشان کنید،
-                این لینک را برایشان بفرستید — بدون ثبت‌نام باز می‌شود.
+                این لینک را برایشان بفرستید، بدون ثبت‌نام باز می‌شود.
               </p>
               <div className="mt-2 flex gap-2">
                 <Input readOnly value={link} dir="ltr" className="text-xs" />

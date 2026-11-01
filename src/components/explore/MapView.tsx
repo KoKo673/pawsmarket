@@ -25,7 +25,7 @@ function markerLabel(item: ListingWithDistance): string {
   const kind = item.kind === 'pet' ? 'حیوان' : item.kind === 'product' ? 'محصول' : 'فروشگاه'
   if (item.kind === 'store') return `${kind}: ${item.name}`
   if (item.price === 0) return `${kind} برای سرپرستی: ${item.name}`
-  return `${kind}: ${item.name} — ${faPriceShort(item.price)} تومان`
+  return `${kind}: ${item.name}، ${faPriceShort(item.price)} تومان`
 }
 
 /**
@@ -223,14 +223,14 @@ const originIcon = L.divIcon({
 const STATUS_HINT: Record<GeoStatus, string> = {
   default: 'برای پیدا کردن مکان واقعی‌تان اجازه‌ی دسترسی بدهید',
   locating: 'در حال دریافت مکان…',
-  active: 'نقشه روی مکان واقعی شماست — برای بازگشت دوباره بزنید',
-  denied: 'دسترسی به مکان رد شد — نقشه روی تهران می‌ماند',
+  active: 'نقشه روی مکان واقعی شماست؛ برای بازگشت دوباره بزنید',
+  denied: 'دسترسی به مکان رد شد؛ نقشه روی تهران می‌ماند',
   unsupported: 'مرورگر شما از مکان‌یابی پشتیبانی نمی‌کند',
-  insecure: 'مکان‌یابی فقط روی HTTPS کار می‌کند — با آدرس https باز کنید (راهنمای dev.cmd)',
+  insecure: 'مکان‌یابی فقط روی HTTPS کار می‌کند؛ با آدرس https باز کنید (راهنمای dev.cmd)',
   'out-of-region':
-    'موقعیت برگشتی خارج از ایران است — VPN/پروکسی را خاموش کنید تا مکان واقعی‌تان پیدا شود',
+    'موقعیت برگشتی خارج از ایران است؛ VPN/پروکسی را خاموش کنید تا مکان واقعی‌تان پیدا شود',
   approximate:
-    'موقعیت تقریبی بود (چند کیلومتر خطا) — برای دقت بیشتر GPS گوشی را روشن کنید یا محله را جستجو کنید',
+    'موقعیت تقریبی بود (چند کیلومتر خطا)؛ برای دقت بیشتر GPS گوشی را روشن کنید یا محله را جستجو کنید',
 }
 
 /**

@@ -152,7 +152,7 @@ export function AdminClaimsPage() {
             لینک‌های ساخته‌شده در این نشست
           </h2>
           <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-            فقط همین یک بار. با رفتن از این صفحه، دیگر قابل بازیابی نیست —
+            فقط همین یک بار. با رفتن از این صفحه، دیگر قابل بازیابی نیست.
             همین حالا رونوشت کنید.
           </p>
           <ul className="mt-3 space-y-2">
@@ -333,7 +333,7 @@ function ClaimDetail({
            className="flex items-start gap-2 rounded-lg bg-destructive/10 px-3 py-2
              text-[11px] font-semibold text-destructive">
           <ShieldQuestion className="mt-px size-3.5 shrink-0" aria-hidden="true" />
-          هیچ شاهدی ثبت نشده — این درخواست را تأیید نکنید.
+          هیچ شاهدی ثبت نشده، این درخواست را تأیید نکنید.
         </p>
       )}
 
@@ -341,7 +341,7 @@ function ClaimDetail({
         <div className="space-y-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-3">
           <p className="flex items-center gap-1.5 text-[11px] font-bold">
             <CheckCircle2 className="size-3.5" aria-hidden="true" />
-            تأیید شد — این لینک فقط همین یک بار نمایش داده می‌شود
+            تأیید شد، این لینک فقط همین یک بار نمایش داده می‌شود
           </p>
           <div className="flex gap-2">
             <code dir="ltr"

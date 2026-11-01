@@ -161,7 +161,7 @@ function Assistant() {
     <section className="mb-6 rounded-2xl border border-border bg-card p-4">
       <h2 className="text-sm font-bold">یک سؤال سریع</h2>
       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-        پاسخ‌ها از سفارش‌ها و قوانین همین سایت می‌آید — نه از حدس. اگر
+        پاسخ‌ها از سفارش‌ها و قوانین همین سایت می‌آید، نه از حدس. اگر
         موضوع دربارهٔ پول یا شکایت باشد، همین‌جا به یک نفر ارجاع داده می‌شود.
       </p>
 

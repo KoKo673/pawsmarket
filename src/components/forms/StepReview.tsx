@@ -135,7 +135,7 @@ export function StepReview({ draft }: { draft: Draft }) {
 
       <p className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-3.5 py-2 text-xs font-semibold text-tide-800 dark:text-tide-300">
         <CheckCircle2 className="size-4" />
-        آماده‌ی انتشار — هر زمان بخواهید می‌توانید ویرایش یا حذفش کنید.
+        آماده‌ی انتشار، هر زمان بخواهید می‌توانید ویرایش یا حذفش کنید.
       </p>
     </div>
   )

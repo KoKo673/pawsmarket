@@ -65,7 +65,7 @@ export function StepLocation({ draft, update }: StepProps) {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          برای ثبت نقطه روی نقشه کلیک کنید — مختصات به‌صورت
+          برای ثبت نقطه روی نقشه کلیک کنید؛ مختصات به‌صورت
           <code className="mx-1 rounded bg-muted px-1.5 py-0.5 text-[11px] font-bold">geography(Point, 4326)</code>
           برای PostGIS ذخیره می‌شود.
         </p>

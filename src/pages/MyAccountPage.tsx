@@ -226,7 +226,7 @@ export function MyAccountPage() {
         ) : pets.length === 0 ? (
           <div className="rounded-2xl border border-border/60 bg-card px-6 py-10 text-center shadow-soft">
             <p className="text-sm font-semibold text-muted-foreground">
-              هنوز حیوانی ثبت نکرده‌اید — با «افزودن حیوان» شروع کنید.
+              هنوز حیوانی ثبت نکرده‌اید، با «افزودن حیوان» شروع کنید.
             </p>
           </div>
         ) : (

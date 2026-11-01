@@ -16,13 +16,13 @@ function locationPlaceholder(status: GeoStatus): string {
     case 'locating':
       return 'در حال پیدا کردن شما…'
     case 'denied':
-      return 'دسترسی مسدود — نام محله را بنویسید'
+      return 'دسترسی مسدود؛ نام محله را بنویسید'
     case 'insecure':
       return 'برای مکان‌یابی سایت را با https باز کنید'
     case 'out-of-region':
-      return 'VPN روشن است — موقعیت واقعی پیدا نشد'
+      return 'VPN روشن است؛ موقعیت واقعی پیدا نشد'
     case 'approximate':
-      return 'موقعیت تقریبی بود — تهران نمایش داده می‌شود'
+      return 'موقعیت تقریبی بود؛ تهران نمایش داده می‌شود'
     default:
       return 'تهران'
   }

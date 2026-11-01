@@ -13,7 +13,7 @@ export function AddPage() {
           ثبت حیوان خانگی یا محصول
         </h1>
         <p data-motion-item className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-          چهار مرحله‌ی ساده — عکس، اطلاعات و یک پین دقیق روی نقشه برای جستجوی مکانی.
+          چهار مرحله‌ی ساده، عکس، اطلاعات و یک پین دقیق روی نقشه برای جستجوی مکانی.
         </p>
       </header>
 

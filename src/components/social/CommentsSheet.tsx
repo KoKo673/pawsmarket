@@ -81,7 +81,7 @@ export function CommentsSheet({
             </p>
           ) : items.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
-              هنوز کامنتی نیست — اولین نفر باشید
+              هنوز کامنتی نیست، اولین نفر باشید
             </p>
           ) : (
             items.map((c) => (

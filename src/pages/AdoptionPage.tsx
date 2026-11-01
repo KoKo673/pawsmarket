@@ -102,7 +102,7 @@ export function AdoptionPage() {
           حیوانات در انتظار خانه
         </h1>
         <p data-motion-item className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-          پروفایل‌ها را ببینید و برای سرپرستی درخواست بدهید — مالک تصمیم می‌گیرد.
+          پروفایل‌ها را ببینید و برای سرپرستی درخواست بدهید، مالک تصمیم می‌گیرد.
         </p>
       </header>
 
@@ -263,7 +263,7 @@ export function AdoptionPage() {
             <Textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="چند خطی از خودتان و شرایط نگهداری بنویسید — صداقت مهم‌ترین چیز است…"
+              placeholder="چند خطی از خودتان و شرایط نگهداری بنویسید، صداقت مهم‌ترین چیز است…"
               rows={4}
               minLength={10}
               maxLength={500}

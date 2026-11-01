@@ -208,7 +208,7 @@ export function ExplorePage() {
                   <>
                     <h2 className="mt-5 text-lg font-extrabold">هنوز آگهی ذخیره نکرده‌اید</h2>
                     <p className="mt-1.5 max-w-xs text-sm text-muted-foreground">
-                      روی قلب هر کارت بزنید تا اینجا جمع شود — لیست روی دستگاه شما می‌ماند.
+                      روی قلب هر کارت بزنید تا اینجا جمع شود، لیست روی دستگاه شما می‌ماند.
                     </p>
                     <Button className="mt-5" onClick={() => setFavoritesOnly(false)}>
                       مشاهده‌ی همه‌ی آگهی‌ها
@@ -220,7 +220,7 @@ export function ExplorePage() {
                       در شعاع {faDigits(radiusKm)} کیلومتری چیزی پیدا نشد
                     </h2>
                     <p className="mt-1.5 max-w-xs text-sm text-muted-foreground">
-                      شعاع را بزرگ‌تر کنید یا یک فیلتر را بردارید — حتماً حیواناتی همین اطراف هستند.
+                      شعاع را بزرگ‌تر کنید یا یک فیلتر را بردارید، حتماً حیواناتی همین اطراف هستند.
                     </p>
                     <Button className="mt-5" onClick={() => setFilterDrawerOpen(true)}>
                       <SlidersHorizontal className="size-4" />

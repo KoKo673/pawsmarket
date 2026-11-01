@@ -165,7 +165,14 @@ export function StoryBar({
             </span>
           </figure>
 
-          <p className="absolute bottom-6 text-xs font-medium text-white/70">
+          {/* A photo is behind this, so no fixed ratio can be promised —
+              white/70 on a bright photo is unreadable and no calculation
+              can say otherwise, because the background is not a colour.
+              The chip pattern is the honest fix and it is already used two
+              elements up (`bg-black/55` behind the pet name): a dark plate
+              makes the contrast ours to guarantee instead of the photo's. */}
+          <p className="absolute bottom-6 rounded-full bg-black/55 px-3 py-1 text-xs
+            font-medium text-white backdrop-blur">
             {faDigits(idx + 1)} از {faDigits(total)} · استوری‌ها ۲۴ ساعت فعال‌اند
           </p>
 

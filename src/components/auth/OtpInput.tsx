@@ -134,7 +134,7 @@ export function OtpInput({
              صفرِ ابتدایی حساب می‌کند و خالی نشان می‌دهد. */
           type="text"
           maxLength={1}
-          aria-label={`${label} — رقم ${i + 1}`}
+          aria-label={`${label}، رقم ${i + 1}`}
           className={cn(
             'h-12 w-10 rounded-xl border border-input bg-card text-center',
             'text-lg font-extrabold shadow-soft',

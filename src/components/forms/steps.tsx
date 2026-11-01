@@ -102,7 +102,7 @@ export function StepBasics({ draft, update }: StepProps) {
           id="draft-name"
           value={draft.name}
           onChange={(e) => update({ name: e.target.value })}
-          placeholder={draft.kind === 'pet' ? 'مثلاً بیسکویت' : 'مثلاً غذای خشک توله سگ — ۳ کیلوگرم'}
+          placeholder={draft.kind === 'pet' ? 'مثلاً بیسکویت' : 'مثلاً غذای خشک توله سگ، ۳ کیلوگرم'}
         />
       </div>
 
@@ -205,7 +205,7 @@ export function StepDetails({ draft, update }: StepProps) {
           id="draft-desc"
           value={draft.description}
           onChange={(e) => update({ description: e.target.value })}
-          placeholder="خلق‌وخو، اسباب‌بازی مورد علاقه، رژیم غذایی — بگذارید کسی عاشقش شود…"
+          placeholder="خلق‌وخو، اسباب‌بازی مورد علاقه، رژیم غذایی، بگذارید کسی عاشقش شود…"
           rows={4}
         />
         <p className="text-end text-xs text-muted-foreground">
@@ -289,7 +289,7 @@ export function StepDetails({ draft, update }: StepProps) {
       {draft.kind === 'pet' && (
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="draft-price">قیمت (تومان) — صفر برای سرپرستی رایگان</Label>
+            <Label htmlFor="draft-price">قیمت (تومان)، صفر برای سرپرستی رایگان</Label>
             <Input
               id="draft-price"
               type="number"

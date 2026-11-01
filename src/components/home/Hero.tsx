@@ -102,7 +102,7 @@ export function Hero() {
             className="inline-flex items-center gap-1.5 self-center rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1.5 text-xs font-bold text-paw-800 dark:text-paw-300 lg:self-start"
           >
             <Sparkles className="size-3.5" />
-            فروشگاه، خدمات دامپزشکی و سرپرستی — یک‌جا
+            فروشگاه، خدمات دامپزشکی و سرپرستی، یک‌جا
           </span>
 
           <h1
@@ -117,7 +117,7 @@ export function Hero() {
             data-motion-item
             className="mx-auto mt-5 max-w-xl text-balance text-base leading-relaxed text-muted-foreground sm:text-lg lg:mx-0"
           >
-            کالا و خوراک، کلینیک و آرایشگاه، و حیوانات در انتظار سرپرستی —
+            کالا و خوراک، کلینیک و آرایشگاه، و حیوانات در انتظار سرپرستی،
             همراه با قیمت، فاصله و امتیاز هر مرکز، در یک نقشه.
           </p>
 

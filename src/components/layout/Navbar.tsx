@@ -82,7 +82,7 @@ export function Navbar() {
       */}
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
         {/* Brand */}
-        <Link to="/" className="group flex shrink-0 items-center gap-2.5" aria-label="پازمارکت — صفحه‌ی اصلی">
+        <Link to="/" className="group flex shrink-0 items-center gap-2.5" aria-label="پازمارکت، صفحه‌ی اصلی">
           <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground shadow-glow transition-transform duration-300 group-hover:rotate-12 group-hover:scale-105">
             <PawPrint className="size-5" />
           </span>
