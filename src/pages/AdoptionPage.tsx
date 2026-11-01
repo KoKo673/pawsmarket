@@ -112,7 +112,7 @@ export function AdoptionPage() {
         </p>
       )}
       {error && (
-        <p className="mx-auto mb-6 max-w-lg rounded-2xl bg-destructive/10 px-5 py-3.5 text-center text-sm font-bold text-destructive">
+        <p className="mx-auto mb-6 max-w-lg rounded-2xl bg-destructive/10 px-5 py-3.5 text-center text-sm font-bold text-destructive-text">
           {error}
         </p>
       )}

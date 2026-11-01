@@ -60,7 +60,7 @@ export function BookingManagePage() {
   if (error || !booking) {
     return (
       <div className="mx-auto max-w-lg px-4 pb-24 pt-28 text-center sm:px-6">
-        <span className="mx-auto grid size-16 place-items-center rounded-full bg-destructive/10 text-destructive">
+        <span className="mx-auto grid size-16 place-items-center rounded-full bg-destructive/10 text-destructive-text">
           <X className="size-8" />
         </span>
         <h1 className="mt-5 text-xl font-extrabold">این لینک باز نشد</h1>

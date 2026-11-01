@@ -153,7 +153,7 @@ export function TicketAccessPage() {
       )}
 
       {reply.isError && (
-        <p role="alert" className="mt-2 text-[11px] font-semibold text-destructive">
+        <p role="alert" className="mt-2 text-[11px] font-semibold text-destructive-text">
           پاسخ ثبت نشد؛ دوباره تلاش کنید.
         </p>
       )}

@@ -82,7 +82,7 @@ export function SearchBar() {
           {status === 'locating' ? (
             <Loader2 className="size-4 animate-spin" />
           ) : status === 'out-of-region' || status === 'insecure' ? (
-            <ShieldAlert className="size-4 text-destructive" />
+            <ShieldAlert className="size-4 text-destructive-text" />
           ) : (
             <Crosshair className="size-4" />
           )}

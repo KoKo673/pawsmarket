@@ -177,7 +177,7 @@ export function AuthCard({ mode }: { mode: 'login' | 'register' }) {
           </div>
 
           {error && (
-            <p data-motion-item className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive">
+            <p data-motion-item className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive-text">
               {error}
             </p>
           )}

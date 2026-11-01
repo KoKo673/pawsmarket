@@ -28,7 +28,7 @@ import { bookingApi, type Booking } from '@/lib/booking-api'
 const STATUS_META: Record<Booking['status'], { label: string; tone: string }> = {
   pending: { label: 'در انتظار پاسخ مرکز', tone: 'bg-amber-500/15 text-amber-800 dark:text-amber-300' },
   confirmed: { label: 'تأییدشده', tone: 'bg-accent/15 text-tide-800 dark:text-tide-300' },
-  declined: { label: 'رد شده', tone: 'bg-destructive/10 text-destructive' },
+  declined: { label: 'رد شده', tone: 'bg-destructive/10 text-destructive-text' },
   cancelled: { label: 'لغو شده', tone: 'bg-muted text-muted-foreground' },
   done: { label: 'انجام شده', tone: 'bg-tide-500/15 text-tide-700 dark:text-tide-300' },
 }

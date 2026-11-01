@@ -78,7 +78,7 @@ export function ForgotPasswordPage() {
           <div data-motion-item className="space-y-4">
             <div className="rounded-2xl border border-accent/30 bg-accent/10 p-4 text-center">
               <MessageSquare className="mx-auto size-7 text-accent" aria-hidden="true" />
-              <p className="mt-2 text-sm font-bold text-accent">
+              <p className="mt-2 text-sm font-bold text-tide-800">
                 اگر این شماره در پازمارکت ثبت شده باشد، رمز تازه پیامک شد
               </p>
               <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
@@ -118,7 +118,7 @@ export function ForgotPasswordPage() {
 
             {error && (
               <p data-motion-item role="alert"
-                 className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive">
+                 className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive-text">
                 {error}
               </p>
             )}

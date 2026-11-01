@@ -129,7 +129,7 @@ export function CartPage() {
                     {faPrice(it.unit_price)}
                   </p>
                   {it.price_changed && (
-                    <p className="mt-1 text-[11px] font-semibold text-destructive">
+                    <p className="mt-1 text-[11px] font-semibold text-destructive-text">
                       قیمت از {faPrice(it.price_when_added)} تغییر کرده است
                     </p>
                   )}
@@ -158,7 +158,7 @@ export function CartPage() {
                   <button
                     type="button"
                     onClick={() => remove.mutate(it.id)}
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground hover:text-destructive"
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground hover:text-destructive-text"
                   >
                     <Trash2 className="size-3" />
                     حذف
@@ -228,7 +228,7 @@ export function CartPage() {
             </fieldset>
 
             {error && (
-              <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive">
+              <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive-text">
                 {error}
               </p>
             )}

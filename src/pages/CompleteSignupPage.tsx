@@ -152,7 +152,7 @@ export function CompleteSignupPage() {
                 {checking ? <Loader2 className="size-4 animate-spin text-muted-foreground" />
                   : verdict === 'ok' ? <Check className="size-4 text-accent" />
                   : verdict === 'idle' ? null
-                  : <X className="size-4 text-destructive" />}
+                  : <X className="size-4 text-destructive-text" />}
               </span>
             </div>
             <p
@@ -160,14 +160,14 @@ export function CompleteSignupPage() {
               className={`text-[11px] ${
                 verdict === 'ok' ? 'text-accent'
                 : verdict === 'idle' ? 'text-muted-foreground'
-                : 'text-destructive'}`}
+                : 'text-destructive-text'}`}
             >
               {hint}
             </p>
           </div>
 
           {error && (
-            <p role="alert" className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive">
+            <p role="alert" className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive-text">
               {error}
             </p>
           )}

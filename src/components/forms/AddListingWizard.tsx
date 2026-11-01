@@ -258,7 +258,7 @@ export function AddListingWizard() {
               className="mt-5 space-y-1.5 rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3"
             >
               {errors.map((err) => (
-                <li key={err} className="flex items-center gap-2 text-sm font-semibold text-destructive">
+                <li key={err} className="flex items-center gap-2 text-sm font-semibold text-destructive-text">
                   <span className="size-1.5 shrink-0 rounded-full bg-destructive" />
                   {err}
                 </li>

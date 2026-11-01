@@ -44,7 +44,7 @@ export function FeaturedNearby() {
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {isError ? (
           <div className="col-span-full flex flex-col items-center justify-center rounded-2xl border border-destructive/25 bg-destructive/5 px-6 py-12 text-center">
-            <span className="grid size-14 place-items-center rounded-full bg-destructive/10 text-destructive">
+            <span className="grid size-14 place-items-center rounded-full bg-destructive/10 text-destructive-text">
               <WifiOff className="size-6" />
             </span>
             <p className="mt-4 text-sm font-extrabold">در حال حاضر به سرور وصل نیستیم</p>

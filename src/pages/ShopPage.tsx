@@ -65,7 +65,7 @@ export function ShopPage() {
       )}
 
       {products.isError && (
-        <p role="alert" className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive">
+        <p role="alert" className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive-text">
           {products.error instanceof Error ? products.error.message : 'محصولات بارگذاری نشد'}
         </p>
       )}
@@ -161,7 +161,7 @@ function ProductCard({ product }: { product: ShopProduct }) {
           {faPrice(product.price_toman)}
         </p>
 
-        {error && <p className="mt-1 text-[11px] text-destructive">{error}</p>}
+        {error && <p className="mt-1 text-[11px] text-destructive-text">{error}</p>}
 
         {user ? (
           <Button

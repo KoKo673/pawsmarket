@@ -258,7 +258,7 @@ function MyLocationButton() {
       {locating ? (
         <Loader2 className="size-4 animate-spin text-primary" />
       ) : status === 'insecure' || status === 'out-of-region' ? (
-        <ShieldAlert className="size-4 text-destructive" />
+        <ShieldAlert className="size-4 text-destructive-text" />
       ) : (
         <Crosshair className={cn('size-4', status === 'active' ? 'text-primary' : 'text-muted-foreground')} />
       )}

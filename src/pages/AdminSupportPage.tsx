@@ -202,7 +202,7 @@ function Thread({ id, onChanged }: { id: number; onChanged: () => void }) {
     return <p className="px-4 py-3 text-xs text-muted-foreground">در حال بارگذاری…</p>
   }
   if (q.isError) {
-    return <p className="px-4 py-3 text-xs text-destructive">گفتگو بارگذاری نشد</p>
+    return <p className="px-4 py-3 text-xs text-destructive-text">گفتگو بارگذاری نشد</p>
   }
   const t: TicketThread = q.data
 
@@ -255,7 +255,7 @@ function Thread({ id, onChanged }: { id: number; onChanged: () => void }) {
       </form>
 
       {reply.isError && (
-        <p role="alert" className="text-[11px] font-semibold text-destructive">
+        <p role="alert" className="text-[11px] font-semibold text-destructive-text">
           پاسخ ثبت نشد؛ دوباره تلاش کنید.
         </p>
       )}

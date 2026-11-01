@@ -45,7 +45,20 @@
        chips («لغو شده», the step numbers) sit on `bg-muted`, which is itself
        a grey — and there 44% measures 4.44. Two points darker is 4.77. */
     --muted-foreground: 20 8% 42%;
-    --destructive: 0 84% 60%;
+    /* 42%, not 60%. At 60% (rgb(239,67,67)) this token failed in BOTH
+       directions it is used: white label on a destructive button measured
+       3.78:1, and the same colour as error text on a card measured 3.78 and
+       3.31 on its own /10 wash. At 42% (rgb(197,17,17)) those are 6.07,
+       6.07 and 5.09. One value, three passing uses — the original was simply
+       too light for a red that carries white text. */
+    --destructive: 0 84% 42%;
+    /* Error TEXT needs a different value from the destructive FILL.
+       In dark mode one number cannot serve both: a red light enough to read
+       on a dark card (>=60%) is too light for a white label on top of it
+       (3.82:1), and a red dark enough for the label (<=45%) is 2.9:1 as
+       text. Splitting them is the only way both uses pass, and it is the
+       same reason the brand ramps exist at several steps. */
+    --destructive-text: 0 84% 42%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 40 16% 90%;
@@ -84,7 +97,8 @@
     --secondary-foreground: 40 20% 88%;
     --muted: 20 10% 17%;
     --muted-foreground: 40 8% 62%;
-    --destructive: 0 72% 55%;
+    --destructive: 0 72% 42%;
+    --destructive-text: 0 72% 64%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 20 10% 21%;

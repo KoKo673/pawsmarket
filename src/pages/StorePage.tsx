@@ -143,7 +143,7 @@ export function StorePage() {
               </span>
             )}
             {s.rating != null && s.rating > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-3 py-1 text-xs font-bold text-accent">
+              <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-3 py-1 text-xs font-bold text-tide-800">
                 <Star className="size-3.5" aria-hidden="true" />
                 {FA.format(s.rating)}
                 {s.review_count ? (

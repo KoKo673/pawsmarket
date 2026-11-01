@@ -119,7 +119,7 @@ export function CreateMomentDialog({
         </div>
 
         {error && (
-          <p className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive">
+          <p className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive-text">
             {error}
           </p>
         )}

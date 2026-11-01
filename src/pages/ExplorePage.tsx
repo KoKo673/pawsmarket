@@ -160,7 +160,7 @@ export function ExplorePage() {
             {isError ? (
               /* حالت خطای سخت‌گیرانه — بک‌اند در دسترس نیست یا پاسخ خراب است */
               <div className="flex h-full min-h-72 flex-col items-center justify-center px-6 text-center">
-                <span className="grid size-20 place-items-center rounded-full bg-destructive/10 text-destructive">
+                <span className="grid size-20 place-items-center rounded-full bg-destructive/10 text-destructive-text">
                   <ServerCrash className="size-9" />
                 </span>
                 <h2 className="mt-5 text-lg font-extrabold">اتصال به سرور برقرار نشد</h2>

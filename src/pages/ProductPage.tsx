@@ -106,13 +106,13 @@ export function ProductPage() {
           </p>
 
           {!p.available && (
-            <p className="mt-3 rounded-xl bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">
+            <p className="mt-3 rounded-xl bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive-text">
               این محصول در حال حاضر موجود نیست
             </p>
           )}
 
           {error && (
-            <p role="alert" className="mt-3 rounded-xl bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">
+            <p role="alert" className="mt-3 rounded-xl bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive-text">
               {error}
             </p>
           )}

@@ -300,7 +300,7 @@ function ClaimForm({ store, onBack }: { store: StoreHit; onBack: () => void }) {
 
       {create.isError && (
         <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-xs
-          font-semibold text-destructive">
+          font-semibold text-destructive-text">
           {create.error instanceof Error ? create.error.message : 'ثبت انجام نشد'}
         </p>
       )}

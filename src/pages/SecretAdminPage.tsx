@@ -109,7 +109,7 @@ export function SecretAdminPage() {
 
         {error && (
           <p role="alert" className="mt-3 rounded-xl bg-destructive/10 px-3 py-2
-            text-xs font-semibold text-destructive">
+            text-xs font-semibold text-destructive-text">
             {error}
           </p>
         )}

@@ -32,6 +32,10 @@ export default {
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
+          /* `text-destructive-text` — error copy, not a button fill. Split
+             from DEFAULT because one lightness cannot pass both in dark
+             mode; see the comment on the token in index.css. */
+          text: 'hsl(var(--destructive-text))',
         },
         muted: {
           DEFAULT: 'hsl(var(--muted))',

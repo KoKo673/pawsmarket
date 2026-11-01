@@ -286,7 +286,7 @@ function OrderDetail({ id }: { id: number }) {
     return <p className="px-4 py-3 text-xs text-muted-foreground">در حال بارگذاری…</p>
   }
   if (q.isError) {
-    return <p className="px-4 py-3 text-xs text-destructive">جزئیات بارگذاری نشد</p>
+    return <p className="px-4 py-3 text-xs text-destructive-text">جزئیات بارگذاری نشد</p>
   }
   const d: AdminOrderDetail = q.data
 
@@ -339,7 +339,7 @@ function Row({ label, value, ltr, span }: {
 function StatusBadge({ status }: { status: string }) {
   const tone =
     status === 'paid' || status === 'delivered' ? 'bg-emerald-500/10 text-emerald-700'
-    : status === 'cancelled' || status === 'refunded' ? 'bg-destructive/10 text-destructive'
+    : status === 'cancelled' || status === 'refunded' ? 'bg-destructive/10 text-destructive-text'
     : status === 'pending' ? 'bg-amber-500/10 text-amber-700'
     : 'bg-muted text-muted-foreground'
   return (

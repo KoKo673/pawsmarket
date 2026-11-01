@@ -209,7 +209,7 @@ function Assistant() {
       </form>
 
       {ask.isError && (
-        <p role="alert" className="mt-2 text-[11px] font-semibold text-destructive">
+        <p role="alert" className="mt-2 text-[11px] font-semibold text-destructive-text">
           {ask.error instanceof Error ? ask.error.message : 'پاسخ نیامد'}
         </p>
       )}
@@ -237,7 +237,7 @@ function Thread({ id }: { id: number }) {
   })
 
   if (q.isPending) return <p className="px-3 py-3 text-xs text-muted-foreground">در حال بارگذاری…</p>
-  if (q.isError) return <p className="px-3 py-3 text-xs text-destructive">گفتگو بارگذاری نشد</p>
+  if (q.isError) return <p className="px-3 py-3 text-xs text-destructive-text">گفتگو بارگذاری نشد</p>
 
   return (
     <div className="mt-2 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
@@ -356,7 +356,7 @@ function NewTicket({ signedIn, onCreated }: { signedIn: boolean; onCreated: () =
         </div>
       )}
 
-      {error && <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive">{error}</p>}
+      {error && <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive-text">{error}</p>}
 
       <Button type="submit" className="w-full" disabled={invalid || create.isPending}>
         {create.isPending && <Loader2 className="me-2 size-4 animate-spin" />}

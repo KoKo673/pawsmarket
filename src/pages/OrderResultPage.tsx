@@ -97,7 +97,7 @@ export function OrderResultPage() {
 
         {state === 'failed' && (
           <>
-            <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-destructive/10 text-destructive">
+            <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-destructive/10 text-destructive-text">
               <XCircle className="size-7" />
             </span>
             <h1 className="mt-4 text-2xl font-extrabold">پرداخت انجام نشد</h1>

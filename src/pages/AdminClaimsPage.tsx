@@ -331,7 +331,7 @@ function ClaimDetail({
       {!claim.national_id && !claim.licence_no && !claim.proof && (
         <p role="alert"
            className="flex items-start gap-2 rounded-lg bg-destructive/10 px-3 py-2
-             text-[11px] font-semibold text-destructive">
+             text-[11px] font-semibold text-destructive-text">
           <ShieldQuestion className="mt-px size-3.5 shrink-0" aria-hidden="true" />
           هیچ شاهدی ثبت نشده، این درخواست را تأیید نکنید.
         </p>
@@ -390,7 +390,7 @@ function ClaimDetail({
       )}
 
       {(approve.isError || reject.isError) && (
-        <p role="alert" className="text-[11px] font-semibold text-destructive">
+        <p role="alert" className="text-[11px] font-semibold text-destructive-text">
           درخواست انجام نشد؛ دوباره تلاش کنید.
         </p>
       )}
