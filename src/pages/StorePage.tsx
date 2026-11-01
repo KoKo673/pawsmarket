@@ -235,8 +235,29 @@ export function StorePage() {
 
       <p className="mt-6 flex items-start gap-2 px-1 text-xs leading-relaxed text-muted-foreground">
         <PawPrint className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden="true" />
-        اطلاعات این صفحه را خود مرکز در پازمارکت ثبت کرده است. اگر چیزی
-        نادرست بود، از{' '}
+        {/* ── What this used to say, and why it was wrong ──────────────
+            It said «اطلاعات این صفحه را خود مرکز در پازمارکت ثبت کرده است» —
+            that the centre entered this itself. It did not. The phone,
+            hours, photo and rating came from a Google Maps enrichment file
+            imported by migration 0020, and the rating beside it is Google's.
+
+            Saying a business supplied information it has never seen is the
+            site making a false statement about a real business to its own
+            customers. It was also self-contradicting: the sentence invited
+            a correction through support, which only makes sense if the
+            centre can change the page — and until it claims the listing,
+            it cannot.
+
+            What is true: the page is compiled from public sources, and the
+            centre can take it over and correct it. Both halves are useful
+            to a reader, and the second is the reason to call a clinic at
+            all. */}
+        این صفحه از اطلاعات عمومی گردآوری شده است و ممکن است کامل نباشد. اگر
+        مرکز شماست،{' '}
+        <Link to="/for-business" className="font-bold text-primary hover:underline">
+          درخواست دسترسی
+        </Link>
+        {' '}بدهید تا خودتان اصلاحش کنید؛ اگر چیز نادرستی دیدید، از{' '}
         <Link to="/support" className="font-bold text-primary hover:underline">
           پشتیبانی
         </Link>

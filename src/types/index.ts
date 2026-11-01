@@ -61,7 +61,12 @@ export interface ProductListing extends BaseListing {
   category: ProductCategory
   price: number
   brand: string
-  inStock: boolean
+  /**
+   * Optional for the same reason as `opensAt`: it defaulted to `true`, so
+   * any product whose source omitted the field advertised itself as
+   * «موجود». Unknown is not in stock.
+   */
+  inStock?: boolean
   /** Store the product is sold at (display name only — join done server-side). */
   storeName: string
   /** شناسه‌ی namespaced فروشگاه (store:3) برای پیمایش به جزئیات فروشگاه */
@@ -97,9 +102,17 @@ export interface StoreListing extends BaseListing {
   /** 0–5, one decimal. 0 = هنوز امتیازی ثبت نشده. */
   rating: number
   reviewCount: number
-  /** Opening hours, 24h local time, e.g. `"09:00"`. */
-  opensAt: string
-  closesAt: string
+  /**
+   * Opening hours, 24h local time, e.g. `"09:00"`. **Optional on purpose.**
+   *
+   * These used to be required, and the adapter filled the gap with '09:00'
+   * and '21:00', so a store that had never supplied hours printed
+   * «۹:۰۰ تا ۲۱:۰۰» as if someone had told us. The type made that the easy
+   * thing to do: a missing value could not be represented, so it had to
+   * become a number. Absent now means absent, and the UI says «ثبت نشده».
+   */
+  opensAt?: string
+  closesAt?: string
   /** Empty string = فروشگاه شماره‌ی تماس ثبت‌نشده دارد. */
   phone: string
   /**

@@ -119,10 +119,17 @@ export function DetailModal() {
                     ? `فروشنده: ${item.storeName}`
                     : item.name}
               </p>
+              {/* The non-store line used to read «تایید‌شده در پازمارکت ·
+                  معمولاً کمتر از ۲ ساعت پاسخ می‌دهد» on every pet and product
+                  sheet. Nothing verifies a listing and nothing measures a
+                  response time: there is no queue and no record behind that
+                  sentence, so the page was vouching for a stranger's
+                  punctuality on its own authority. This says what is true:
+                  the listing exists here, and a call is how you reach them. */}
               <p className="text-xs text-muted-foreground">
                 {item.kind === 'store'
                   ? `ساعات کار: ${faTimeRange(item.opensAt, item.closesAt)} · ${item.address}`
-                  : 'تاییدشده در پازمارکت · معمولاً کمتر از ۲ ساعت پاسخ می‌دهد'}
+                  : 'ثبت‌شده در پازمارکت · برای هماهنگی با آگهی‌دهنده تماس بگیرید'}
               </p>
             </div>
           </div>

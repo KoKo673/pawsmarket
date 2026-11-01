@@ -338,7 +338,11 @@ function toProductListing(raw: RawRow, storeNames: Map<string, string>): Product
     category,
     price: num(raw.price, 0),
     brand: str(raw.brand, 'بدون برند'),
-    inStock: bool(raw.inStock, true),
+    // `true` as the default advertised anything with a missing field as
+    // «موجود». A product whose source did not say is not in stock; it is
+    // unknown, and the price list stopped being the place to promise that.
+    ...(raw.inStock === undefined || raw.inStock === null
+      ? {} : { inStock: bool(raw.inStock, false) }),
     storeName,
     storeId: raw.store_id != null ? wireId('store', { id: raw.store_id }) : undefined,
     ...(live
@@ -412,8 +416,20 @@ function toStoreListing(raw: RawRow): StoreListing {
     category,
     rating: num(raw.rating, 0),
     reviewCount: num(raw.reviewCount ?? raw.review_count, 0),
-    opensAt: str(raw.opensAt ?? raw.opens_at, '09:00'),
-    closesAt: str(raw.closesAt ?? raw.closes_at, '21:00'),
+    // ── No invented hours ────────────────────────────────────────────
+    // These used to default to '09:00' and '21:00', so a store that has
+    // never supplied hours printed «۹:۰۰ تا ۲۱:۰۰» as fact. One store does
+    // that today and every clinic that has not set hours yet will — and a
+    // customer standing outside a locked door at 09:05 trusts the page that
+    // told them it opens at nine.
+    //
+    // Left undefined instead, and the UI renders «ثبت نشده». Same shape
+    // `toPetListing` already uses for age and gender a few lines up: a
+    // missing field is missing, not a number somebody guessed.
+    ...((raw.opensAt ?? raw.opens_at)
+      ? { opensAt: str(raw.opensAt ?? raw.opens_at, '') } : {}),
+    ...((raw.closesAt ?? raw.closes_at)
+      ? { closesAt: str(raw.closesAt ?? raw.closes_at, '') } : {}),
     phone: str(raw.phone, ''),
     // `website` is deliberately not carried: 569 of its 605 values were Google
     // Maps search URLs of the shop's own name — not the shop's site — and
