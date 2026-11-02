@@ -8,13 +8,6 @@ import { faDigits } from '@/lib/fa'
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
 const TOKEN_KEY = 'pawsmarket-auth-token'
 
-/**
- * Publish mode without a backend: VITE_CATALOG_MODE=static ships a
- * catalog.json snapshot and every social call is rejected with a clear
- * message, so no one sees a login form that silently never submits.
- * The current Pages build sets VITE_API_BASE_URL instead, so this is off.
- */
-const STATIC_MODE = import.meta.env.VITE_CATALOG_MODE === 'static'
 
 /**
  * Resolve a media path returned by the API into a URL the browser can load.
@@ -82,13 +75,6 @@ function detailOf(status: number, body: unknown, retryAfter?: string | null): st
 }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
-  if (STATIC_MODE) {
-    // پیام شفاف برای نسخه‌ی نمایشی روی GitHub Pages
-    throw new ApiError(
-      'قابلیت‌های اجتماعی فقط روی نسخه‌ی محلی فعال‌اند (بک‌اند در حال اجرا نیست)',
-      0,
-    )
-  }
   const token = getToken()
   let res: Response
   try {

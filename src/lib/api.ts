@@ -53,7 +53,6 @@ const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
  * scripts/export_catalog.py) instead of live fetches. Missing/broken
  * catalog still rejects — strictness is never faked with inlined mocks.
  */
-const STATIC_MODE = import.meta.env.VITE_CATALOG_MODE === 'static'
 
 export class ApiError extends Error {
   readonly status: number
@@ -440,8 +439,18 @@ function toStoreListing(raw: RawRow): StoreListing {
 
 /* ── Geo query strings ─────────────────────────────────────────── */
 
-/** Largest page the nearby endpoints accept (`le=2000` on all three). */
-const NEARBY_MAX_LIMIT = 2000
+/**
+ * How many stores to ask for in one page.
+ *
+ * The endpoints accept up to 2000, and asking for all of them cost 28.9 KB
+ * gzipped — on the ~200 B/s link this product is designed for, that is a
+ * quarter minute of transfer before the map has anything on it.
+ *
+ * 600 covers every store within a normal Tehran radius (the whole
+ * catalogue is 447) and is 7.5 KB at the default page size. The roadmap
+ * asked for this number; the measurement agrees with it.
+ */
+const NEARBY_MAX_LIMIT = 600
 
 /**
  * Radius is sent as BOTH `radius` and `max_distance`.
@@ -607,51 +616,6 @@ function isServiceStore(row: RawRow): boolean {
   return SERVICE_CATEGORIES.has(String(row.category ?? ''))
 }
 
-async function catalogSnapshot(): Promise<{
-  pets: RawRow[]; products: RawRow[]; stores: RawRow[]
-}> {
-  // Fetched with a bare fetch, NOT through request().
-  //
-  // request() prefixes API_BASE, so this was asking the Railway API for
-  // «/pawsmarket/catalog.json» — a path it does not serve — and getting a 404
-  // every time. The snapshot silently never loaded, the catalogue fell back to
-  // whatever the API returned, and because that response is now capped at 150
-  // stores the filter for «پناهگاه» had none to match: fifteen shelters sat in
-  // the published catalog while the UI showed «۰ نتیجه».
-  //
-  // The snapshot lives beside the app on the same CDN, which is the whole
-  // reason it exists — it must not be routed through the API's origin.
-  const path = `${import.meta.env.BASE_URL}catalog.json`
-  const res = await fetch(path, { headers: { Accept: 'application/json' } })
-  if (!res.ok) {
-    throw new ApiError(`catalog.json ${res.status}`, res.status)
-  }
-  const catalog = (await res.json()) as {
-    pets?: unknown; products?: unknown; stores?: unknown
-  }
-  if (!Array.isArray(catalog.pets) || !Array.isArray(catalog.products)
-      || !Array.isArray(catalog.stores)) {
-    throw new ApiError(
-      `Invalid catalog.json at ${path}: expected {pets,products,stores} arrays`,
-      200)
-  }
-  // The snapshot is a vendored scrape of Digikala's listings. Those are
-  // other people's products, and this shop sells only its own stock, so
-  // both `products` and the `shop`-category stores are dropped here.
-  //
-  // Dropped at the source rather than filtered later: every surface
-  // (explore, map, search, category tiles, the detail sheet) reads this
-  // one function, and a filter applied in four places is a filter the
-  // fifth place forgets. Service centres stay — a vet is a listing, not
-  // something we sell.
-  const stores = (catalog.stores as RawRow[]).filter(isServiceStore)
-
-  return {
-    pets: catalog.pets as RawRow[],
-    products: [],
-    stores,
-  }
-}
 
 export async function fetchNearbyListings(
   origin: GeoPoint,
@@ -683,29 +647,25 @@ export async function fetchNearbyListings(
   const failures = settled.filter(
     (r): r is PromiseRejectedResult => r.status === 'rejected')
 
-  if (failures.length === settled.length && !STATIC_MODE) {
-    // Everything failed. Try the export before giving up.
-    const snapshot = await catalogSnapshot().catch(() => null)
-    if (snapshot && snapshot.stores.length > 0) {
-      petRows = snapshot.pets
-      productRows = snapshot.products
-      storeRows = snapshot.stores.map((r) => ({ ...r, _stale: true }))
-    } else {
-      const first = failures[0]?.reason
-      const status = first instanceof ApiError ? first.status : 0
-      throw new ApiError(
-        first instanceof ApiError && first.message
-          ? first.message
-          : 'در حال حاضر به سرور وصل نیستیم؛ لطفاً چند لحظه دیگر تلاش کنید',
-        status)
-    }
-  } else if (failures.length === settled.length && STATIC_MODE) {
-    // Deployments that build with VITE_CATALOG_MODE=static never call the
-    // API at all; they read the export directly.
-    const snapshot = await catalogSnapshot()
-    petRows = snapshot.pets
-    productRows = snapshot.products
-    storeRows = snapshot.stores
+  if (failures.length === settled.length) {
+    // Everything failed. There used to be a 400 KB `catalog.json` here as a
+    // last resort — a build-time scrape that was never enabled in any
+    // deployment (`.env.production` had no VITE_CATALOG_MODE) and whose ids
+    // once disagreed with the database, which is what made 431 of 447
+    // stores render twice and sent booking buttons to the wrong clinic.
+    //
+    // It is gone. Serving a fifteen-day-old snapshot without saying so is
+    // worse than an honest error: the map looked complete and every phone
+    // number on it could be wrong. The runtime cache below remembers the
+    // last success from THIS browser, which is the same idea without the
+    // staleness or the 400 KB.
+    const first = failures[0]?.reason
+    const status = first instanceof ApiError ? first.status : 0
+    throw new ApiError(
+      first instanceof ApiError && first.message
+        ? first.message
+        : 'در حال حاضر به سرور وصل نیستیم؛ لطفاً چند لحظه دیگر تلاش کنید',
+      status)
   } else {
     ;[petRows, productRows, storeRows] = settled.map((r) =>
       r.status === 'fulfilled' ? r.value : [])
@@ -737,10 +697,6 @@ export async function fetchNearbyListings(
  * Strict: any failure propagates and the wizard shows its Persian error.
  */
 export async function createListing(draft: NewListingDraft): Promise<{ id: string }> {
-  if (STATIC_MODE) {
-    // Honest failure — a static host cannot persist anything
-    throw new Error('نسخه‌ی منتشرشده فاقد سرور نوشتاری است؛ ثبت آگهی زمانی ممکن است که بک‌اند در دسترس باشد.')
-  }
   const path = draft.kind === 'pet' ? '/api/pets' : '/api/products'
   const body = {
     ...draft,
