@@ -151,7 +151,18 @@ export function StatsGrid({ item }: { item: ListingWithDistance }) {
             <Stat
               icon={<Phone className="size-3.5 text-primary" />}
               label="تلفن"
-              value={item.phone ? <span className="ltr-inline">{faPhone(item.phone)}</span> : 'ثبت نشده'}
+              value={
+                // A phone number a visitor cannot tap is a number they retype.
+                // The map drawer is where most people meet a clinic, and the
+                // number sat here as plain text while `/store/:slug` made the
+                // same number a `tel:` link — so the surface with the larger
+                // audience was the one that could not call.
+                item.phone ? (
+                  <a href={`tel:${String(item.phone).replace(/[^+\d]/g, '')}`} className="ltr-inline hover:underline">
+                    {faPhone(item.phone)}
+                  </a>
+                ) : 'ثبت نشده'
+              }
             />
             <Stat
               icon={<Scissors className="size-3.5 text-primary" />}

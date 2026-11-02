@@ -66,6 +66,8 @@ export function SearchBar() {
       <div className="relative flex min-w-0 flex-1 items-center gap-2 px-3 py-1.5">
         <MapPin className="size-4 shrink-0 text-primary" aria-hidden />
         <Input
+          id="search-location"
+          name="location"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           placeholder={locationPlaceholder(status)}
@@ -95,6 +97,9 @@ export function SearchBar() {
       <div className="flex min-w-0 flex-1 items-center gap-2 px-3 py-1.5">
         <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
         <Input
+          id="search-keyword"
+          name="q"
+          type="search"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           placeholder="سگ، غذای گربه، دامپزشک…"

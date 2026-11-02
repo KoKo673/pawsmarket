@@ -461,14 +461,21 @@ function clusterIcon(count: number): L.DivIcon {
   const size = Math.min(52, 34 + Math.log10(count) * 12)
   const fontSize = count > 99 ? 12 : count > 9 ? 14 : 15
 
+  // paw-700, not paw-500. Measured 2026-11-02 on /explore: white on the old
+  // #FA5C00 scored 3.18:1, and the count sits at 14px — below both large-text
+  // thresholds, so the required ratio is 4.5. This disc's only job is that
+  // number being readable, and 3.18 is not. hsl(20 92% 40%) scores 4.94 and
+  // is the same hue, one step darker: still the brand orange, not a new one.
+  // The shadow darkened with it, because dropping the fill two steps under a
+  // glow mixed for the lighter one reads as a halo rather than depth.
   const html = `
     <div style="
       position:relative;width:${size}px;height:${size}px;
       display:grid;place-items:center;
       border-radius:999px;
-      background:#FA5C00;
+      background:#C44708;
       border:3px solid rgba(255,255,255,.96);
-      box-shadow:0 4px 14px rgba(226,71,0,.45);
+      box-shadow:0 4px 14px rgba(154,45,0,.45);
       color:#fff;
       font:800 ${fontSize}px/1 Vazirmatn,system-ui,sans-serif;
       font-variant-numeric:tabular-nums;
