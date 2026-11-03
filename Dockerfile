@@ -71,6 +71,12 @@ FROM nginx:1.27-alpine AS serve
 # change does not invalidate the cached copy of dist/.
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY nginx-main.conf /etc/nginx/nginx.conf
+# The ArvanCloud edge list, included by nginx-main.conf. Deliberately not in
+# conf.d/: that directory is glob-included, and this file holds `geo`, which
+# is http-scope — pulling it in from both places defines the variable twice
+# and nginx refuses to start. A config that does not start looks exactly like
+# a site that is down.
+COPY arvan-edge-ips.conf /etc/nginx/arvan-edge-ips.conf
 
 COPY --from=build /app/dist /usr/share/nginx/html
 
