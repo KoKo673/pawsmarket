@@ -322,6 +322,18 @@ function AppRoutes() {
                 </AnimatedPage>
               }
             />
+            {/* The same page at a three-character address, for SMS. A
+                transliterated Persian name ran to 60 characters, which in
+                a text from an unknown number reads as a redirect rather
+                than as «your listing on a website». */}
+            <Route
+              path="/s/:code"
+              element={
+                <AnimatedPage>
+                  <StorePage />
+                </AnimatedPage>
+              }
+            />
             <Route
               path="/support"
               element={

@@ -79,7 +79,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-border/60 py-5 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} پازمارکت · ساخته‌شده برای حیوانات و آدم‌هایی که ازشان حسابی جا می‌زنند.
+        © {new Date().getFullYear()} پازمارکت · هر چیزی که حیوانتان لازم دارد، نزدیک خانه‌تان.
       </div>
     </footer>
   )

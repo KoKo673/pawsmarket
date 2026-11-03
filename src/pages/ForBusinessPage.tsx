@@ -1,10 +1,12 @@
 import { AlertCircle, Building2, Check, Loader2, Search } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { useSearchParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { readUtm } from '@/lib/campaign'
 
 /**
  * صفحهٔ «برای کسب‌وکار» — /for-business
@@ -65,6 +67,25 @@ export function ForBusinessPage() {
   const [submitted, setSubmitted] = useState('')
   const [chosen, setChosen] = useState<StoreHit | null>(null)
 
+  /* A clinic that came from its own store page already chose — asking it
+     to search for itself a second time is where people give up. The link
+     carries ?store=<id>, so pick that listing and land on the form.
+     Fetched rather than passed through the router state because a shared
+     or reloaded URL must land on the same place. */
+  const [params] = useSearchParams()
+  const preId = Number(params.get('store') || 0)
+
+  const preselect = useQuery({
+    queryKey: ['business-store', preId],
+    queryFn: () => getJson<StoreHit>(`/api/business/store/${preId}`),
+    enabled: preId > 0 && !chosen,
+    retry: false,
+  })
+
+  useEffect(() => {
+    if (preselect.data && !chosen) setChosen(preselect.data)
+  }, [preselect.data, chosen])
+
   const search = useQuery({
     queryKey: ['business-stores', submitted],
     queryFn: () => getJson<{ items: StoreHit[]; note?: string }>(
@@ -81,12 +102,12 @@ export function ForBusinessPage() {
           برای کسب‌وکار
         </span>
         <h1 className="mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl">
-          مرکز شما در پازمارکت هست، داشبوردش را بگیرید
+          نوبت‌های مرکزتان را خودتان مدیریت کنید
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          کلینیک، آرایشگاه، پانسیون یا پناهگاه شما روی نقشهٔ ما هست. با
-          داشبورد می‌بینید چه نوبتی گرفته شده و همان‌جا تأیید یا رد می‌کنید،
-          بدون حساب کاربری، فقط با یک لینک.
+          مشتری از روی نقشه نوبت می‌گیرد و شما همان لحظه در داشبورد
+          می‌بینیدش — تأیید یا رد، بدون تماس تلفنی. صفحهٔ مرکزتان هم همان
+          اطلاعاتی را نشان می‌دهد که خودتان تأیید کرده‌اید.
         </p>
       </header>
 
@@ -171,7 +192,17 @@ function ClaimForm({ store, onBack }: { store: StoreHit; onBack: () => void }) {
   })
   const create = useMutation({
     mutationFn: () => getJson<{ store: string; message: string }>(
-      '/api/business/claims', { method: 'POST', body: JSON.stringify({ ...form, store_id: store.id }) }),
+      '/api/business/claims', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...form,
+          store_id: store.id,
+          ...readUtm(),
+          // Empty on a direct visit, and on any browser that strips it.
+          // The backend stores NULL for a blank string rather than "".
+          referrer: document.referrer || undefined,
+        }),
+      }),
   })
 
   if (create.isSuccess) {

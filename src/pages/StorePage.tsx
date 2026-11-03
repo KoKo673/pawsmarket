@@ -2,10 +2,13 @@ import {
   ArrowRight, CalendarPlus, Clock, Globe, MapPin, PawPrint, Phone, Star,
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { BOOKING_ENABLED } from '@/lib/booking-rules'
+import { bindUtm, readUtm, withUtm } from '@/lib/campaign'
+import { faDigits } from '@/lib/fa'
 import { storeLabel } from '@/lib/store-labels'
 
 const API = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
@@ -67,6 +70,8 @@ interface StoreDetail {
   categories: string[] | null
   lat: number | null
   lng: number | null
+  /** Present only on a `/s/<code>` lookup — the campaign bound to the code. */
+  code_utm?: string | null
 }
 
 const FA = new Intl.NumberFormat('fa-IR')
@@ -79,15 +84,38 @@ function faTime(value: string | null): string {
 }
 
 export function StorePage() {
-  const { slug } = useParams<{ slug: string }>()
+  /* Two addresses reach this page. `/store/<slug>` is the one a clinic
+     puts in its Instagram bio, because the slug says what it is.
+     `/s/<code>` is the one that goes in an SMS: a 60-character
+     transliterated Persian name in a text message from an unknown number
+     reads as a redirect, and the operator said it looked like a scam.
+     Both render this page; the only difference is which endpoint resolves
+     the store. */
+  const { slug, code } = useParams<{ slug?: string; code?: string }>()
+
+  /* The SMS links point here, not at the claim form. Stash the campaign
+     tags on arrival, or the hop to /for-business would be the first place
+     anyone looked for them and they would already be gone. */
+  useEffect(() => { readUtm() }, [slug, code])
 
   const query = useQuery({
-    queryKey: ['store-by-slug', slug],
+    queryKey: ['store', slug ? 'slug' : 'code', slug ?? code],
     queryFn: () => getJson<StoreDetail>(
-      `/api/stores/by-slug/${encodeURIComponent(slug ?? '')}`),
-    enabled: !!slug,
+      slug
+        ? `/api/stores/by-slug/${encodeURIComponent(slug)}`
+        : `/api/stores/by-code/${encodeURIComponent(code ?? '')}`),
+    enabled: !!(slug || code),
     retry: false,
   })
+
+  /* A short link carries its campaign tag in the row, not the query
+     string — a printed or retyped /s/xxxx has no ?utm_source to lose.
+     Applied after the response because that is the first moment we know
+     which code this was. */
+  const boundUtm = query.data?.code_utm
+  useEffect(() => {
+    if (boundUtm) bindUtm({ utm_source: boundUtm })
+  }, [boundUtm])
 
   if (query.isLoading) {
     return (
@@ -171,7 +199,13 @@ export function StorePage() {
               <Button asChild size="lg" className="w-full gap-2">
                 <a href={`tel:${phone}`}>
                   <Phone className="size-4" aria-hidden="true" />
-                  <span dir="ltr" className="whitespace-nowrap">{s.phone}</span>
+                  {/* The label is Persian everywhere else on this page, so a
+                      Latin-digit number here read as an address bar, not a
+                      phone. The `tel:` href keeps Latin digits — that half
+                      has to survive being handed to the dialler. */}
+                  <span dir="ltr" className="whitespace-nowrap">
+                    {faDigits(phone.replace(/^\+98/, '0'))}
+                  </span>
                 </a>
               </Button>
             )}
@@ -233,8 +267,16 @@ export function StorePage() {
         </div>
       </article>
 
-      <p className="mt-6 flex items-start gap-2 px-1 text-xs leading-relaxed text-muted-foreground">
+      <div className="mt-6 flex items-start gap-2 px-1 text-xs leading-relaxed text-muted-foreground">
         <PawPrint className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden="true" />
+        {/* ── Why this is a <span> and not bare text ───────────────────
+            This was a `<p className="flex">` with the sentence as raw text
+            nodes. Every text node and every <Link> became its own flex
+            item, and flex lays items out in a row: the sentence broke into
+            four columns and read as garbled fragments instead of flowing
+            prose. One <span> makes the whole sentence a single item that
+            wraps normally, with the paw floating beside it. */}
+        <span>
         {/* ── What this used to say, and why it was wrong ──────────────
             It said «اطلاعات این صفحه را خود مرکز در پازمارکت ثبت کرده است» —
             that the centre entered this itself. It did not. The phone,
@@ -254,7 +296,12 @@ export function StorePage() {
             all. */}
         این صفحه از اطلاعات عمومی گردآوری شده است و ممکن است کامل نباشد. اگر
         مرکز شماست،{' '}
-        <Link to="/for-business" className="font-bold text-primary hover:underline">
+        {/* The campaign tags arrive on the store link and must survive this
+            hop. readUtm() has already stashed them in sessionStorage, but
+            carrying them in the URL too keeps the address shareable and
+            makes what happened visible while testing a campaign. */}
+        <Link to={withUtm(`/for-business?store=${s.id}`)}
+              className="font-bold text-primary hover:underline">
           درخواست دسترسی
         </Link>
         {' '}بدهید تا خودتان اصلاحش کنید؛ اگر چیز نادرستی دیدید، از{' '}
@@ -262,7 +309,8 @@ export function StorePage() {
           پشتیبانی
         </Link>
         {' '}بگویید.
-      </p>
+        </span>
+      </div>
     </Shell>
   )
 }

@@ -328,6 +328,24 @@ function ClaimDetail({
         </div>
       )}
 
+      {/* Which message brought them here. Shown only when a campaign tag was
+          actually present — «نامشخص» on every organic claim would be noise
+          the reviewer learns to skip, which is worse than showing nothing. */}
+      {claim.utm_campaign || claim.utm_source ? (
+        <div className="rounded-lg bg-card px-3 py-2">
+          <p className="text-[11px] font-bold text-muted-foreground">منبع ورود</p>
+          <p dir="ltr" className="mt-1 font-mono text-[13px]">
+            {[claim.utm_source, claim.utm_medium, claim.utm_campaign]
+              .filter(Boolean).join(' / ')}
+          </p>
+          {claim.referrer && (
+            <p dir="ltr" className="mt-1 truncate text-[11px] text-muted-foreground">
+              {claim.referrer}
+            </p>
+          )}
+        </div>
+      ) : null}
+
       {!claim.national_id && !claim.licence_no && !claim.proof && (
         <p role="alert"
            className="flex items-start gap-2 rounded-lg bg-destructive/10 px-3 py-2

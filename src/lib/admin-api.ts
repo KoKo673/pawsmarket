@@ -161,6 +161,11 @@ export interface Claim {
   licence_no: string | null
   proof: string | null
   note: string | null
+  /** Campaign tags from the link that led here; null when untracked. */
+  utm_source: string | null
+  utm_medium: string | null
+  utm_campaign: string | null
+  referrer: string | null
   status: string
   review_note: string | null
   reviewed_at: string | null
