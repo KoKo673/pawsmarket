@@ -206,6 +206,20 @@ export interface SmsDelivery {
   }>
 }
 
+/**
+ * A week of page views.
+ *
+ * `humans` and `visitors` differ on purpose: one person opening five
+ * pages is five views and one visitor, and a report that shows only one
+ * of the two cannot say whether traffic was wide or deep.
+ */
+export interface Traffic {
+  days: number
+  daily: Array<{ day: string; humans: number; visitors: number; bots: number }>
+  pages: Array<{ path: string; views: number }>
+  sources: Array<{ src: string; views: number }>
+}
+
 export interface Ticket {
   id: number
   subject: string
@@ -318,4 +332,12 @@ export const adminApi = {
       `/api/admin/sms-delivery/reconcile?limit=${limit}`, {
         method: 'POST', body: '{}',
       }),
+
+  /* ── بازدید ──────────────────────────────────────────────────
+   *
+   * Before this existed the only visitor record was nginx's access log
+   * inside the container, which a recreate erased — so "did anyone come"
+   * had no answer at all.
+   */
+  traffic: (days = 7) => call<Traffic>(`/api/admin/traffic?days=${days}`),
 }

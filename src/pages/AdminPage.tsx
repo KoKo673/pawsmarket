@@ -1,5 +1,5 @@
 import {
-  AlertCircle, BadgeCheck, ChevronLeft, Clock, Inbox, Loader2,
+  AlertCircle, BadgeCheck, ChevronLeft, Clock, Eye, Inbox, Loader2,
   Package, RefreshCw, Search, ShoppingBag, Users,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -39,10 +39,11 @@ const PROVIDER_FA: Record<string, string> = {
   digikala: 'دیجی‌کالا',
 }
 
-type Tab = 'overview' | 'orders' | 'users' | 'sync'
+type Tab = 'overview' | 'traffic' | 'orders' | 'users' | 'sync'
 
 const TABS: { key: Tab; label: string; icon: typeof Users }[] = [
   { key: 'overview', label: 'نمای کلی', icon: BadgeCheck },
+  { key: 'traffic', label: 'بازدید', icon: Eye },
   { key: 'orders', label: 'سفارش‌ها', icon: ShoppingBag },
   { key: 'users', label: 'کاربرها', icon: Users },
   { key: 'sync', label: 'همگام‌سازی', icon: RefreshCw },
@@ -88,6 +89,7 @@ export function AdminPage() {
       </div>
 
       {tab === 'overview' && <OverviewTab />}
+      {tab === 'traffic' && <TrafficTab />}
       {tab === 'orders' && <OrdersTab />}
       {tab === 'users' && <UsersTab />}
       {tab === 'sync' && <SyncTab />}
@@ -539,6 +541,109 @@ function Empty({ icon: Icon, text }: { icon: typeof Package; text: string }) {
     <div className="rounded-2xl border border-border bg-muted/30 px-6 py-14 text-center">
       <Icon className="mx-auto size-7 text-muted-foreground" aria-hidden="true" />
       <p className="mt-3 text-sm font-semibold">{text}</p>
+    </div>
+  )
+}
+
+/**
+ * بازدید — how many people came, and where from.
+ *
+ * This tab exists because on 2026-11-03 the honest answer to "did anyone
+ * visit last night" was "nobody knows": the only record was nginx's log
+ * inside the container, gone after the first recreate. Everything here
+ * comes from `page_views`, which the client writes once per route change.
+ *
+ * Bots are shown, not hidden. A crawler spike that inflates the number is
+ * a fact worth seeing; removing it from the screen is how a quiet month
+ * later becomes a mystery.
+ */
+function TrafficTab() {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['admin-traffic'],
+    queryFn: () => adminApi.traffic(7),
+  })
+
+  if (isLoading) return <Loading />
+  if (isError || !data) return <Failed />
+
+  const totalHumans = data.daily.reduce((n, d) => n + d.humans, 0)
+  const totalBots = data.daily.reduce((n, d) => n + d.bots, 0)
+  const totalVisitors = data.daily.reduce((n, d) => n + d.visitors, 0)
+
+  if (totalHumans === 0 && totalBots === 0) {
+    return (
+      <Empty
+        icon={Eye}
+        text="هفت روز گذشته هیچ بازدیدی ثبت نشده. اگر تازه ردیابی را روشن کرده‌اید، این طبیعی است."
+      />
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Stat label="بازدید انسان" value={totalHumans} />
+        <Stat label="بازدیدکنندهٔ یکتا" value={totalVisitors} />
+        <Stat label="ربات" value={totalBots} />
+      </div>
+
+      <section>
+        <h2 className="mb-2 text-sm font-bold">روز به روز</h2>
+        <div className="overflow-hidden rounded-2xl border border-border">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/40 text-xs text-muted-foreground">
+              <tr>
+                <th className="px-3 py-2 text-start font-semibold">روز</th>
+                <th className="px-3 py-2 text-start font-semibold">انسان</th>
+                <th className="px-3 py-2 text-start font-semibold">یکتا</th>
+                <th className="px-3 py-2 text-start font-semibold">ربات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.daily.map((d) => (
+                <tr key={d.day} className="border-t border-border/60">
+                  <td className="px-3 py-2" dir="ltr">{d.day}</td>
+                  <td className="px-3 py-2 font-bold">{faDigits(d.humans)}</td>
+                  <td className="px-3 py-2">{faDigits(d.visitors)}</td>
+                  <td className="px-3 py-2 text-muted-foreground">{faDigits(d.bots)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <section>
+          <h2 className="mb-2 text-sm font-bold">صفحه‌های پربازدید</h2>
+          <ul className="space-y-1.5 rounded-2xl border border-border p-3">
+            {data.pages.map((p) => (
+              <li key={p.path} className="flex items-center justify-between gap-3 text-sm">
+                <span className="truncate font-mono text-xs" dir="ltr">{p.path}</span>
+                <span className="shrink-0 font-bold">{faDigits(p.views)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="mb-2 text-sm font-bold">منبع ورود</h2>
+          <ul className="space-y-1.5 rounded-2xl border border-border p-3">
+            {data.sources.map((s) => (
+              <li key={s.src} className="flex items-center justify-between gap-3 text-sm">
+                <span className="truncate" dir="ltr">{s.src}</span>
+                <span className="shrink-0 font-bold">{faDigits(s.views)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+
+      <p className="text-[11px] leading-relaxed text-muted-foreground">
+        بدون کوکی و بدون IP خام. «یکتا» از هش نمک‌دار IP و مرورگر شمرده
+        می‌شود که فقط تا پایان همان روز معنا دارد. ردیابی روی نسخهٔ
+        توسعه اجرا نمی‌شود.
+      </p>
     </div>
   )
 }

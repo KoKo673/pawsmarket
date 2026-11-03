@@ -7,6 +7,7 @@ import { RequireAuth } from '@/components/auth/RequireAuth'
 import { Footer } from '@/components/layout/Footer'
 import { Navbar } from '@/components/layout/Navbar'
 import { useGeolocation } from '@/hooks/use-geolocation'
+import { trackView } from '@/lib/analytics'
 import { initEntranceMotion, MOTION } from '@/lib/motion'
 import { HomePage } from '@/pages/HomePage'
 import { AppProviders } from '@/providers/AppProviders'
@@ -229,6 +230,14 @@ function AppRoutes() {
       root.style.overflowAnchor = ''
     }
   }, [location.pathname, location.search])
+  /* One page view per route change. Keyed on pathname only: a changed
+     query string is usually a filter, not a new page, and counting
+     /explore?preset=vets and /explore separately would make the landing
+     pages unreadable. */
+  useEffect(() => {
+    trackView(location.pathname)
+  }, [location.pathname])
+
   // The Explore view is a full-height app surface — no footer there
   const isExplore = location.pathname === '/explore'
 
