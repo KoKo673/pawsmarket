@@ -1,4 +1,4 @@
-import { LogOut, Loader2, PawPrint, Plus } from 'lucide-react'
+import { KeyRound, Loader2, LogOut, PawPrint, Plus } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -30,6 +30,50 @@ export function MyAccountPage() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const queryClient = useQueryClient()
+
+  const [showPwForm, setShowPwForm] = useState(false)
+  const [pwBusy, setPwBusy] = useState(false)
+  const [pwError, setPwError] = useState<string | null>(null)
+  const [pwCurrent, setPwCurrent] = useState('')
+  const [pwNew, setPwNew] = useState('')
+  const [pwConfirm, setPwConfirm] = useState('')
+  const [pwDone, setPwDone] = useState<string | null>(null)
+
+  const submitPassword = async (e: FormEvent) => {
+    e.preventDefault()
+    setPwError(null)
+    if (pwNew.length < 8) {
+      setPwError('رمز جدید دست‌کم ۸ نویسه باشد')
+      return
+    }
+    if (pwNew !== pwConfirm) {
+      setPwError('رمز جدید و تکرارش یکسان نیست')
+      return
+    }
+    setPwBusy(true)
+    try {
+      // A session is enough for the first setting; an existing password
+      // needs the current one. The server answers 409 once a password
+      // exists, which tells the user to use the "change" shape instead.
+      let message: string | null = null
+      try {
+        message = (await socialApi.setPassword(pwNew)).message
+      } catch (err) {
+        const status = (err as Error & { status?: number }).status
+        if (status !== 409) throw err
+        message = (await socialApi.changePassword(pwCurrent, pwNew)).message
+      }
+      setPwDone(message)
+      setPwNew('')
+      setPwConfirm('')
+      setPwCurrent('')
+      setShowPwForm(false)
+    } catch (err) {
+      setPwError(err instanceof Error ? err.message : 'مشکلی پیش آمد')
+    } finally {
+      setPwBusy(false)
+    }
+  }
 
   const petsQuery = useQuery({
     queryKey: ['my-pet-profiles', origin.lat, origin.lng],
@@ -264,6 +308,118 @@ export function MyAccountPage() {
               </Link>
             ))}
           </div>
+        )}
+      </section>
+
+      {/* رمز عبور — این‌جا بود که حلقه‌ی بازیابی کامل می‌شد.
+          `/recover` یک رمز موقت می‌فرستد که ۳۰ دقیقه عمر دارد و صفحه‌ی
+          فراموشی به کاربر می‌گوید «بعد از حساب من رمز دلخواه را بگذارید» —
+          اما هیچ فرمتی وجود نداشت. بعد از ۳۰ دقیقه، حساب کاملاً قفل
+          می‌شد، چون `/change-password` رمز فعلی می‌خواهد و `/set-password`
+          وقتی رمز هست (409) رد می‌کند.
+
+          حالا همین فرم همان دو راه را پوشش می‌دهد: اول امتحان
+          `/set-password`، اگر سرور گفت «از قبل رمز دارد» خودکار به
+          صفحه‌ی دیگر. کاربر همیشه در همین صفحه می‌ماند، بدون پرش به صفحه‌ی دیگر. */
+          صفحه می‌ماند، بدون پرش به صفحه‌ی دیگر. */}
+      <section data-motion-section className="mt-8">
+        <div data-motion-item className="mb-4 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 text-lg font-extrabold">
+            <KeyRound className="size-5 text-primary" />
+            رمز عبور
+          </h2>
+          <Button
+            size="sm"
+            className="gap-1.5"
+            onClick={() => setShowPwForm((v) => !v)}
+            aria-expanded={showPwForm}
+          >
+            {showPwForm ? 'بستن' : 'تغییر رمز'}
+          </Button>
+        </div>
+
+        {pwDone && (
+          <p data-motion-item role="status"
+             className="mb-4 rounded-2xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm font-bold text-tide-800">
+            {pwDone}
+          </p>
+        )}
+
+        {showPwForm && (
+          <form
+            data-motion-item
+            onSubmit={submitPassword}
+            className="mb-6 space-y-4 rounded-2xl border border-border/60 bg-card p-5 shadow-soft"
+          >
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              اگر هنوز رمز ندارید، فقط رمز تازه را بنویسید. اگر رمز دارید،
+              رمز فعلی‌تان هم لازم است.
+            </p>
+
+            <div className="space-y-2">
+              <Label htmlFor="pw_current">رمز فعلی (اختیاری)</Label>
+              <Input
+                id="pw_current"
+                type="password"
+                value={pwCurrent}
+                onChange={(e) => setPwCurrent(e.target.value)}
+                autoComplete="current-password"
+                dir="ltr"
+                className="text-left"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="pw_new">رمز تازه</Label>
+              <Input
+                id="pw_new"
+                type="password"
+                value={pwNew}
+                onChange={(e) => setPwNew(e.target.value)}
+                autoComplete="new-password"
+                dir="ltr"
+                className="text-left"
+                minLength={8}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="pw_confirm">تکرار رمز تازه</Label>
+              <Input
+                id="pw_confirm"
+                type="password"
+                value={pwConfirm}
+                onChange={(e) => setPwConfirm(e.target.value)}
+                autoComplete="new-password"
+                dir="ltr"
+                className="text-left"
+                required
+              />
+            </div>
+
+            {pwError && (
+              <p role="alert"
+                 className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive-text">
+                {pwError}
+              </p>
+            )}
+
+            <div className="flex gap-2">
+              <Button type="submit" size="lg" className="flex-1 gap-2" disabled={pwBusy}>
+                {pwBusy && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
+                ذخیرهٔ رمز
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                onClick={() => setShowPwForm(false)}
+              >
+                لغو
+              </Button>
+            </div>
+          </form>
         )}
       </section>
     </div>
