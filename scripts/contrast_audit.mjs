@@ -283,23 +283,6 @@ async function auditRoute(browser, { route, label, auth }) {
   return entry
 }
 
-/**
- * The documented brand exception — see the long note in a11y_audit.mjs.
- *
- * White on `--primary` (#fa5705) is 3.27 where the text needs 4.5, on every
- * primary button in the app at every size. Enlarging does not help: WCAG's
- * "large text" starts at 18.66px with weight >=700, and the Button base weight
- * is 600, so sm/default/lg all need 4.5. The real fix is the
- * `--primary-foreground` token, which repaints every primary button and is
- * parked for the product owner.
- *
- * Matched on the fill and the text colour, not the size — one token, one
- * exception. Delete this, and the matching block in a11y_audit.mjs, when the
- * token moves.
- */
-function isBrandException(f) {
-  return f.bg === 'rgb(250,87,5)' && f.color === 'rgb(255, 255, 255)'
-}
 
 async function main() {
   const browser = await launchBrowser()
@@ -318,8 +301,8 @@ async function main() {
       continue
     }
     const { unresolved } = entry
-    const failing = entry.failing.filter((f) => !isBrandException(f))
-    const excusedNodes = entry.failing.filter((f) => isBrandException(f))
+    const failing = entry.failing
+    const excusedNodes = []
     const excused = excusedNodes.length
     entry.gating = failing
     entry.excused = excused

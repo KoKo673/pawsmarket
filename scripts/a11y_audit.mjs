@@ -174,58 +174,7 @@ const JSON_OUT = arg('json', '')
 const TOKEN = arg('token', process.env.PAWS_TOKEN ?? '')
 const PUBLIC_ONLY = process.argv.includes('--public-only')
 
-/**
- * THE ONE RECORDED EXCEPTION IN THIS CODEBASE — white text on `--primary`.
- *
- * ── What it is ───────────────────────────────────────────────────────────
- * `--primary` is `20 96% 50%` = #fa5705 (src/index.css:25). `--primary-foreground`
- * is white in the light theme and `20 30% 10%` in the dark one. So the same
- * button reads 3.27:1 in light and 6.31:1 in dark, and only the light theme is
- * short of the 4.5 that 12-16px text needs.
- *
- * ── Why every button size is covered, not just the small one ─────────────
- * A first attempt exempted only the 12px button that prompted the decision,
- * on the reasoning that a bigger neighbour failing would still be caught.
- * Measuring showed that was wrong: six more nodes fail identically at 14px and
- * 16px, and they are all the same token. A gate that stays red until a token
- * moves is a gate people learn to ignore. The exception is for
- * `--primary-foreground`, and that token does not vary by button size.
- *
- * ── Why not just enlarge the button (tried, measured, reverted) ──────────
- * WCAG counts text as "large" at >=24px, or at >=18.66px with weight >=700.
- * The Button base weight is font-semibold (600), so no size reaches it:
- *   sm       12px/600  needs 4.5  ->  3.27
- *   default  14px/600  needs 4.5  ->  3.27
- *   lg       16px/600  needs 4.5  ->  3.27
- * size="sm" -> size="default" on /me was tried: the text went to 14px/600, axe
- * still reported 3.27 against 4.5, and the button grew 36px -> 44px beside a
- * 28px heading. Worse layout, identical contrast.
- *
- * ── HOW TO DELETE THIS ───────────────────────────────────────────────────
- * Change `--primary-foreground` in the LIGHT theme (src/index.css, near line
- * 26) from `0 0% 100%` to `20 30% 10%` — the value the dark theme already uses.
- * That measures 5.38 and every primary button in the app clears 4.5.
- * Then delete `isBrandButton` and its call site here, the matching
- * `isBrandException` in scripts/contrast_audit.mjs, and re-run both audits:
- * `brand_exception=` should read 0 and `gating_violations=` should stay 0.
- *
- * The audit NAMES every exempted node (see the report below), so after the
- * token moves you can see exactly which seven were being held back.
- *
- * ── What this deliberately does NOT cover ────────────────────────────────
- * Dark text on a light surface at 3.23 (the disabled «بازگشت») and orange text
- * on a white button at 1.19 (the home banner's CTA) were real defects, not this
- * exception, and both were fixed in 2f7f980.
- */
-const BRAND_FILL = '250,87,5'   // #fa5705 as r,g,b — axe hands the value back as hex
 
-function isBrandButton(node) {
-  if (node.ruleId !== 'color-contrast') return false
-  const hex = String(node.bgColor ?? '').replace(/^#/, '').match(/^[0-9a-f]{6}$/)
-  if (!hex) return false
-  const asRgb = [0, 2, 4].map((i) => parseInt(hex[0].slice(i, i + 2), 16)).join(',')
-  return asRgb === BRAND_FILL
-}
 
 /**
  * Launch a browser, preferring the installed Chrome.
@@ -295,7 +244,7 @@ async function auditRoute(browser, { route, label, auth }) {
       const detail = []
       const excused = []
       for (const v of res.violations) {
-        const brand = v.nodes.filter((n) => isBrandButton({
+        const brand = []
           bgColor: n.any?.[0]?.data?.bgColor,
           ruleId: v.id,
         }))
@@ -471,7 +420,6 @@ async function main() {
   if (allExcused.length > 0) {
     console.log(`\n  BRAND EXCEPTION — ${allExcused.length} node(s), reported but not gated.`)
     console.log('  White on --primary (#fa5705) is 3.27 where 4.5 is needed. The fix is the')
-    console.log('  --primary-foreground token in src/index.css; see the note above isBrandButton')
     console.log('  for how to delete this exception. These are the nodes it is holding back:')
     for (const e of allExcused) {
       console.log(`      ${e.route.padEnd(14)} ${String(e.ratio).padStart(5)}  ${e.fontSize.padEnd(14)}` +
