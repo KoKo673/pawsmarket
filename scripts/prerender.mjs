@@ -36,6 +36,13 @@ import { dirname, join } from 'node:path'
 const API = (process.env.PRERENDER_API || 'https://pawsmarket.ir').replace(/\/$/, '')
 const OUT = process.env.PRERENDER_OUT || 'dist'
 
+// Google Search Console ownership token. Read from the build environment
+// (Vite bakes VITE_* into the bundle; this Node script reads the same values
+// from process.env, so .env.production must set it for both). When empty,
+// the placeholder in index.html is dropped — a page shipped without the
+// operator's token should not carry a fake verification line.
+const GSC_TOKEN = (process.env.VITE_GSC_VERIFICATION || '').trim()
+
 /** Escape text for interpolation into HTML. */
 function esc(value) {
   return String(value ?? '')
@@ -191,6 +198,27 @@ async function main() {
   } catch {
     console.log('[prerender] no dist/index.html — nothing to do')
     return
+  }
+
+  // Search Console verification meta. index.html ships a placeholder
+  // comment; only a real token from VITE_GSC_VERIFICATION becomes a
+  // <meta name="google-site-verification">, and only once — so 447 store
+  // pages do not each carry a duplicate line when prerendered from this
+  // shell. The token is inserted once here, not per store page (the page()
+  // helper never touches it).
+  if (!/google-site-verification/.test(shell)) {
+    shell = GSC_TOKEN
+      ? shell.replace(
+          /<!--google-site-verification-->/,
+          `<meta name="google-site-verification" content="${esc(GSC_TOKEN)}" />`,
+        )
+      : shell.replace(/\s*<!--google-site-verification-->/, '')
+    await writeFile(join(OUT, 'index.html'), shell, 'utf8')
+    console.log(
+      GSC_TOKEN
+        ? '[prerender] Search Console verification meta injected'
+        : '[prerender] no Search Console token — placeholder line removed',
+    )
   }
 
   // Every store, not the first page: the endpoint caps `limit` at 2000 and

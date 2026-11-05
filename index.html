@@ -16,6 +16,20 @@
     />
     <title>پازمارکت — حیوانات و لوازم نزدیک شما</title>
 
+    <!-- Google Search Console ownership. Verification happens in two ways,
+         and only one is used:
+         - Meta tag (this line, filled once by the operator from Search
+           Console → Settings → Ownership verification).
+         - DNS TXT record, preferred for a domain you control, because it
+           survives a redesign and a copied index.html. When the DNS record
+           is in place this meta can stay empty — the verification that
+           matters is the DNS one.
+         Build-time: the token is read by prerender.mjs from
+         VITE_GSC_VERIFICATION (see .env.production). If it is empty the
+         placeholder line below is removed, so a shipped page never carries
+         an unverified token. -->
+    <!--google-site-verification-->
+
     <!-- Typography: Vazirmatn, self-hosted (SIL OFL 1.1).
          Was fonts.googleapis.com — a foreign dependency for a domestic
          audience, and until it loaded the page painted in the fallback face.
