@@ -317,6 +317,11 @@ const qs = (params: Record<string, string | number | undefined | null>) => {
 }
 
 export const socialApi = {
+  /** First password for a phone-signup account; server answers 409 if one exists. */
+  setPassword: (newPassword: string) => authApi.setPassword(newPassword),
+  /** Change password for an account that already has one; needs current password. */
+  changePassword: (currentPassword: string, newPassword: string) =>
+    authApi.changePassword(currentPassword, newPassword),
   createProfile: (data: { name: string; species: string; bio?: string; lat: number; lng: number }) =>
     request<PetProfile>('/api/pets/profile', { method: 'POST', body: JSON.stringify(data) }),
   /** `asPet` = the viewer's own pet id, so `is_following` is about that pet. */

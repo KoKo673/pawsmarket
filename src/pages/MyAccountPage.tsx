@@ -320,8 +320,9 @@ export function MyAccountPage() {
 
           حالا همین فرم همان دو راه را پوشش می‌دهد: اول امتحان
           `/set-password`، اگر سرور گفت «از قبل رمز دارد» خودکار به
-          صفحه‌ی دیگر. کاربر همیشه در همین صفحه می‌ماند، بدون پرش به صفحه‌ی دیگر. */
-          صفحه می‌ماند، بدون پرش به صفحه‌ی دیگر. */}
+          `/change-password` می‌زند. کاربر همیشه در همین صفحه می‌ماند،
+          بدون پرش به صفحه‌ی دیگر. */}
+
       <section data-motion-section className="mt-8">
         <div data-motion-item className="mb-4 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-lg font-extrabold">

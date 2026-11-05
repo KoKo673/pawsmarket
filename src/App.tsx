@@ -8,6 +8,7 @@ import { Footer } from '@/components/layout/Footer'
 import { Navbar } from '@/components/layout/Navbar'
 import { useGeolocation } from '@/hooks/use-geolocation'
 import { trackView } from '@/lib/analytics'
+import { initAnalytics, trackPageView } from '@/lib/gtag'
 import { initEntranceMotion, MOTION } from '@/lib/motion'
 import { HomePage } from '@/pages/HomePage'
 import { AppProviders } from '@/providers/AppProviders'
@@ -194,6 +195,7 @@ function AppRoutes() {
   }, [hydrate])
   // سیستم واحد انیمیشن ورود — یک‌بار در مرز layout، برای همه‌ی صفحات
   useEffect(() => {
+    initAnalytics()
     const boot = initEntranceMotion()
     return () => boot.dispose()
   }, [])
@@ -236,6 +238,7 @@ function AppRoutes() {
      pages unreadable. */
   useEffect(() => {
     trackView(location.pathname)
+    trackPageView(location.pathname)
   }, [location.pathname])
 
   // The Explore view is a full-height app surface — no footer there
