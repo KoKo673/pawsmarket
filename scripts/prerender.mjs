@@ -202,24 +202,22 @@ async function main() {
 
   // Search Console verification meta. index.html ships a placeholder
   // comment; only a real token from VITE_GSC_VERIFICATION becomes a
-  // <meta name="google-site-verification">, and only once — so 447 store
-  // pages do not each carry a duplicate line when prerendered from this
-  // shell. The token is inserted once here, not per store page (the page()
-  // helper never touches it).
-  if (!/google-site-verification/.test(shell)) {
-    shell = GSC_TOKEN
-      ? shell.replace(
-          /<!--google-site-verification-->/,
-          `<meta name="google-site-verification" content="${esc(GSC_TOKEN)}" />`,
-        )
-      : shell.replace(/\s*<!--google-site-verification-->/, '')
-    await writeFile(join(OUT, 'index.html'), shell, 'utf8')
-    console.log(
-      GSC_TOKEN
-        ? '[prerender] Search Console verification meta injected'
-        : '[prerender] no Search Console token — placeholder line removed',
-    )
-  }
+  // <meta name="google-site-verification">. Without a token the
+  // placeholder comment is removed entirely — a page shipped without the
+  // operator's token should not carry a fake verification line, and must
+  // not ship the placeholder as evidence of anything either.
+  shell = GSC_TOKEN
+    ? shell.replace(
+        /<!--google-site-verification-->/,
+        `<meta name="google-site-verification" content="${esc(GSC_TOKEN)}" />`,
+      )
+    : shell.replace(/\s*<!--google-site-verification-->/, '')
+  await writeFile(join(OUT, 'index.html'), shell, 'utf8')
+  console.log(
+    GSC_TOKEN
+      ? '[prerender] Search Console verification meta injected'
+      : '[prerender] no Search Console token — placeholder line removed',
+  )
 
   // Every store, not the first page: the endpoint caps `limit` at 2000 and
   // paginates with `offset`, and a build that silently rendered 200 of 447
