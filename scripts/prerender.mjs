@@ -31,17 +31,33 @@
  * hydration, so a visitor sees no difference — only a crawler does.
  */
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { dirname, join } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const API = (process.env.PRERENDER_API || 'https://pawsmarket.ir').replace(/\/$/, '')
 const OUT = process.env.PRERENDER_OUT || 'dist'
 
 // Google Search Console ownership token. Read from the build environment
 // (Vite bakes VITE_* into the bundle; this Node script reads the same values
-// from process.env, so .env.production must set it for both). When empty,
-// the placeholder in index.html is dropped — a page shipped without the
-// operator's token should not carry a fake verification line.
-const GSC_TOKEN = (process.env.VITE_GSC_VERIFICATION || '').trim()
+// from .env.production so the built HTML matches the bundle even when
+// process.env is unset — docker build only passed VITE_GA4_ID, so GSC was
+// empty at prerender). When empty, the placeholder in index.html is dropped —
+// a page shipped without the operator's token should not carry a fake verification line.
+function readDotEnv(name) {
+  if (process.env[name]) return process.env[name]
+  try {
+    const here = dirname(fileURLToPath(import.meta.url))
+    const envFile = resolve(here, '..', '.env.production')
+    const text = readFileSync(envFile, 'utf8')
+    for (const line of text.split('\n')) {
+      const m = line.match(new RegExp(`^${name}=(.*)$`))
+      if (m) return m[1].trim()
+    }
+  } catch { /* file not available — fall through to empty */ }
+  return ''
+}
+const GSC_TOKEN = readDotEnv('VITE_GSC_VERIFICATION')
 
 /** Escape text for interpolation into HTML. */
 function esc(value) {
