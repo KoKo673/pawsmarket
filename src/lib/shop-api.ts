@@ -101,6 +101,8 @@ export const shopApi = {
     address: string
     note?: string
     gateway: 'zibal' | 'zarinpal'
+    delivery_eta_days: number
+    delivery_slot?: number
   }) =>
     request<{ order_id: number; total_toman: number; gateway: string; redirect_url: string }>(
       '/api/shop/checkout',

@@ -37,6 +37,7 @@ export function CartPage() {
   const [address, setAddress] = useState('')
   const [note, setNote] = useState('')
   const [gateway, setGateway] = useState<'zibal' | 'zarinpal'>('zibal')
+  const [deliveryDays, setDeliveryDays] = useState(3)
   const [error, setError] = useState<string | null>(null)
 
   // Prefill from the account so a signed-in customer does not retype
@@ -64,6 +65,7 @@ export function CartPage() {
       address: address.trim(),
       note: note.trim() || undefined,
       gateway,
+      delivery_eta_days: deliveryDays,
     }),
     onSuccess: (res) => {
       // The gateway owns the next screen. Nothing here is "paid" until it
@@ -208,6 +210,25 @@ export function CartPage() {
               <Label htmlFor="c-note">یادداشت (اختیاری)</Label>
               <Input id="c-note" value={note} onChange={(e) => setNote(e.target.value)} />
             </div>
+
+            <fieldset className="space-y-2 pt-2">
+              <legend className="text-sm font-bold">زمان تحویل</legend>
+              <p className="text-xs text-muted-foreground">
+                حداقل ۲ تا ۳ روز کاری پس از ثبت سفارش
+              </p>
+              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="روز تحویل">
+                {[2, 3, 4, 5, 7].map((d) => (
+                  <label key={d}
+                         className={`cursor-pointer rounded-xl border px-3 py-2 text-sm font-semibold ${deliveryDays === d ? 'border-primary bg-primary/10 text-primary' : 'border-border'}`}>
+                    <input type="radio" name="delivery-days" value={d}
+                           checked={deliveryDays === d}
+                           onChange={() => setDeliveryDays(d)}
+                           className="sr-only" />
+                    {d} روز کاری
+                  </label>
+                ))}
+              </div>
+            </fieldset>
 
             <fieldset className="space-y-2 pt-2">
               <legend className="text-sm font-bold">درگاه پرداخت</legend>
