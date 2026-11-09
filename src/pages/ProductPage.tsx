@@ -11,14 +11,10 @@ import { useAuthStore } from '@/store/auth.store'
 /**
  * صفحهٔ یک محصول.
  *
- * Says one honest thing that the card cannot: where it comes from. We buy
- * the cheapest offer from a partner and ship it ourselves, so the product
- * page names the source rather than implying we hold stock. A customer
- * who knows that is not surprised by a delivery that takes a day longer.
- *
- * Deliberately shows no competitor prices. `cost_price` and the margin
- * live in the database for reports, not for the shop window — publishing
- * them would hand our margin to anyone scraping the page.
+ * Shows name, price and a single honest shipping note. No sourcing or
+ * supplier details are shown to the customer. Competitor prices stay in
+ * the database — publishing them would hand the margin to anyone
+ * scraping the page.
  */
 export function ProductPage() {
   const { id } = useParams<{ id: string }>()
@@ -144,28 +140,19 @@ export function ProductPage() {
                 directly. The <dt> sat inside a nested div, so axe counted
                 it as having no <dl> parent - 4 dlitems and the list itself.
                 The icon moves into the <dt> so the structure is legal and
-                the description still reads as one row. */}
+                the description still reads as one row.
+                No source/sourcing text here: naming the supplier to the
+                customer is neither required nor desirable. */}
             <div className="flex items-start gap-2">
               <dt className="flex items-center gap-2 font-bold">
                 <Truck className="size-4 shrink-0 text-muted-foreground" aria-hidden />
                 ارسال
               </dt>
               <dd className="flex-1 text-muted-foreground">
-                سفارش را ما تأمین و ارسال می‌کنیم؛ پس از ثبت، وضعیت در
+                حداقل ۲ تا ۳ روز کاری پس از ثبت سفارش؛ وضعیت در
                 «سفارش‌های من» به‌روز می‌شود.
               </dd>
             </div>
-            {p.source && (
-              <div className="flex items-start gap-2">
-                <dt className="flex items-center gap-2 font-bold">
-                  <Package className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-                  تأمین
-                </dt>
-                <dd className="flex-1 text-muted-foreground">
-                  از {p.source}، قیمت روزانه به‌روز می‌شود.
-                </dd>
-              </div>
-            )}
           </dl>
         </div>
       </div>
