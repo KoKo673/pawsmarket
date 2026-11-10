@@ -47,7 +47,11 @@ export interface OrderSummary {
   created_at: string
   paid_at: string | null
   delivery_eta_days: number | null
-  delivery_slot: number | null
+  // No `delivery_slot`. It used to be here, matching a backend field that
+  // was documented as a slot id from a `booking_slots` table no migration
+  // ever created. The backend dropped it (app/routers/shop.py), so this
+  // interface must not keep advertising it — a type that names a field the
+  // server never sends is the kind of thing someone later reads and trusts.
 }
 
 export interface OrderDetail extends OrderSummary {
@@ -135,7 +139,6 @@ export const shopApi = {
     note?: string
     gateway: 'zibal' | 'zarinpal'
     delivery_eta_days: number
-    delivery_slot?: number
   }) =>
     request<{ order_id: number; total_toman: number; gateway: string; redirect_url: string }>(
       '/api/shop/checkout',
