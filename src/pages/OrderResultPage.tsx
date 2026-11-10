@@ -89,8 +89,12 @@ export function OrderResultPage() {
               و ارسال را از همین‌جا پیگیری می‌کنیم.
             </p>
             <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-              <Button asChild className="flex-1"><Link to="/shop">ادامهٔ خرید</Link></Button>
-              <Button asChild variant="outline" className="flex-1"><Link to="/">خانه</Link></Button>
+              <Button asChild className="flex-1">
+                <Link to={orderId ? `/orders/${orderId}` : '/orders'}>
+                  پیگیری سفارش
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="flex-1"><Link to="/shop">ادامهٔ خرید</Link></Button>
             </div>
           </>
         )}

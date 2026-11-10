@@ -40,6 +40,24 @@ export interface Cart {
   total_toman: number
 }
 
+export interface OrderSummary {
+  id: number
+  status: string
+  total_toman: number
+  created_at: string
+  paid_at: string | null
+  delivery_eta_days: number | null
+  delivery_slot: number | null
+}
+
+export interface OrderDetail extends OrderSummary {
+  contact_name: string
+  contact_phone: string
+  address: string
+  note: string | null
+  items: { qty: number; unit_price: number; name: string }[]
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken()
   let res: Response
@@ -58,8 +76,23 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (!res.ok) {
     let detail = 'مشکلی پیش آمد'
     try {
-      const body = await res.json() as { detail?: string }
-      if (body?.detail) detail = body.detail
+      const body = await res.json() as { detail?: unknown }
+      const d = body?.detail
+      if (typeof d === 'string') {
+        // 4xx from the app's own handlers: a Persian sentence built for a
+        // customer ("قیمت این محصولات تغییر کرده است…").
+        detail = d
+      } else if (Array.isArray(d) && typeof d[0]?.msg === 'string') {
+        // FastAPI's 422 shape is an ARRAY of {loc, msg, type}. Passing it
+        // straight to Error() stringifies to "[object Object]" — measured,
+        // the customer saw exactly that when a phone number failed the
+        // backend's format check after passing the client's length check.
+        detail = d[0].msg
+      } else if (typeof d === 'object' && d !== null) {
+        // /health/deep answers {status, checks, reason}.
+        const r = (d as { reason?: unknown }).reason
+        if (typeof r === 'string') detail = r
+      }
     } catch {
       /* non-JSON body */
     }
@@ -108,4 +141,11 @@ export const shopApi = {
       '/api/shop/checkout',
       { method: 'POST', body: JSON.stringify(input) },
     ),
+
+  // The product page promises the customer that order status appears in
+  // «سفارشهای من». Until these existed that promise led nowhere.
+  orders: () => request<{ items: OrderSummary[] }>('/api/shop/orders'),
+
+  order: (id: number | string) =>
+    request<OrderDetail>(`/api/shop/orders/${id}`),
 }

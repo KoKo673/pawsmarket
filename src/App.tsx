@@ -87,6 +87,10 @@ const CartPage = lazy(() =>
   import('@/pages/CartPage').then((m) => ({ default: m.CartPage })))
 const OrderResultPage = lazy(() =>
   import('@/pages/OrderResultPage').then((m) => ({ default: m.OrderResultPage })))
+const MyOrdersPage = lazy(() =>
+  import('@/pages/MyOrdersPage').then((m) => ({ default: m.MyOrdersPage })))
+const OrderDetailPage = lazy(() =>
+  import('@/pages/OrderDetailPage').then((m) => ({ default: m.OrderDetailPage })))
 const BookingManagePage = lazy(() =>
   import('@/pages/BookingManagePage')
     .then((m) => ({ default: m.BookingManagePage })))
@@ -457,6 +461,25 @@ function AppRoutes() {
               element={
                 <AnimatedPage>
                   <OrderResultPage />
+                </AnimatedPage>
+              }
+            />
+            {/* The product page promises the buyer that order status lands
+                in «سفارشهای من»; before these two routes that promise was
+                a 404. */}
+            <Route
+              path="/orders"
+              element={
+                <AnimatedPage>
+                  <MyOrdersPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/orders/:id"
+              element={
+                <AnimatedPage>
+                  <OrderDetailPage />
                 </AnimatedPage>
               }
             />

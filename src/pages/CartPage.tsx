@@ -48,14 +48,22 @@ export function CartPage() {
     }
   }, [user])
 
+  // A failed quantity change or removal used to do nothing at all: the
+  // click had no effect and no message. On a dead network that reads as a
+  // broken page rather than as a request that failed.
+  const itemsError = (err: unknown) =>
+    setError(err instanceof Error ? err.message : 'تغییر سبد انجام نشد')
+
   const setQty = useMutation({
     mutationFn: ({ id, qty }: { id: number; qty: number }) => shopApi.setQty(id, qty),
     onSuccess: (data) => queryClient.setQueryData(['cart'], data),
+    onError: itemsError,
   })
 
   const remove = useMutation({
     mutationFn: (id: number) => shopApi.remove(id),
     onSuccess: (data) => queryClient.setQueryData(['cart'], data),
+    onError: itemsError,
   })
 
   const checkout = useMutation({
@@ -73,7 +81,15 @@ export function CartPage() {
       window.location.href = res.redirect_url
     },
     onError: (err: unknown) => {
-      setError(err instanceof Error ? err.message : 'ثبت سفارش انجام نشد')
+      const message = err instanceof Error ? err.message : 'ثبت سفارش انجام نشد'
+      setError(message)
+      // A 409 means the server saw a different price than this page holds.
+      // Without refetching, the customer keeps looking at the stale total
+      // and every retry earns the same 409 — measured. Refreshing the cart
+      // is what turns the error into something they can act on.
+      if (message.includes('قیمت') || message.includes('موجود نیست')) {
+        void queryClient.invalidateQueries({ queryKey: ['cart'] })
+      }
     },
   })
 
@@ -218,8 +234,14 @@ export function CartPage() {
               </p>
               <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="روز تحویل">
                 {[2, 3, 4, 5, 7].map((d) => (
+                  // The input is sr-only, so the global :focus-visible ring
+                  // lands on a 1×1 clipped box: a keyboard user tabbing
+                  // through this group saw no focus at all. `has-[:focus-visible]`
+                  // puts the ring on the label the eye is looking at, and
+                  // selection carries a checkmark as well as colour.
                   <label key={d}
-                         className={`cursor-pointer rounded-xl border px-3 py-2 text-sm font-semibold ${deliveryDays === d ? 'border-primary bg-primary/10 text-primary' : 'border-border'}`}>
+                         className={`flex cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-semibold has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-background ${deliveryDays === d ? 'border-primary bg-primary/10 text-primary' : 'border-border'}`}>
+                    <span aria-hidden className={deliveryDays === d ? 'opacity-100' : 'opacity-0'}>✓</span>
                     <input type="radio" name="delivery-days" value={d}
                            checked={deliveryDays === d}
                            onChange={() => setDeliveryDays(d)}
