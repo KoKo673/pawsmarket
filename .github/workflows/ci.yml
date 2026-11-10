@@ -28,6 +28,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # ── Every App.tsx route must be reachable through nginx ─────────
+      # This runs before the typecheck because it is the cheapest check
+      # here and the one whose failure mode is invisible everywhere else.
+      #
+      # Measured 2026-11-10: /orders and /orders/:id shipped to production
+      # and returned a hard 404 to every customer who had just paid. The
+      # routes existed, the links existed, the build passed, the tests
+      # passed — and the dev server cannot catch it, because vite answers
+      # every path with index.html. Only production 404s.
+      - name: Route parity (App.tsx ↔ nginx)
+        run: npm run check:routes
+
       - name: Typecheck
         run: npx tsc -b
 
