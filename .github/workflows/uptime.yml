@@ -74,6 +74,48 @@ jobs:
           # index.html would fail here, which is the point.
           echo "$body" | grep -q '"status":"ok"'
 
+      # ── Deep health: database AND Redis ─────────────────────────
+      # /health only proves the process is alive. /health/deep runs a real
+      # query against Postgres and pings Redis, so it answers 503 when a
+      # dependency is dead while the process still says 200. Before
+      # 2026-11-10 that endpoint returned {"status":"ok"} with Redis down,
+      # which is worse than having no check at all.
+      #
+      # Checked from GitHub's network, which is the only vantage point
+      # that does not require trusting the box to report on itself.
+      - name: Deep health (database + Redis)
+        run: |
+          body=$(curl -sS --retry 3 --retry-delay 5 --max-time 20 \
+            https://pawsmarket.ir/health/deep)
+          echo "GET /health/deep -> $body"
+          echo "$body" | grep -q '"status":"ok"'
+          # Both named `ok`, not merely absent from a failure list: a
+          # future dependency reporting "not configured" must not pass as
+          # healthy.
+          echo "$body" | grep -q '"database":"ok"'
+          echo "$body" | grep -q '"redis":"ok"'
+
+      # ── Routes a customer is actually linked to ─────────────────
+      # `/orders` shipped and returned a hard 404, because nginx answers
+      # unknown paths with a real 404 and the route allow-list did not
+      # include it. Nothing inside the server noticed — the internal
+      # scrapes do not go through nginx. Only an outside check sees this.
+      #
+      # The nginx allow-list is now checked statically at build time by
+      # scripts/check-route-parity.mjs. This is the runtime half: it proves
+      # the deployed config matches what the build believed.
+      - name: Customer-facing routes reach the app, not a 404
+        run: |
+          failed=0
+          for path in /orders /cart /shop /bookings; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' \
+              --retry 2 --retry-delay 3 --max-time 20 \
+              "https://pawsmarket.ir$path")
+            echo "GET $path -> $code"
+            if [ "$code" != "200" ]; then failed=1; fi
+          done
+          [ "$failed" = "0" ]
+
       - name: A prerendered store page still renders
         run: |
           # One real slug, not the first row: a page that 404s would pass a
