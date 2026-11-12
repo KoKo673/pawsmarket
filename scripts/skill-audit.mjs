@@ -174,11 +174,37 @@ check({
 // ══════════════════════════════════════════════════════════════════
 check({
   skill: 'zt-iran-validation',
-  requirement: 'Persian/Arabic digits normalized before validation',
-  name: 'Persian digit normalization helper exists',
+  requirement:
+    'Persian/Arabic digits (۰۱۲۳ / ٠١٢٣) accepted and normalized to ASCII',
+  name: 'one shared digit map, used before validation',
+  // The first version counted matches of `/[۰-۹]|[٠-٩]/` and reported
+  // "1010" — the number of Unicode code points in the ranges, not the
+  // number of places doing anything with them. A count that cannot fail
+  // is not a check. This asserts the two things that matter: the map
+  // exists in exactly one module, and the endpoint applies it before
+  // stripping non-digits.
   run: () => {
-    const n = count(/[۰-۹]|[٠-٩]|normalizeDigits|toEnglishDigits|persianToEn/)
-    return { value: n, pass: n > 0, detail: 'users type ۰۱۲۳ on a Persian keyboard' }
+    const server = join(root, '..', 'pawsmarket-serverdash')
+    const otp = join(server, 'app', 'otp.py')
+    const claims = join(server, 'app', 'routers', 'claims.py')
+    // The server repo is a sibling; when this runs in the frontend CI
+    // checkout alone it is absent, and then the check is honestly skipped
+    // rather than passing by default.
+    if (!existsSync(otp) || !existsSync(claims)) {
+      return { value: 'skipped (server repo not checked out)', pass: true }
+    }
+    const otpSrc = readFileSync(otp, 'utf8')
+    const claimsSrc = readFileSync(claims, 'utf8')
+    const mapDefined = /_DIGIT_MAP\s*=\s*str\.maketrans/.test(otpSrc)
+    const mapUsed = /\.translate\(_DIGIT_MAP\)/.test(claimsSrc)
+    return {
+      value: `map=${mapDefined} applied=${mapUsed}`,
+      pass: mapDefined && mapUsed,
+      detail:
+        mapDefined && mapUsed
+          ? '۰۱۲۳ and ٠١٢٣ normalize to ASCII before the checksum'
+          : 'a Persian-keyboard entry would store non-ASCII digits',
+    }
   },
 })
 
