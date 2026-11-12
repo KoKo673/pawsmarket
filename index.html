@@ -3,6 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <!-- PWA. Without this link the manifest exists and nothing reads it:
+         the browser never discovers it, the site is not installable, and
+         the icons and standalone display are inert. Measured 2026-11-12:
+         /manifest.webmanifest answered 404 on the live site while NFR-4.6
+         claimed "PWA / آفلاین ✅" in the SRS. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"

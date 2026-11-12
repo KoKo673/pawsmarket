@@ -40,6 +40,21 @@ jobs:
       - name: Route parity (App.tsx ↔ nginx)
         run: npm run check:routes
 
+      # ── The installed skills' checklists, as checks ─────────────────
+      # 2,702 skills are installed and 24 contain code. The rest are
+      # instruction documents, and an instruction followed from memory
+      # once is followed differently next time. Each rule in
+      # scripts/skill-audit.mjs names the skill it comes from and quotes
+      # what that skill requires — RTL logical properties, Persian
+      # typography, Iranian digit normalization, no raw HTML injection,
+      # alt text, PWA metadata.
+      #
+      # Only the `severity: error` rules fail the build. The rest are
+      # advisories, because a check that fails on a judgement call is a
+      # check someone disables.
+      - name: Skill checklist audit
+        run: npm run check:skills
+
       - name: Typecheck
         run: npx tsc -b
 
