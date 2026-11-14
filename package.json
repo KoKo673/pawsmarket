@@ -8,6 +8,7 @@
     "build": "node scripts/check-route-parity.mjs && tsc -b && vite build && node scripts/prerender.mjs",
     "check:routes": "node scripts/check-route-parity.mjs",
     "check:skills": "node scripts/skill-audit.mjs",
+    "gate": "bash scripts/gate.sh",
     "lint": "oxlint src",
     "preview": "vite preview",
     "audit:a11y": "node scripts/a11y_audit.mjs",
