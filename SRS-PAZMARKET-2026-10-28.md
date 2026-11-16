@@ -262,26 +262,38 @@ Quality   oxlint · tsc -b · Playwright · Lighthouse · axe-core · pytest
 
 ## ۵. مدل داده
 
-### ۵.۱ شمای زنده — ۳۰ جدول/ویو
+### ۵.۱ شمای زنده — ۳۳ جدول/ویو
 
-همه از `information_schema` روی دیتابیس زنده در تاریخ این سند.
+همه از `information_schema` روی دیتابیس زنده، بازخوانی‌شده در ۲۰۲۶-۱۱-۱۶.
 
 ```
 هویت        users · sessions · otp_codes · admin_door_attempts
 کاتالوگ     stores · products · marketplace_products · offers · sources
             sync_runs
 اجتماعی     pets · pet_profiles · pet_photos · posts · comments · follows
-            likes
+            likes · adoption_requests · page_views
 معامله      bookings · orders · order_items · payments · cart_items
 پشتیبانی    support_tickets · support_messages
 کسب‌وکار    store_claims
 ویو         store_booking_stats
 سیستمی      geography_columns · geometry_columns · spatial_ref_sys
+باقی‌ماندهٔ دستی  cat_backup_1103b · stores_category_backup_1103
 ```
+
+> **دو جدول `*_backup_*` در فهرست هستند چون واقعاً وجود دارند، نه چون
+> طراحی شده‌اند.** از یک اصلاح دستی در ۲۰۲۶-۱۱-۰۳ مانده‌اند (نامشان تاریخ
+> دارد). هیچ کدی به آن‌ها ارجاع نمی‌دهد و هیچ مهاجرتی نمی‌سازدشان — پس روی
+> نصب تازه نخواهند بود. حذفشان تصمیم است نه تمیزکاری بی‌خطر: تا وقتی
+> مطمئن نشده‌ایم دادهٔ اصلی از آن‌ها بازسازی‌شدنی نیست، `DROP` نمی‌شوند.
+
+> **این عدد عوض شد و دلیلش درسِ همین بخش است.** سند «۳۰ جدول» می‌گفت؛
+> اندازه‌گیری ۳۳ داد، چون `adoption_requests` و `page_views` اضافه شده
+> بودند و کسی سرفصل را به‌روز نکرده بود. عدد ساختاری بدون بازخوانی از
+> منبع، تاریخچه است نه وضعیت.
 
 ### ۵.۲ هویت
 
-**`users`** — ۱۳ ستون
+**`users`** — ۱۴ ستون
 ```
 id                SERIAL PK
 username          TEXT NOT NULL
@@ -295,7 +307,13 @@ created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 phone             TEXT
 phone_verified_at TIMESTAMPTZ                 ← این است که تلفن را مدرک می‌کند
 is_admin          BOOLEAN NOT NULL DEFAULT false
+password_expires_at TIMESTAMPTZ               ← رمز موقت بازیابی، ۳۰ دقیقه
 ```
+
+> `password_expires_at` تا این بازخوانی در سند نبود. ستون از مهاجرت
+> `0023` وجود دارد و `recover`/`login` به آن تکیه می‌کنند، ولی هیچ
+> سرتیتر SRS آن را نام نمی‌برد — دقیقاً همان نوع دریفت که این سند باید
+> جلویش را بگیرد.
 
 > `password_hash` عمداً nullable است. کامنت مهاجرت `0008`: NULL صادقانه
 > است («این حساب رمز ندارد») در برابر ذخیرهٔ یک هش جعلی که هرگز تطبیق
@@ -325,6 +343,38 @@ created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 
 **`admin_door_attempts`** — ۶ ستون: `id, username, ok, ip, user_agent, created_at`.
 رمز و عبارت عبور هرگز ذخیره نمی‌شوند؛ فقط نام کاربریِ تلاش‌شده.
+
+#### سرنوشت داده‌ها هنگام حذف حساب
+
+`DELETE FROM users WHERE id = ?` تنها کاری است که روتور انجام می‌دهد؛
+بقیه را کلیدهای خارجی تصمیم می‌گیرند. جدول زیر از `pg_constraint` زنده
+خوانده شده، نه از مهاجرت‌ها:
+
+| جدول | ستون | رفتار | معنا |
+|---|---|---|---|
+| `sessions` | `user_id` | **CASCADE** | خروج از همهٔ دستگاه‌ها |
+| `pet_profiles` | `owner_id` | **CASCADE** | پروفایل حیوان پاک می‌شود |
+| `posts` | `author_user_id` | **CASCADE** | پست‌ها و استوری‌ها پاک می‌شوند |
+| `likes` | `user_id` | **CASCADE** | — |
+| `comments` | `user_id` | **CASCADE** | — |
+| `adoption_requests` | `user_id` | **CASCADE** | — |
+| `cart_items` | `user_id` | **CASCADE** | — |
+| `bookings` | `user_id` | **SET NULL** | نوبتِ گذشته در تقویم فروشگاه می‌ماند |
+| `orders` | `user_id` | **SET NULL** | سفارشِ پرداخت‌شده سابقهٔ مالی است |
+| `support_tickets` | `user_id` | **SET NULL** | گفتگو ممکن است دربارهٔ سفارشی باشد که مانده |
+
+> **این جدول یک تست دارد، نه یک ادعا.** `tests/test_account_delete.py`
+> فهرست قیدهای زنده را از `pg_constraint` می‌خواند و اگر جدولی با
+> `NO ACTION`/`RESTRICT` اضافه شود، تست شکست می‌خورد — چون در آن حالت
+> `DELETE` با نقض کلید خارجی شکست می‌خورد و **حساب غیرقابل‌حذف می‌شود**،
+> و کسی تا وقتی مشتری شکایت نکند متوجه نمی‌شود. جدولِ تازه‌ای که این
+> تست را نمی‌بیند، خطر اصلی این بخش است.
+
+> **آنچه باقی می‌ماند عمدی است.** `orders` سابقهٔ مالی است؛ سابقه‌ای که
+> به درخواست مشتری خودش را پاک کند سابقه نیست. `contact_phone` روی
+> سفارشِ مانده **پاک نمی‌شود** — این یک مورد باز است: پاک‌سازی آن یعنی
+> تغییر معنی «سابقهٔ ارسال»، و تصمیمش با مالک محصول است، نه با یک
+> `UPDATE` خودسرانه.
 
 ### ۵.۳ کاتالوگ و معامله
 
@@ -593,6 +643,49 @@ via_phone = bool(
 
 **FR-3.14** `[شکاف]` `_recover_with_temp_password` کد مرده است و هنوز
 `temp_password` برمی‌گرداند. اگر دوباره وصل شود، شکل پاسخ را می‌شکند.
+
+**FR-3.15** حذف حساب — `DELETE /api/auth/account`، بدنه
+`{password, confirm_username}`. پاسخ **200** با `{ok, message}`.
+
+دو اثبات هویت لازم است و **هیچ‌کدام بولین نیست**:
+
+| ورودی | چه چیزی را می‌بندد |
+|---|---|
+| `password` (رمز فعلی) | گوشیِ باز و در دسترسِ کسی دیگر |
+| `confirm_username` (تایپ‌شده) | کلیک اشتباه روی دکمهٔ مخرب |
+
+`confirm: true` عمداً پذیرفته **نمی‌شود**، چون همان چیزی است که یک
+کلیک اشتباه می‌فرستد. مقایسهٔ نام کاربری case-insensitive است (بر پایهٔ
+`username_lower`، که هویت واقعی است).
+
+ترتیب و خطاها:
+
+```
+حساب موجود نیست       → 200 (نشست از ردیف جان سالم برده؛ قصد برآورده شده)
+password_hash NULL    → 409 «اول رمز تعیین کنید»
+رمز غلط               → 401
+نام کاربری ناهمخوان   → 422
+موفق                   → DELETE FROM users RETURNING id
+```
+
+**شاخهٔ 409 عمدی است:** حسابی که با OTP ساخته شده و هرگز رمز نگذاشته،
+`password_hash = NULL` دارد و نمی‌تواند از بررسی رمز بگذرد. یک `401`
+خالی مشتری را قانع می‌کند که رمز را غلط زده — روی حسابی که رمز ندارد.
+
+**حذف یک دستور است، نه حلقه روی جدول‌ها.** `DELETE FROM users` و بقیه
+از کلیدهای خارجی پیروی می‌کنند (§۵.۲، جدول سرنوشت داده‌ها). حلقهٔ
+دستی روی جدول‌ها همان روشی است که یک حذف را نیمه‌کاره می‌گذارد: جدولی
+که ماه بعد اضافه شود فراموش می‌شود.
+
+**محدودیت نرخ:** `account_delete` — ۵ بار در ساعت.
+
+**UI:** بخش «حذف حساب» در `/account`، پیش‌فرض بسته، دکمهٔ نهایی
+`destructive` و تا وقتی نام کاربری درست تایپ نشده غیرفعال.
+
+**تست:** `tests/test_account_delete.py` — ۸ تست، از جمله یکی که
+`pg_constraint` زنده را می‌خواند و اگر جدولی با `NO ACTION` اضافه شود
+شکست می‌خورد، و یکی که ثابت می‌کند سفارشِ پرداخت‌شده با
+`user_id = NULL` باقی می‌ماند.
 
 ### ۶.۴ OTP
 
@@ -2220,6 +2313,76 @@ endpoint:
 `tests/test_torob_gateway.py` (شامل «۲۰۰ با بدنهٔ کپچا زنده حساب نمی‌شود»
 و «چسبندگی خروجی»).
 
+#### NFR-6.63 — ردیابی خطا (۲۰۲۶-۱۱-۱۶)
+
+**وضعیت قبلی، اندازه‌گیری‌شده:** صفر خط `ERROR` در Loki برای ۲۴ ساعت،
+در حالی که سایت قطعاً ۵xx داشت. علت: **هیچ catch-all وجود نداشت** —
+استثنای مدیریت‌نشده به پیش‌فرض uvicorn می‌رسید: ۵۰۰ روی سیم، و یک خط
+روی stderr که هیچ‌کس با هیچ چیز مرتبطش نمی‌کرد.
+
+**سه جزء، هر سه در کد:**
+
+1. `@app.exception_handler(Exception)` در `app/main.py`
+2. `_error_key(exc, template, path)` — کلید گروه‌بندی
+3. `pawsmarket_unhandled_exceptions{error_key}` روی `/metrics`
+
+**گروه‌بندی، نکتهٔ اصلی است، نه یک جزئیات.** کلید = کلاس استثنا +
+**قالب** مسیر (`/api/pets/{pet_id}`). سه انتخاب که هر کدام یک شکست
+مختلف را می‌بندند:
+
+| اگر کلید … | آن‌گاه … |
+|---|---|
+| پیام باشد | «user 41 not found» و «user 92 not found» دو issue می‌شوند |
+| فقط کلاس باشد | هر `TypeError` با هر `TimeoutError` یکی می‌شود |
+| **قالب مسیر باشد** | دو id یک مسیر، یک issue‌اند؛ دو باگ، دو issue |
+
+**مسیری که `route` ندارد، همان‌جایی است که خراب می‌شد.** `scope['route']`
+برای درخواست‌هایی غایب است که دقیقاً ارزشمندترین‌اند: استثنا داخل یک
+middleware، یا مسیری که به هیچ route نخورد. آن‌جا `request.url.path`
+خام می‌شد و `/api/pets/12` و `/api/pets/13` دو series و دو آلارم
+می‌ساختند — یک خزش روی ۵۰۰ محصول، ۵۰۰ series. اکنون `_mask_segment`
+هر بخش مسیر را جدا می‌سنجد: تماماً رقم → `<n>`، UUID → `<uuid>`، هش
+۸+ نویسه → `<hex>`. **slug دست‌نخورده می‌ماند** (`vet-clinic-tehran`) چون
+همان چیزِ خراب است.
+
+**نتیجهٔ اندازه‌گیری‌شده:** ۵۰۰ درخواست با id متفاوت → **۱ series**
+(`tests/test_error_grouping_quality.py`).
+
+**تردیدی که به یک باگ واقعی رسید:** `record_unhandled` هنگام کار به
+`RequestIdMiddleware` هم وصل شد، چون استثنای داخل middleware **هرگز به
+handler برنامه نمی‌رسد** — Starlette آن را قبل از آن به پاسخ تبدیل
+می‌کند. آن ۵۰۰ فقط در `http_requests_total` شمرده می‌شد: عددی بدون باگ.
+
+**اثبات end-to-end** (route موقت، سپس حذف و تأیید حذف):
+
+```
+/__errprobe → 500 + پیام فارسی
+Loki        → level=ERROR error_key="RuntimeError /__errprobe"
+Prometheus  → pawsmarket_unhandled_exceptions{...} 1.0
+آلارم       → UnhandledExceptions با error_key در annotation
+```
+
+آلارم پس از پنجرهٔ ۱۰ دقیقه **خودش خاموش شد**.
+
+**تله‌ای که یک ساعت گرفت:** `traceback.format_exc()` داخل handlerی که
+بیرون بلوک `except` اجرا می‌شود `"NoneType: None"` می‌دهد و به‌صورت
+رشتهٔ خالی به Loki می‌رسد — **شبیه stack گرفته‌شده**، بدتر از نبودنش.
+درست: `''.join(traceback.format_exception(type(exc), exc, exc.__traceback__))`.
+
+**چرا Sentry نه:** یک SaaS خارجی باید از داخل ایران قابل‌دسترس باشد (که
+معمولاً نیست)، و مسیرها، شناسهٔ کاربر و stack از سرور بیرون می‌رفت.
+بک‌اند از قبل JSON ساختاریافته به Loki می‌فرستد.
+
+**داشبورد:** ردیف «Errors» در همان داشبورد عملیاتی
+(`monitoring/grafana-dashboard.py`) — چهار پنل: تعداد ۱ ساعته، تعداد
+نوع‌های متمایز، سری زمانی به‌تفکیک کلید، و جدول ۱۵ خطای اول. عمداً
+داشبورد جداگانه نیست: «آیا این تازه است؟» فقط کنار نرخ درخواست و
+تأخیر معنی دارد.
+
+**شکاف باقی‌مانده:** هیچ خطای واقعیِ business-logic هنوز رخ نداده تا
+گروه‌بندی روی دادهٔ واقعی دیده شود. آنچه اثبات شد مسیر فنی و خواص
+گروه‌بندی است، نه کیفیت آن روی خطاهای واقعی.
+
 ### ۷.۷ تغییرات ۲۰۲۶-۱۱-۱۰ (پس از FR-11.11)
 
 این تغییرات در بازبینی چندروزه اعمال شدند و بخشی از قرارداد فعلی‌اند:
@@ -2258,6 +2421,7 @@ endpoint:
 | SR-13 | `EXPOSED` پورت‌ها: فقط ۸۰ | ✅ سنجیده |
 | SR-14 | Postgres و Redis **بدون پورت میزبان** | ✅ |
 | SR-15 | CORS: `''` و `'  ,  '` مثل تنظیم‌نشده رفتار کنند | تست دارد |
+| SR-17 | حذف حساب دو اثبات هویت می‌خواهد؛ «تأیید» بولین نیست | `test_account_delete.py` |
 
 **SR-16** CORS: `allow_credentials` تنظیم نشده و همهٔ نشست‌ها Bearer اند،
 پس `'*'` درخواست credentialed را لو نمی‌دهد.
@@ -2365,20 +2529,22 @@ audit سه بار صفحهٔ ورود را زیر سه نام گزارش می‌
 
 ### ۱۰.۲ بک‌اند — pytest
 
-**۱۷۷ تابع تست در ۱۹ فایل**، روی `TestClient` به **دیتابیس واقعی** کانتینر.
+**۴۲۳ تابع تست در ۵۳ فایل** (شمارش ۲۰۲۶-۱۱-۱۶)، روی `TestClient` به
+**دیتابیس واقعی** کانتینر.
 
 ```
-test_otp.py              21    test_sources.py         15
-test_otp_endpoints.py    17    test_kavenegar.py       14
-test_sms.py              15    test_shop.py            12
-test_catalog_regression  12    test_pricing.py         11
-test_data_integrity.py    9    test_catalog_sync.py     9
-test_social.py            8    test_recover.py          6
-test_username_rules.py    5    test_reactions.py        5
-test_ratelimit_ip.py      5    test_auth.py             4
-test_adoption.py          4    test_assistant.py        3
-test_ratelimit_shared.py  2
+test_otp.py                     21   test_sources.py            15
+test_sms_ir.py                  20   test_sms.py                15
+test_health_cli.py              19   test_kavenegar.py          14
+test_matching.py                18   test_error_grouping_quality 12
+test_booking_notify.py          18   test_catalog_regression.py 12
+test_otp_endpoints.py           17   test_account_delete.py      8
 ```
+
+> **عدد قبلی این بخش غلط بود و به همین شکل در سند مانده بود.**
+> «۱۷۷ تابع در ۱۹ فایل» در ۲۰۲۶-۱۰-۲۸ نوشته شد و تا بازخوانی
+> ۲۰۲۶-۱۱-۱۶ کسی دوباره نشمرد — در حالی که فایل‌ها سه برابر شده بودند.
+> عدد تست بدون بازشماری، همان دریفت ساختاری است که §۵.۱ هم گرفتارش شد.
 
 **`pytest` در `requirements-dev.txt` است، نه `requirements.txt`.**
 سنجیده: `docker exec pawsmarket-backend-1 python -m pytest` →
@@ -2387,8 +2553,36 @@ test_ratelimit_shared.py  2
 فایل `conftest.py` خودش توضیح می‌دهد که چرا: «pytest روی سرور تولید
 یعنی کد تست هم آنجاست».
 
-**یعنی ادعای «۱۸۷ پاس» را نمی‌توان روی این سرور راستی‌آزمایی کرد.**
-۱۷۷ تابع تست شمارش شد؛ عدد اجرا تأیید نشد.
+**اجرا: در کانتینر، روی شبکهٔ `pawsmarket_default`، با دیتابیس جدا.**
+
+```bash
+# یک‌بار: دیتابیس دورانداختنی
+sudo docker exec pawsmarket-database-1 psql -U pawsmarket -d postgres \
+  -c 'CREATE DATABASE pawsmarket_test OWNER pawsmarket;'
+
+# schema — init.sql قبل از مهاجرت‌ها، وگرنه ۰۰۲۵ به بعد شکست می‌خورند
+sudo docker exec -i pawsmarket-database-1 psql -U pawsmarket \
+  -d pawsmarket_test -v ON_ERROR_STOP=1 < init.sql
+for f in migrations/*.sql; do
+  sudo docker exec -i pawsmarket-database-1 psql -U pawsmarket \
+    -d pawsmarket_test -v ON_ERROR_STOP=1 < "$f"
+done
+
+# اجرا
+sudo docker run --rm --network pawsmarket_default \
+  -e PGHOST=database -e PGDATABASE=pawsmarket_test \
+  -e PGUSER=pawsmarket -e PGPASSWORD=... -e PYTHONPATH=/app \
+  -v "$PWD":/app pm-test:latest python -m pytest tests/ -q
+```
+
+> **دو تله، هر دو واقعی:**
+> ۱. **`init.sql` باید اول اجرا شود.** مهاجرت‌ها روی جداولی کار می‌کنند
+>    که `init.sql` می‌سازد؛ برعکسش ۸ مهاجرت را با «relation does not
+>    exist» می‌شکند و schema ناقص بالا می‌آید (۳۱ جدول از ۳۳).
+> ۲. **`PGDATABASE` باید صریح `pawsmarket_test` باشد.** پیش‌فرض وارد
+>    شدن به کانتینر `pawsmarket` است — یعنی تولید. یک `-e` جاافتاده
+>    تست را روی دادهٔ واقعی اجرا می‌کند، و `conftest` ردیف‌های تستی را
+>    پاک می‌کند.
 
 ### ۱۰.۳ گیت‌های رفتارمحور
 

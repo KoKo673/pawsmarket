@@ -1,4 +1,4 @@
-import { KeyRound, Loader2, LogOut, PawPrint, Plus } from 'lucide-react'
+import { KeyRound, Loader2, LogOut, PawPrint, Plus, Trash2 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -9,7 +9,7 @@ import { Input, Textarea } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Label } from '@/components/ui/label'
 import { faDigits } from '@/lib/fa'
-import { mediaUrl, socialApi, type PetProfile } from '@/lib/social-api'
+import { authApi, mediaUrl, socialApi, type PetProfile } from '@/lib/social-api'
 import { useAuthStore } from '@/store/auth.store'
 import { useGeoStore } from '@/store/geo.store'
 
@@ -38,6 +38,36 @@ export function MyAccountPage() {
   const [pwNew, setPwNew] = useState('')
   const [pwConfirm, setPwConfirm] = useState('')
   const [pwDone, setPwDone] = useState<string | null>(null)
+
+  // حذف حساب — فروریخته و پیش‌فرض بسته. یک بخش مخرب نباید با یک اسکرول
+  // اتفاقی دیده شود، و «تأیید» هم باید تایپ شود، نه کلیک.
+  const [showDelete, setShowDelete] = useState(false)
+  const [delPassword, setDelPassword] = useState('')
+  const [delConfirm, setDelConfirm] = useState('')
+  const [delBusy, setDelBusy] = useState(false)
+  const [delError, setDelError] = useState<string | null>(null)
+
+  const submitDelete = async (e: FormEvent) => {
+    e.preventDefault()
+    setDelError(null)
+    // A cheap local check so an obvious typo does not cost a round trip.
+    // The server re-checks it; this is not the control.
+    if (delConfirm.trim().toLowerCase() !== (user?.username ?? '').toLowerCase()) {
+      setDelError('نام کاربری را دقیقاً مثل بالای صفحه بنویسید')
+      return
+    }
+    setDelBusy(true)
+    try {
+      await authApi.deleteAccount(delPassword, delConfirm)
+      // Local sign-out, then home. `logout()` also clears the token, so a
+      // stale one cannot keep calling the API as a deleted account.
+      await logout()
+      navigate('/', { replace: true })
+    } catch (err) {
+      setDelError((err as Error).message || 'حذف حساب انجام نشد')
+      setDelBusy(false)
+    }
+  }
 
   const submitPassword = async (e: FormEvent) => {
     e.preventDefault()
@@ -416,6 +446,113 @@ export function MyAccountPage() {
                 variant="outline"
                 size="lg"
                 onClick={() => setShowPwForm(false)}
+              >
+                لغو
+              </Button>
+            </div>
+          </form>
+        )}
+      </section>
+
+      {/* حذف حساب — آخرین بخش صفحه، و به‌عمد کم‌رنگ.
+
+          Why it exists at all: the checklist item «حذف حساب کاربر» is a
+          legal expectation (a person can take their data and leave) and
+          a practical one — without it, the only way out of an account is
+          to ask an admin, and the account is never really gone.
+
+          Why it looks like this: an accidental tap must not be able to
+          end an account, so the destructive button is behind BOTH a
+          disclosure and a typed username. `danger` colouring is applied
+          only to the final button, not to the section, so the page does
+          not read as an error. */}
+      <section data-motion-section className="mt-8">
+        <div data-motion-item className="mb-4 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 text-lg font-extrabold">
+            <Trash2 className="size-5 text-destructive-text" />
+            حذف حساب
+          </h2>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowDelete((v) => !v)}
+            aria-expanded={showDelete}
+          >
+            {showDelete ? 'بستن' : 'حذف حساب من'}
+          </Button>
+        </div>
+
+        {showDelete && (
+          <form
+            data-motion-item
+            onSubmit={submitDelete}
+            className="space-y-4 rounded-2xl border border-destructive/40 bg-destructive/5 p-5"
+          >
+            <p className="text-sm leading-relaxed">
+              این کار <strong>برگشت‌پذیر نیست</strong>. پروفایل، حیوانات،
+              پست‌ها و دیدگاه‌های شما پاک می‌شوند. سفارش‌ها و نوبت‌های
+              گذشته به‌عنوان سابقهٔ مالی و کاری باقی می‌مانند، ولی دیگر به
+              نام شما نیستند.
+            </p>
+
+            <div className="space-y-2">
+              <Label htmlFor="del_pw">رمز عبور</Label>
+              <Input
+                id="del_pw"
+                type="password"
+                value={delPassword}
+                onChange={(e) => setDelPassword(e.target.value)}
+                autoComplete="current-password"
+                dir="ltr"
+                className="text-left"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="del_confirm">
+                برای تأیید، نام کاربری خود را بنویسید
+                <span className="ms-1 font-mono text-xs text-muted-foreground" dir="ltr">
+                  {user?.username}
+                </span>
+              </Label>
+              <Input
+                id="del_confirm"
+                value={delConfirm}
+                onChange={(e) => setDelConfirm(e.target.value)}
+                autoComplete="off"
+                spellCheck={false}
+                required
+              />
+            </div>
+
+            {delError && (
+              <p role="alert"
+                 className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive-text">
+                {delError}
+              </p>
+            )}
+
+            <div className="flex gap-2">
+              <Button
+                type="submit"
+                size="lg"
+                variant="destructive"
+                className="flex-1 gap-2"
+                disabled={
+                  delBusy ||
+                  !delPassword ||
+                  delConfirm.trim().toLowerCase() !== (user?.username ?? '').toLowerCase()
+                }
+              >
+                {delBusy && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
+                حذف همیشگی حساب
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                onClick={() => setShowDelete(false)}
               >
                 لغو
               </Button>

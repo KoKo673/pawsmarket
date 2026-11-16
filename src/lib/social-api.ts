@@ -222,6 +222,15 @@ export const authApi = {
     }),
   logout: () => request<{ ok: boolean }>('/api/auth/logout', { method: 'POST' }),
   me: () => request<{ user: AuthUser }>('/api/auth/me'),
+  /**
+   * حذف حساب. `password` و `confirm_username` هر دو فرستاده می‌شوند چون
+   * سرور هر دو را می‌خواهد — غیرفعال‌کردن دکمه در UI ادب است، نه کنترل.
+   */
+  deleteAccount: (password: string, confirmUsername: string) =>
+    request<{ ok: boolean; message: string }>('/api/auth/account', {
+      method: 'DELETE',
+      body: JSON.stringify({ password, confirm_username: confirmUsername }),
+    }),
   /** رمز موقت می‌گیرد. پاسخ برای حساب ناموجود هم یکسان است. */
   /**
    * بازیابی رمز — فقط با شمارهٔ موبایل.
