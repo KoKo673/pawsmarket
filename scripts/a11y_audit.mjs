@@ -244,10 +244,15 @@ async function auditRoute(browser, { route, label, auth }) {
       const detail = []
       const excused = []
       for (const v of res.violations) {
+        /* The brand-colour exception was removed on purpose: it excluded
+           failing nodes by matching a background colour, which is how a
+           failing gate reported green. Nothing is excused by style any
+           more, so `brand` is empty. The half-deleted `filter(...)` that
+           produced it left a dangling object literal here, and this file
+           has not parsed since — the whole accessibility gate has been
+           dead code. Keeping the empty array states the decision in code
+           rather than deleting the concept, so the report shape holds. */
         const brand = []
-          bgColor: n.any?.[0]?.data?.bgColor,
-          ruleId: v.id,
-        }))
         const counted = v.nodes.length - brand.length
         byImpact[v.impact ?? 'minor'] += counted
         /* Named, not counted. The point of an exception is that someone can

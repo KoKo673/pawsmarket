@@ -133,7 +133,11 @@ function MapSync({ origin }: { origin: GeoPoint }) {
   const map = useMap()
   const status = useGeoStore((s) => s.status)
   const originRef = useRef(origin)
-  originRef.current = origin
+  /* Assigning a ref during render is an impure render: with concurrent
+     rendering React may render and discard, leaving the ref holding a value
+     that never became visible. The effect is the sanctioned update point and
+     still runs before any effect or handler that reads it. */
+  useEffect(() => { originRef.current = origin }, [origin])
 
   /**
    * IMPORTANT: Leaflet caches its size (`map.getSize()` returns the stale
@@ -515,9 +519,14 @@ function ListingMarkers({
   // onSelect is re-created on every parent render; keep the latest in a ref so
   // marker handlers are bound once instead of on every listing change.
   const selectRef = useRef(onSelect)
-  selectRef.current = onSelect
   const clusterRef = useRef(onCluster)
-  clusterRef.current = onCluster
+  // Updated in an effect, not during render: a concurrent render that React
+  // discards must not leave a handler calling a callback that was never
+  // committed to the tree.
+  useEffect(() => {
+    selectRef.current = onSelect
+    clusterRef.current = onCluster
+  })
 
   /* One counter, bumped when either the zoom or the visible box changes.
    *

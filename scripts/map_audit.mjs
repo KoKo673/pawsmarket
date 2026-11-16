@@ -186,19 +186,24 @@ async function main() {
   // ── 5. Empty result set ──────────────────────────────────────────────────
   {
     const { context, page } = await openMap(browser, { geo: TEHRAN, permission: 'granted' })
-    /* Both sources have to be emptied, and that is the point worth recording.
-       catalog.json is the PRIMARY source — the API only contributes rows the
-       snapshot does not already have (see listNearby in lib/api.ts). Mocking
-       the three API routes alone left 623 listings on the map, all of them
-       from the snapshot, which reads like the mock failing rather than the
-       merge working. A database with no coordinates is both empty. */
-    await page.route('**/catalog.json', (r) => r.fulfill({
-      status: 200, contentType: 'application/json',
-      body: JSON.stringify({ pets: [], products: [], stores: [] }),
-    }))
-    await page.route('**/api/pets*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"items":[]}' }))
-    await page.route('**/api/products*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"items":[]}' }))
-    await page.route('**/api/stores/nearby*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"items":[]}' }))
+    /* Only the API feeds the map now.
+       This used to mock `catalog.json` as well, because the snapshot really
+       was the primary source and mocking the API alone left 623 pins. That
+       snapshot was deleted from `lib/api.ts` (its ids disagreed with the
+       database and it served fifteen-day-old rows), and `getProductsRaw`
+       now returns [] unconditionally. The stale mock kept the case failing
+       with 45 pins from the live API — the fixture, not the map, was wrong.
+       The live routes are all that is left to empty. */
+    await page.route('**/api/pets*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+    await page.route('**/api/products*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+    await page.route('**/api/stores/nearby*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+    /* Emptying the routes is not enough: getStoresRaw falls back to a
+       localStorage copy of the last good answer (`LAST_STORES_KEY`) when the
+       request fails or returns nothing usable, and that copy survives a
+       reload. Clearing it is the difference between "the API said none" and
+       "the map is showing yesterday's 45 pins from a previous case in this
+       same browser context". */
+    await page.evaluate(() => { try { localStorage.clear() } catch { /* opaque origin */ } })
     await page.reload({ waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(5000)
     const mapTab = page.locator('button, [role="tab"]').filter({ hasText: /^نقشه$/ }).first()
@@ -216,7 +221,7 @@ async function main() {
       'map renders with only the origin dot, no error text, no crash',
       `present=${m.present} markers=${m.markers} (origin dot + ${listingMarkers} listings) errorText=${errs}`,
       Boolean(m.present && m.hasPixels && listingMarkers === 0 && !errs),
-      { note: 'catalog.json emptied too — it is the primary source, not a fallback' },
+      { note: 'only the API feeds the map now; the snapshot is gone' },
     )
     await context.close()
   }
@@ -313,17 +318,30 @@ async function main() {
       pets: [],
       products: [],
       stores: [{
-        id: 9001, name: 'پت‌شاپ آزمایشی', address: 'تهران', category: 'shop',
+        // 'shop' is filtered OUT: listNearby keeps only SERVICE_CATEGORIES
+        // (vet/groomer/boarding/shelter/cafe), so a shop-category row is
+        // dropped before the map ever sees it and the case failed with
+        // "no listing pin rendered". 'vet' is a category the map shows.
+        id: 9001, slug: 'fixture-vet', name: 'کلینیک آزمایشی',
+        address: 'تهران', category: 'vet',
         lat: 35.73, lng: 51.42,
       }],
     }
     const { context, page } = await openMap(browser, { geo: TEHRAN, permission: 'granted' })
-    await page.route('**/catalog.json', (r) => r.fulfill({
-      status: 200, contentType: 'application/json', body: JSON.stringify(ONE_STORE),
+    /* Feed the single store through the route the app actually reads.
+       Mocking `catalog.json` here kept this case on the cluster branch —
+       the snapshot no longer exists, so the stub was never consulted and
+       the map kept every real listing, which is why the assertion said
+       «still hit the cluster branch — the fixture is wrong». */
+    await page.route('**/api/pets*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+    await page.route('**/api/products*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+    await page.route('**/api/stores/nearby*', (r) => r.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify(ONE_STORE.stores),
     }))
-    await page.route('**/api/pets*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"items":[]}' }))
-    await page.route('**/api/products*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"items":[]}' }))
-    await page.route('**/api/stores/nearby*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"items":[]}' }))
+    // Same localStorage trap as case 5: a cached street of real stores would
+    // keep the pin clustered no matter what the route answers.
+    await page.evaluate(() => { try { localStorage.clear() } catch { /* opaque origin */ } })
     await page.reload({ waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(5000)
     const mapTab = page.locator('button, [role="tab"]').filter({ hasText: /^نقشه$/ }).first()
@@ -332,7 +350,18 @@ async function main() {
     const pin = await page.evaluate(() => {
       // The origin dot is the only marker with no text; the listing pin has one.
       const all = [...document.querySelectorAll('.leaflet-marker-icon')]
-      const p = all.find((m) => (m.textContent || '').trim())
+      /* A SERVICE store (vet/groomer/...) draws as a glyph icon with no
+         price text, unlike a product pin whose label is its price. The old
+         selector required textContent and therefore only ever found product
+         pins — a single vet pin looked like "nothing rendered". Fall back to
+         the marker's accessible name, which Leaflet sets from `title`. */
+      const named = (m) => ((m.textContent || '').trim()
+        || m.getAttribute('title') || m.getAttribute('aria-label') || '')
+      const p = all.find((m) => {
+        const n = named(m)
+        // the origin dot says «شما اینجا هستید» / has no name at all
+        return n && !/شما اینجا/.test(n)
+      })
       if (!p) return { found: false, total: all.length }
       return {
         found: true,
@@ -364,7 +393,14 @@ async function main() {
 
       // And it must actually open on Enter, same as the cluster pin.
       await page.evaluate(() => {
-        const p = [...document.querySelectorAll('.leaflet-marker-icon')].find((m) => (m.textContent || '').trim())
+        /* Same corrected selector as the assertion above: a service-store
+           pin has no text, only a name. With the old textContent test nothing
+           was focused, so Enter went to the document and this case measured
+           the absence of a focus target rather than the key handler. */
+        const name = (m) => ((m.textContent || '').trim()
+          || m.getAttribute('title') || m.getAttribute('aria-label') || '')
+        const p = [...document.querySelectorAll('.leaflet-marker-icon')]
+          .find((m) => name(m) && !/شما اینجا/.test(name(m)))
         p?.focus()
       })
       await page.keyboard.press('Enter')

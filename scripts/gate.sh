@@ -1,66 +1,171 @@
 #!/usr/bin/env bash
-# Runs the CI gates on a machine that has no Node installed.
+# The project's gates, runnable on the operator's machine.
 #
-# ── Why this file exists ──────────────────────────────────────────
-# Node is not installed on the operator's Windows machine. That meant
-# `npm run check:routes` and `npm run check:skills` — the two gates that
-# guard the highest-cost failure modes in this project — could only ever
-# run in CI. "It passes in CI" is not the same as "it passes here": a
-# route can be added to App.tsx and nginx locally, pushed, and only be
-# discovered as broken after the push. The whole point of a gate is to
-# fail before that.
+# ── The silent failure this replaces ──────────────────────────────
+# This file used to open with "Node is not installed on the operator's
+# Windows machine", and ran everything in `node:22-slim` because of it.
+# That was wrong: Node has been at `.tools/node/node.exe` (v24.21.0,
+# with npm) the whole time. Two months of gates and a10y audits were
+# routed through Docker or deferred to CI over a binary that was on
+# disk the entire time — and one of the scripts that was never run
+# (`a11y_audit.mjs`) turned out to have been unparseable since the
+# commit that removed its brand-colour exception.
 #
-# So they run in `node:22-slim` instead. Same major version CI pins, so
-# the results cannot diverge. The image is local already (it is also
-# what the frontend build uses).
+# So: use the local Node when it exists, fall back to Docker when it
+# does not. Both are checked, and the choice is printed, because "which
+# runtime ran the gate" is exactly the fact that was assumed wrong.
 #
 # Usage:
-#   bash scripts/gate.sh            # both gates
-#   bash scripts/gate.sh routes     # just one
+#   bash scripts/gate.sh              # every gate
+#   bash scripts/gate.sh routes
 #   bash scripts/gate.sh skills
+#   bash scripts/gate.sh lint
+#   bash scripts/gate.sh types
+#   bash scripts/gate.sh a11y         # needs a running server + Chrome
 #
-# Exit code is the first gate's failure, so it drops into a pre-push
-# hook or a `make check` unchanged.
+# Exit code is the first failure, so it drops into a pre-push hook.
 
 set -uo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# The skill audit reads the sibling backend repo for its digit-map
-# check, so the MOUNT has to be the parent, not this repo. Mounting
-# only this repo made that check silently report "skipped".
+# The skill audit reads the sibling backend repo for its digit-map check,
+# so a Docker mount has to be the parent, not this repo. Mounting only
+# this repo made that check silently report "skipped".
 PARENT="$(cd "$REPO/.." && pwd)"
 NAME="$(basename "$REPO")"
 IMAGE="${NODE_IMAGE:-node:22-slim}"
 
-if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
-    echo "gate: pulling $IMAGE (first run only)" >&2
-    docker pull "$IMAGE" >/dev/null || {
-        echo "gate: cannot pull $IMAGE — is Docker running?" >&2
-        exit 2
-    }
+# ── Pick a Node ───────────────────────────────────────────────────
+# 1. NODE_BIN, for a caller that knows better.
+# 2. .tools/node/node.exe in the parent dir — the one this project
+#    ships with and the one playwright/vite/axe are installed against.
+# 3. node on PATH.
+# 4. Docker, last, because it cannot see the host's Chrome (a11y needs it).
+NODE=""
+if [ -n "${NODE_BIN:-}" ] && [ -x "$NODE_BIN" ]; then
+    NODE="$NODE_BIN"
+elif [ -x "$PARENT/.tools/node/node.exe" ]; then
+    NODE="$PARENT/.tools/node/node.exe"
+elif [ -x "$PARENT/.tools/node/node" ]; then
+    NODE="$PARENT/.tools/node/node"
+elif command -v node >/dev/null 2>&1; then
+    NODE="$(command -v node)"
 fi
 
-run_gate() {
-    local script="$1" name="$2"
-    echo "── $name"
-    # -v: mount the parent so ../pawsmarket-serverdash is visible.
-    # MSYS_NO_PATHCONV keeps Git Bash from rewriting /w into C:/w on Windows.
-    MSYS_NO_PATHCONV=1 docker run --rm \
-        -v "$PARENT:/w" \
-        -w "/w/$NAME" \
+run_node() {
+    local script="$1" label="$2"
+    echo "── $label"
+    if [ -n "$NODE" ]; then
+        ( cd "$REPO" && "$NODE" "$script" )
+        return $?
+    fi
+    # Docker fallback. MSYS_NO_PATHCONV keeps Git Bash from rewriting /w.
+    if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+        docker pull "$IMAGE" >/dev/null 2>&1 || {
+            echo "gate: no Node and cannot pull $IMAGE" >&2; return 2; }
+    fi
+    MSYS_NO_PATHCONV=1 docker run --rm -v "$PARENT:/w" -w "/w/$NAME" \
         "$IMAGE" node "$script"
     return $?
 }
 
 want="${1:-all}"
 rc=0
+if [ -n "$NODE" ]; then
+    echo "gate: runtime = $("$NODE" --version 2>/dev/null) ($NODE)"
+else
+    echo "gate: runtime = docker $IMAGE (no local node found)" >&2
+fi
 
 if [ "$want" = "all" ] || [ "$want" = "routes" ]; then
-    run_gate scripts/check-route-parity.mjs "Route parity (App.tsx ↔ nginx)" || rc=$?
+    run_node scripts/check-route-parity.mjs "Route parity (App.tsx ↔ nginx)" || rc=$?
+fi
+
+# Every .mjs under scripts/ must at least PARSE.
+#
+# a11y_audit.mjs shipped with a dangling object literal in the commit that
+# removed its brand-colour exception, and nothing caught it: the file is not
+# imported by anything, so the build never touched it, and the audit was
+# simply never run. `node --check` is the cheapest possible guard and it
+# would have failed on the first commit. Runs in the local runtime only —
+# the parse is version-sensitive enough to want the real one.
+if [ "$want" = "all" ] || [ "$want" = "parse" ]; then
+    if [ -n "$NODE" ]; then
+        echo "── scripts parse"
+        bad=0
+        for f in "$REPO"/scripts/*.mjs; do
+            [ -e "$f" ] || continue
+            "$NODE" --check "$f" 2>/dev/null || { echo "  PARSE FAIL: $(basename "$f")" >&2; bad=1; }
+        done
+        [ "$bad" -eq 0 ] && echo "  all script files parse" || rc=$?
+    else
+        echo "── scripts parse SKIPPED (no local node)" >&2
+    fi
 fi
 
 if [ "$want" = "all" ] || [ "$want" = "skills" ]; then
-    run_gate scripts/skill-audit.mjs "Skill checklist audit" || rc=$?
+    run_node scripts/skill-audit.mjs "Skill checklist audit" || rc=$?
+fi
+
+# Typecheck and lint need the local toolchain (node_modules), so they are
+# only attempted when a real Node is present. Reporting "skipped" loudly
+# is the point: a gate that silently vanishes teaches nothing.
+if [ "$want" = "all" ] || [ "$want" = "types" ]; then
+    if [ -n "$NODE" ] && [ -d "$REPO/node_modules" ]; then
+        echo "── TypeScript"
+        ( cd "$REPO" && "$NODE" node_modules/typescript/bin/tsc -b --noEmit ) || rc=$?
+    else
+        echo "── TypeScript SKIPPED (no local node_modules)" >&2
+    fi
+fi
+
+if [ "$want" = "all" ] || [ "$want" = "lint" ]; then
+    if [ -n "$NODE" ] && [ -d "$REPO/node_modules" ]; then
+        echo "── oxlint"
+        ( cd "$REPO" && "$NODE" node_modules/.bin/oxlint src 2>/dev/null \
+            || "$NODE" node_modules/oxlint/bin/oxlint src ) || rc=$?
+    else
+        echo "── oxlint SKIPPED (no local node_modules)" >&2
+    fi
+fi
+
+if [ "$want" = "a11y" ]; then
+    if [ -z "$NODE" ]; then
+        echo "gate: a11y needs a real Node and a Chrome install" >&2
+        rc=2
+    else
+        echo "── axe (needs BASE_URL, default https://pawsmarket.ir)"
+        ( cd "$REPO" && "$NODE" scripts/a11y_audit.mjs --base "${BASE_URL:-https://pawsmarket.ir}" ) || rc=$?
+    fi
+fi
+
+# The behavioural audits. Each was written, committed, and then never run:
+# map_audit was failing 2 of 10 cases against fixtures that had gone stale
+# when catalog.json was deleted, and the failures went unnoticed because
+# nothing executed them. They need a running app and Chrome, so they are a
+# separate target rather than part of `all`.
+#
+# Exit 2 from contrast/tab-order means "a route needed a session token and
+# was skipped", which is not a failure; 1 is.
+if [ "$want" = "audit" ]; then
+    if [ -z "$NODE" ]; then
+        echo "gate: audit needs a real Node and a Chrome install" >&2
+        rc=2
+    else
+        for s in contrast_audit tab_order_audit map_audit scroll_audit booking_guard_audit; do
+            echo "── $s"
+            ( cd "$REPO" && "$NODE" "scripts/$s.mjs" --base "${BASE_URL:-http://127.0.0.1:5174}" )
+            sub=$?
+            if [ "$sub" -eq 1 ]; then
+                rc=1
+            elif [ "$sub" -eq 2 ]; then
+                echo "  ($s skipped some routes; not a failure)" >&2
+            elif [ "$sub" -ne 0 ]; then
+                echo "  ($s could not run: exit $sub)" >&2
+                rc=1
+            fi
+        done
+    fi
 fi
 
 if [ "$rc" -eq 0 ]; then

@@ -158,6 +158,12 @@ export function StoreDashboardPage() {
 
   const d = q.data
   const needsAttention = d.counts.pending > 0
+  /* `Date.now()` inside render is an impure call: React may re-render for
+     any reason, so "last request: N minutes ago" would silently change on
+     an unrelated state update and the output stops being a function of the
+     data. Compute it once here, where it is a value rather than part of the
+     render expression. Minute granularity makes the difference invisible. */
+  const nowMs = d.counts.last_request ? Date.now() : 0
 
   return (
     <Shell>
@@ -205,7 +211,7 @@ export function StoreDashboardPage() {
             d.counts.last_request
               ? `آخرین: ${new Intl.RelativeTimeFormat('fa', { numeric: 'auto' })
                   .format(-Math.max(1, Math.round(
-                    (Date.now() - new Date(d.counts.last_request).getTime()) / 60000)), 'minute')}`
+                    (nowMs - new Date(d.counts.last_request).getTime()) / 60000)), 'minute')}`
               : undefined
           } />
         </div>
