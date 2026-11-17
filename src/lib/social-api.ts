@@ -231,6 +231,42 @@ export const authApi = {
       method: 'DELETE',
       body: JSON.stringify({ password, confirm_username: confirmUsername }),
     }),
+  /**
+   * دانلود همهٔ دادهٔ حساب به‌صورت یک فایل JSON.
+   *
+   * A plain `<a download>` cannot be used: the endpoint needs the bearer
+   * token, and a browser navigation does not send one. So this fetches,
+   * then hands the blob to an object URL. Revoked on the next tick —
+   * keeping it alive leaks the file into the page's memory.
+   */
+  exportAccount: async (): Promise<void> => {
+    const token = getToken()
+    const res = await fetch(`${API_BASE}/api/auth/account/export`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    if (!res.ok) {
+      let body: unknown = null
+      try {
+        body = await res.json()
+      } catch {
+        /* non-JSON error body */
+      }
+      throw new ApiError(detailOf(res.status, body, null), res.status)
+    }
+    const blob = await res.blob()
+    // The server names the file; fall back to a dated name if a proxy
+    // strips Content-Disposition.
+    const cd = res.headers.get('content-disposition') || ''
+    const named = /filename="?([^"]+)"?/.exec(cd)
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = named?.[1] || 'pawsmarket-data.json'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  },
   /** رمز موقت می‌گیرد. پاسخ برای حساب ناموجود هم یکسان است. */
   /**
    * بازیابی رمز — فقط با شمارهٔ موبایل.

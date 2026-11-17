@@ -1,4 +1,4 @@
-import { KeyRound, Loader2, LogOut, PawPrint, Plus, Trash2 } from 'lucide-react'
+import { Download, KeyRound, Loader2, LogOut, PawPrint, Plus, Trash2 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -38,6 +38,22 @@ export function MyAccountPage() {
   const [pwNew, setPwNew] = useState('')
   const [pwConfirm, setPwConfirm] = useState('')
   const [pwDone, setPwDone] = useState<string | null>(null)
+
+  // دادهٔ من — دانلود فایل JSON حساب.
+  const [exportBusy, setExportBusy] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
+
+  const downloadMyData = async () => {
+    setExportError(null)
+    setExportBusy(true)
+    try {
+      await authApi.exportAccount()
+    } catch (err) {
+      setExportError((err as Error).message || 'دانلود داده انجام نشد')
+    } finally {
+      setExportBusy(false)
+    }
+  }
 
   // حذف حساب — فروریخته و پیش‌فرض بسته. یک بخش مخرب نباید با یک اسکرول
   // اتفاقی دیده شود، و «تأیید» هم باید تایپ شود، نه کلیک.
@@ -452,6 +468,50 @@ export function MyAccountPage() {
             </div>
           </form>
         )}
+      </section>
+
+      {/* دادهٔ من — جفتِ «حذف حساب» و بالای آن.
+
+          Ordering is deliberate: a person who wants out should see that
+          they can take their data BEFORE they see the destructive
+          button, not after. Reading top-to-bottom, "export" answers
+          "what will I lose?" and only then does "delete" appear.
+
+          It sits next to delete rather than buried in a settings menu
+          because it is the same decision from the user's point of view. */}
+      <section data-motion-section className="mt-8">
+        <div data-motion-item className="mb-4 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 text-lg font-extrabold">
+            <Download className="size-5 text-primary" />
+            دادهٔ من
+          </h2>
+        </div>
+
+        <div data-motion-item className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            همهٔ چیزی که از شما داریم — پروفایل، حیوانات، پست‌ها، دیدگاه‌ها،
+            سفارش‌ها و پشتیبانی — در یک فایل JSON. رمز عبور در آن نیست.
+          </p>
+          <div className="mt-4">
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={downloadMyData}
+              disabled={exportBusy}
+            >
+              {exportBusy
+                ? <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                : <Download className="size-4" aria-hidden="true" />}
+              دانلود داده‌های من
+            </Button>
+          </div>
+          {exportError && (
+            <p role="alert"
+               className="mt-3 rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive-text">
+              {exportError}
+            </p>
+          )}
+        </div>
       </section>
 
       {/* حذف حساب — آخرین بخش صفحه، و به‌عمد کم‌رنگ.

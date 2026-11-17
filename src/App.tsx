@@ -3,6 +3,7 @@ import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, HashRouter, Route, Routes, useLocation } from 'react-router-dom'
 
 import { RequireAdmin } from '@/components/auth/RequireAdmin'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { RequireAuth } from '@/components/auth/RequireAuth'
 import { Footer } from '@/components/layout/Footer'
 import { Navbar } from '@/components/layout/Navbar'
@@ -616,11 +617,17 @@ export default function App() {
   // GitHub Pages has no SPA fallback (deep links would 404) — the published
   // build uses HashRouter (/#/explore); local dev keeps clean URLs.
   const Router = import.meta.env.VITE_HASH_ROUTER === 'true' ? HashRouter : BrowserRouter
+  // The boundary sits OUTSIDE the router on purpose: a render error inside
+  // a route component must leave a working page behind it, and its fallback
+  // is a plain full-page navigation rather than a router link, so it still
+  // works if the router itself is what threw.
   return (
-    <AppProviders>
-      <Router>
-        <AppRoutes />
-      </Router>
-    </AppProviders>
+    <ErrorBoundary>
+      <AppProviders>
+        <Router>
+          <AppRoutes />
+        </Router>
+      </AppProviders>
+    </ErrorBoundary>
   )
 }
