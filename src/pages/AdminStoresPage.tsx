@@ -34,6 +34,8 @@ const CATEGORY_FA: Record<string, string> = {
   shop: 'فروشگاه',
 }
 
+const PAGE = 30
+
 export function AdminStoresPage() {
   const [term, setTerm] = useState('')
   const [submitted, setSubmitted] = useState('')
@@ -41,10 +43,17 @@ export function AdminStoresPage() {
   const [issued, setIssued] = useState<Record<number, string>>({})
   const [copied, setCopied] = useState<number | null>(null)
 
+  // 30/447 was the same lie as the shop's 51/797: a correct total above a
+  // list the page could not extend. PAGE + page state + offset in the
+  // query key, and a search resets to page 1 (staying on page 9 of a
+  // two-page result shows an empty table that reads as "no stores").
+  const [page, setPage] = useState(0)
   const q = useQuery({
-    queryKey: ['admin', 'stores', submitted],
-    queryFn: () => adminApi.stores(submitted),
+    queryKey: ['admin', 'stores', submitted, page],
+    queryFn: () => adminApi.stores(submitted, PAGE, page * PAGE),
+    placeholderData: (prev) => prev,
   })
+  const pageCount = Math.max(1, Math.ceil((q.data?.total ?? 0) / PAGE))
 
   const issue = useMutation({
     mutationFn: (id: number) => adminApi.dashboardLink(id),
@@ -77,7 +86,7 @@ export function AdminStoresPage() {
       <AdminNav />
 
       <form
-        onSubmit={(e) => { e.preventDefault(); setSubmitted(term.trim()) }}
+        onSubmit={(e) => { e.preventDefault(); setSubmitted(term.trim()); setPage(0) }}
         className="mb-5 flex gap-2"
       >
         <Input
@@ -111,6 +120,10 @@ export function AdminStoresPage() {
             {new Intl.NumberFormat('fa-IR').format(q.data.total)} مرکز
             {' · '}
             {new Intl.NumberFormat('fa-IR').format(q.data.with_dashboard)} دارای داشبورد
+            {pageCount > 1 && (
+              <> · صفحهٔ {new Intl.NumberFormat('fa-IR').format(page + 1)}
+                 {' '}از {new Intl.NumberFormat('fa-IR').format(pageCount)}</>
+            )}
           </p>
 
           {q.data.items.length === 0 && (
@@ -189,6 +202,26 @@ export function AdminStoresPage() {
               )
             })}
           </ul>
+
+          {pageCount > 1 && (
+            <nav aria-label="صفحه‌های مراکز"
+                 className="mt-6 flex items-center justify-center gap-3">
+              <Button variant="outline" size="sm"
+                      disabled={page === 0 || q.isFetching}
+                      onClick={() => setPage((n) => Math.max(0, n - 1))}>
+                صفحهٔ قبل
+              </Button>
+              <span className="text-xs font-bold" aria-live="polite">
+                {new Intl.NumberFormat('fa-IR').format(page + 1)} /{' '}
+                {new Intl.NumberFormat('fa-IR').format(pageCount)}
+              </span>
+              <Button variant="outline" size="sm"
+                      disabled={page + 1 >= pageCount || q.isFetching}
+                      onClick={() => setPage((n) => Math.min(pageCount - 1, n + 1))}>
+                صفحهٔ بعد
+              </Button>
+            </nav>
+          )}
         </>
       )}
     </div>

@@ -270,9 +270,12 @@ export const adminApi = {
   syncRuns: (limit = 20) =>
     call<{ items: SyncRun[] }>(`/api/admin/sync-runs?limit=${limit}`),
 
-  stores: (q = '', limit = 30) =>
+  // `offset` added 2026-11-17: the endpoint returned a correct total of
+  // 447 with no way to ask for rows past 30, so the page said «۴۴۷ مرکز»
+  // above 30 rows. A total without an offset is unreachable by design.
+  stores: (q = '', limit = 30, offset = 0) =>
     call<{ total: number; with_dashboard: number; items: StoreRow[] }>(
-      `/api/admin/stores?q=${encodeURIComponent(q)}&limit=${limit}`),
+      `/api/admin/stores?q=${encodeURIComponent(q)}&limit=${limit}&offset=${offset}`),
 
   /** Returns the raw URL once. The server keeps only its hash. */
   dashboardLink: (storeId: number) =>

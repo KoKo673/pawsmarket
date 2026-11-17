@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { MapPin, PawPrint, ShieldCheck, Sparkles } from 'lucide-react'
 
 import { QuickFilters } from '@/components/home/QuickFilters'
@@ -156,9 +157,19 @@ export function Hero() {
             </li>
             <li className="inline-flex items-center gap-1.5">
               <ShieldCheck className="size-4 text-accent" />
-              {productCount > 0
-                ? `${faDigits(productCount)} کالا برای فروش`
-                : 'فروشگاه در حال آماده‌سازی'}
+              {/* The count is a LINK because a number the visitor cannot act
+                  on is a promise the page cannot keep. Measured 2026-11-17:
+                  the hero said «۷۹۷ کالا برای فروش» and nothing near it led
+                  to the shop — told about 797 products, handed no way to see
+                  one. The same fault as the shop page showing 51 of 797,
+                  one step earlier in the journey. */}
+              {productCount > 0 ? (
+                <Link to="/shop" className="font-bold text-primary hover:underline">
+                  {faDigits(productCount)} کالا برای فروش
+                </Link>
+              ) : (
+                'فروشگاه در حال آماده‌سازی'
+              )}
             </li>
             <li className="inline-flex items-center gap-1.5">
               <PawPrint className="size-4 text-tide-500" /> فهرست‌شده بر اساس فاصله
