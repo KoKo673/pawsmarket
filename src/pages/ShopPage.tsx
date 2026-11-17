@@ -26,6 +26,17 @@ export function ShopPage() {
   const [q, setQ] = useState('')
   const [submitted, setSubmitted] = useState('')
   const [page, setPage] = useState(0)
+  const [sort, setSort] = useState('newest')
+  const [category, setCategory] = useState('')
+
+  // Chip row from the catalogue's own naming, not a hardcoded taxonomy.
+  // A hand-written list rots the day a new product type arrives, and lies
+  // for every product filed under the wrong heading.
+  const cats = useQuery({
+    queryKey: ['shop-categories'],
+    queryFn: () => shopApi.categories(),
+    staleTime: 10 * 60_000,
+  })
 
   // Measured 2026-11-17: the page header said «۷۹۷ محصول» while 51 cards
   // rendered. The API was paginated and correct; this component asked for
@@ -33,8 +44,8 @@ export function ShopPage() {
   // and could not be reached. The count came from `total`, which is why
   // the discrepancy was visible at all.
   const products = useQuery({
-    queryKey: ['shop-products', submitted, page],
-    queryFn: () => shopApi.products(submitted, PAGE, page * PAGE),
+    queryKey: ['shop-products', submitted, page, sort, category],
+    queryFn: () => shopApi.products(submitted, PAGE, page * PAGE, sort, category),
     // Keeps the previous page on screen while the next one loads, so the
     // grid does not collapse to a spinner and jump the scroll position.
     placeholderData: (prev) => prev,
@@ -79,6 +90,20 @@ export function ShopPage() {
     topRef.current?.scrollIntoView({ block: 'start' })
   }
 
+  /** Changing a filter is a new result set, so it also resets to page 1 —
+   *  page 5 of a two-page result shows an empty grid that reads as
+   *  "no products". */
+  function pickCategory(next: string) {
+    setCategory(next)
+    setPage(0)
+    topRef.current?.scrollIntoView({ block: 'start' })
+  }
+
+  function pickSort(next: string) {
+    setSort(next)
+    setPage(0)
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 pb-24 pt-28 sm:px-6">
       <header className="mb-8">
@@ -107,6 +132,68 @@ export function ShopPage() {
         </div>
         <Button type="submit">جستجو</Button>
       </form>
+
+      {/* ── دسته‌ها و مرتب‌سازی ──────────────────────────────────────
+          The two controls a storefront of 800 products cannot work
+          without: which part of the catalogue am I looking at, and in what
+          order. Chips come from the catalogue's own naming (measured:
+          20 categories with >= 8 products); sort is a whitelist on the
+          server, never a raw SQL fragment.
+
+          The chip row scrolls horizontally on a phone rather than
+          wrapping into four rows of chips above the products — the header
+          is already three blocks tall and the products must stay visible. */}
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <button
+            type="button"
+            onClick={() => pickCategory('')}
+            aria-pressed={category === ''}
+            className={
+              'shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ' +
+              (category === ''
+                ? 'bg-primary text-primary-foreground'
+                : 'border border-border bg-card hover:bg-muted')
+            }
+          >
+            همه
+          </button>
+          {(cats.data?.items ?? []).map((c) => (
+            <button
+              key={c.name}
+              type="button"
+              onClick={() => pickCategory(c.name)}
+              aria-pressed={category === c.name}
+              className={
+                'shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ' +
+                (category === c.name
+                  ? 'bg-primary text-primary-foreground'
+                  : 'border border-border bg-card hover:bg-muted')
+              }
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+
+        <label className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+          مرتب‌سازی
+          <select
+            value={sort}
+            onChange={(e) => pickSort(e.target.value)}
+            className="rounded-xl border border-border bg-card px-2 py-1.5 text-xs font-bold text-foreground"
+          >
+            <option value="newest">جدیدترین</option>
+            <option value="price_asc">ارزان‌ترین</option>
+            <option value="price_desc">گران‌ترین</option>
+            {/* Only offered because a rating exists for part of the
+                catalogue; the server sorts NULLS LAST so unrated products
+                never outrank rated ones. */}
+            <option value="rating">بیشترین امتیاز</option>
+            <option value="popular">پرفروش‌ترین</option>
+          </select>
+        </label>
+      </div>
 
       {products.isPending && (
         <div className="grid place-items-center py-24">

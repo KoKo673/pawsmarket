@@ -127,11 +127,24 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export const shopApi = {
-  products: (q = '', limit = 40, offset = 0) =>
+  /**
+   * `sort` is a KEY ('newest' | 'price_asc' | 'price_desc' | 'rating' |
+   * 'popular'); the server whitelists it and falls back to the default for
+   * an unknown value, so a stale bookmark still shows products.
+   * `category` is the two-word group the server derives from the name.
+   */
+  products: (q = '', limit = 40, offset = 0, sort = 'newest', category = '') =>
     request<{ total: number; items: ShopProduct[] }>(
-      `/api/shop/products?limit=${limit}&offset=${offset}` +
-      (q ? `&q=${encodeURIComponent(q)}` : ''),
+      `/api/shop/products?limit=${limit}&offset=${offset}&sort=${encodeURIComponent(sort)}` +
+      (q ? `&q=${encodeURIComponent(q)}` : '') +
+      (category ? `&category=${encodeURIComponent(category)}` : ''),
     ),
+
+  /** The category chips. `total` says how many exist; the client shows a
+   *  subset and must not imply it is showing all of them. */
+  categories: () =>
+    request<{ total: number; items: { name: string; count: number }[] }>(
+      '/api/shop/categories'),
 
   product: (id: number | string) =>
     request<ShopProductDetail>(`/api/shop/products/${id}`),

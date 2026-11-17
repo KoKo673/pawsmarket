@@ -1,4 +1,4 @@
-import { ArrowRight, Loader2, Package, ShoppingCart, Store, Truck } from 'lucide-react'
+import { Loader2, Package, ShoppingCart, Store, Truck } from 'lucide-react'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -70,16 +70,51 @@ export function ProductPage() {
   }
 
   const p = product.data
+  // Same two-word grouping the shop chips and the similar strip use.
+  // Deriving it here rather than adding a field keeps ONE definition of
+  // "category" in the product — the server's split_part expression — and
+  // this is a display label, not a second source of truth.
+  const category = p.name.trim().split(/\s+/).slice(0, 2).join(' ')
 
   return (
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-28 sm:px-6">
-      <Link
-        to="/shop"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-primary"
-      >
-        <ArrowRight className="size-4" />
-        فروشگاه
-      </Link>
+      {/* Breadcrumb, not a lone back-link. A shopper three products deep
+          could not see where they were or that a category exists — the
+          pattern every large storefront has, and the reason «فروشگاه» as
+          a single link reads as "leave". The category segment is the same
+          two-word group the shop chips use, so the two agree.
+
+          `nav` + `aria-label` + ordered list is the accessible form; a row
+          of <a> tags with slashes is a visual breadcrumb a screen reader
+          reads as a sentence fragment. */}
+      <nav aria-label="مسیر صفحه" className="mb-6">
+        <ol className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+          <li>
+            <Link to="/" className="hover:text-primary">خانه</Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li>
+            <Link to="/shop" className="hover:text-primary">فروشگاه</Link>
+          </li>
+          {category && (
+            <>
+              <li aria-hidden="true">/</li>
+              <li>
+                <Link
+                  to={`/shop?category=${encodeURIComponent(category)}`}
+                  className="hover:text-primary"
+                >
+                  {category}
+                </Link>
+              </li>
+            </>
+          )}
+          <li aria-hidden="true">/</li>
+          <li aria-current="page" className="line-clamp-1 font-bold text-foreground">
+            {p.name}
+          </li>
+        </ol>
+      </nav>
 
       <div className="grid gap-8 md:grid-cols-2">
         {/* The image keeps an empty alt on purpose: the H1 below already
