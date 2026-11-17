@@ -168,6 +168,39 @@ if [ "$want" = "audit" ]; then
     fi
 fi
 
+# ── build ────────────────────────────────────────────────────────────
+#
+# This target did not exist until 2026-11-17, and its absence was itself a
+# silent failure: `gate.sh build` printed "all checks passed" without
+# running anything, because none of the `if [ "$want" = ... ]` blocks
+# matched. A gate that reports success for work it did not do is worse
+# than a missing gate — it was taken as proof of a deploy that never
+# happened, and `dist/index.html` still held a five-day-old file.
+if [ "$want" = "build" ]; then
+    if [ -z "$NODE" ]; then
+        echo "gate: build needs a real Node" >&2
+        rc=2
+    else
+        echo "── Production build"
+        ( cd "$REPO" && PATH="$(dirname "$NODE"):$PATH" npm run build )
+        [ $? -ne 0 ] && rc=1
+        # Prove fresh output exists rather than trusting the exit code of
+        # a pipeline that could have no-opped.
+        if [ "$rc" -eq 0 ] && [ ! -f "$REPO/dist/index.html" ]; then
+            echo "  [FAIL] dist/index.html missing after a successful build" >&2
+            rc=1
+        fi
+    fi
+fi
+
+# A named target that matched nothing is an error, not a pass.
+if [ -n "$want" ] && [ "$want" != "all" ]; then
+    case "$want" in
+        routes|skills|lint|types|parse|a11y|audit|build) ;;
+        *) echo "gate: unknown target '$want'" >&2; rc=2 ;;
+    esac
+fi
+
 if [ "$rc" -eq 0 ]; then
     echo "gate: all checks passed"
 else
