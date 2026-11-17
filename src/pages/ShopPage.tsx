@@ -1,11 +1,11 @@
 import { Loader2, Package, Search, ShoppingCart } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { faPrice } from '@/lib/fa'
+import { faDigits, faPrice } from '@/lib/fa'
 import { shopApi, type ShopProduct } from '@/lib/shop-api'
 import { useAuthStore } from '@/store/auth.store'
 
@@ -43,11 +43,39 @@ export function ShopPage() {
   const total = products.data?.total ?? 0
   const pageCount = Math.max(1, Math.ceil(total / PAGE))
 
+  // Changing page must land the reader at the TOP of the new list.
+  //
+  // Measured 2026-11-17 by the owner: after tapping «صفحهٔ بعد» the next
+  // products loaded but the viewport stayed at the pager, so the page
+  // looked unchanged — the new content was above the fold and the only
+  // thing visible was the same two buttons. `placeholderData` above keeps
+  // the old grid mounted while the new one loads, which makes this worse
+  // (nothing reflows, so nothing moves), and the comment there used to
+  // claim the opposite.
+  //
+  // `scrollIntoView` on a ref, not `window.scrollTo(0,0)`: the grid is
+  // inside a page that may be offset, and scrolling the document to zero
+  // would also hide the header's context. The ref moves to the count line,
+  // so the reader sees «… محصول · صفحهٔ N از M» and then the cards.
+  const topRef = useRef<HTMLParagraphElement | null>(null)
+
+  function goToPage(next: number) {
+    const clamped = Math.max(0, Math.min(pageCount - 1, next))
+    if (clamped === page) return
+    setPage(clamped)
+    // Smooth, but respect prefers-reduced-motion — for some people a
+    // 600px animated jump is nausea, not polish.
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    topRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth',
+                                     block: 'start' })
+  }
+
   // A new search starts at page 1: staying on page 5 of a two-page result
   // shows an empty grid that looks like "no products", not "wrong page".
   const submitSearch = () => {
     setSubmitted(q.trim())
     setPage(0)
+    topRef.current?.scrollIntoView({ block: 'start' })
   }
 
   return (
@@ -109,8 +137,9 @@ export function ShopPage() {
 
       {items.length > 0 && (
         <>
-          <p className="mb-4 text-xs text-muted-foreground">
-            {total} محصول{pageCount > 1 && <> · صفحهٔ {page + 1} از {pageCount}</>}
+          <p ref={topRef} className="mb-4 scroll-mt-24 text-xs text-muted-foreground">
+            {faDigits(total)} محصول
+            {pageCount > 1 && <> · صفحهٔ {faDigits(page + 1)} از {faDigits(pageCount)}</>}
           </p>
           <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {items.map((p) => <ProductCard key={p.id} product={p} />)}
@@ -121,7 +150,7 @@ export function ShopPage() {
               <Button
                 variant="outline"
                 disabled={page === 0 || products.isFetching}
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                onClick={() => goToPage(page - 1)}
               >
                 صفحهٔ قبل
               </Button>
@@ -129,12 +158,12 @@ export function ShopPage() {
                   ellipsis list is one more control to get wrong. The count
                   is the rarer fix, and it still shows in the page label. */}
               <span className="text-sm font-bold" aria-live="polite">
-                {page + 1} / {pageCount}
+                {faDigits(page + 1)} / {faDigits(pageCount)}
               </span>
               <Button
                 variant="outline"
                 disabled={page + 1 >= pageCount || products.isFetching}
-                onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+                onClick={() => goToPage(page + 1)}
               >
                 صفحهٔ بعد
               </Button>

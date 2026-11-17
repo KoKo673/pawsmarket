@@ -524,6 +524,11 @@ interface WeekBooking {
 interface Week {
   week_start: string
   week_end: string
+  // The server counts what it sent; a calendar with a truncated week can
+  // say so instead of looking quiet. Added when the endpoint's silent
+  // LIMIT 500 was removed — a cap nobody could see is worse than one the
+  // grid can name.
+  total: number
   items: WeekBooking[]
 }
 
