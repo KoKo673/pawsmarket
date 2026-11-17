@@ -27,6 +27,16 @@ export interface ShopProduct {
    */
   rating: number | null
   rating_count: number | null
+  /**
+   * The source's brand, or `null` when it publishes none.
+   *
+   * Measured 2026-11-17: digikala-mcp sends one on 94 of 94 rows; Torob
+   * sends none at all. NULL is not 'متفرقه' — that is Digikala's own
+   * miscellaneous bucket and is mapped to NULL on the way in, because a
+   * brand filter where the biggest value means "no brand" is worse than
+   * no filter.
+   */
+  brand: string | null
 }
 
 export interface SimilarProduct {

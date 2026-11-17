@@ -137,9 +137,20 @@ export function ProductPage() {
               Rendered only when a rating exists — `RatingStars` returns
               null for null, because «۰.۰» would say "rated badly" about
               a product nobody rated. Measured: 319 of 801 have one. */}
-          {(p.rating !== null || (p.shop_count ?? 0) > 1) && (
+          {(p.rating !== null || (p.shop_count ?? 0) > 1 || p.brand) && (
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
               <RatingStars rating={p.rating} count={p.rating_count} size="md" />
+              {/* The brand is often the only thing that distinguishes two
+                  products with near-identical names in this catalogue:
+                  «غذای خشک سگ ۱۰ کیلوگرمی» says nothing, «مفید» does.
+                  Absent when the source publishes none — Torob never
+                  does, so a Torob-sourced product simply has no brand
+                  line rather than a placeholder. */}
+              {p.brand && (
+                <span className="text-xs text-muted-foreground">
+                  برند <span className="font-bold text-foreground">{p.brand}</span>
+                </span>
+              )}
               {(p.shop_count ?? 0) > 1 && (
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                   <Store className="size-3.5" aria-hidden="true" />
