@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 
+import { RatingStars } from '@/components/shop/RatingStars'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { faDigits, faPrice } from '@/lib/fa'
@@ -237,6 +238,14 @@ function ProductCard({ product }: { product: ShopProduct }) {
         <Link to={href} className="line-clamp-2 text-sm font-bold leading-snug hover:text-primary">
           {product.name}
         </Link>
+        {/* Above the price on purpose: the rating is what makes the price
+            mean something. Absent when there is none — see RatingStars. */}
+        {product.rating !== null && (
+          <span className="mt-1.5">
+            <RatingStars rating={product.rating} count={product.rating_count} />
+          </span>
+        )}
+
         <p className="mt-2 text-base font-extrabold text-primary">
           {faPrice(product.price_toman)}
         </p>

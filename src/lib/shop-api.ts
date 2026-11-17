@@ -17,11 +17,32 @@ export interface ShopProduct {
   image: string | null
   source: string | null
   updated_at: string
+  /**
+   * The source's own rating, or `null` when none exists.
+   *
+   * `null` is not `0`. Roughly 60% of the catalogue has no rating at
+   * all, and a card that shows «۰.۰» for those is telling the shopper
+   * the product was rated badly when nobody rated it. The UI must render
+   * nothing for null.
+   */
+  rating: number | null
+  rating_count: number | null
+}
+
+export interface SimilarProduct {
+  id: number
+  name: string
+  price_toman: number
+  image: string | null
 }
 
 export interface ShopProductDetail extends ShopProduct {
   available: boolean
   source_url: string | null
+  /** How many shops the source says carry this item — null when unknown. */
+  shop_count: number | null
+  /** Empty is a valid answer; the page renders no section for it. */
+  similar: SimilarProduct[]
 }
 
 export interface CartLine {

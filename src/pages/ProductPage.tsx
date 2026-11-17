@@ -1,10 +1,11 @@
-import { ArrowRight, Loader2, Package, ShoppingCart, Truck } from 'lucide-react'
+import { ArrowRight, Loader2, Package, ShoppingCart, Store, Truck } from 'lucide-react'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
+import { RatingStars } from '@/components/shop/RatingStars'
 import { Button } from '@/components/ui/button'
-import { faPrice } from '@/lib/fa'
+import { faDigits, faPrice } from '@/lib/fa'
 import { shopApi } from '@/lib/shop-api'
 import { useAuthStore } from '@/store/auth.store'
 
@@ -97,6 +98,22 @@ export function ProductPage() {
         <div className="flex flex-col">
           <h1 className="text-2xl font-extrabold leading-snug">{p.name}</h1>
 
+          {/* Social proof, from the source's own rating.
+              Rendered only when a rating exists — `RatingStars` returns
+              null for null, because «۰.۰» would say "rated badly" about
+              a product nobody rated. Measured: 319 of 801 have one. */}
+          {(p.rating !== null || (p.shop_count ?? 0) > 1) && (
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <RatingStars rating={p.rating} count={p.rating_count} size="md" />
+              {(p.shop_count ?? 0) > 1 && (
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <Store className="size-3.5" aria-hidden="true" />
+                  این کالا در {faDigits(p.shop_count!)} فروشگاه عرضه می‌شود
+                </span>
+              )}
+            </div>
+          )}
+
           <p className="mt-4 text-3xl font-extrabold text-primary">
             {faPrice(p.price_toman)}
           </p>
@@ -156,6 +173,58 @@ export function ProductPage() {
           </dl>
         </div>
       </div>
+
+      {/* ── محصولات مشابه ───────────────────────────────────────────
+          The pattern every large storefront has and this page lacked:
+          "if this is not the one, what else is there". It sits BELOW the
+          buy area so it never competes with the decision, and it renders
+          NOTHING when the list is empty — a strip of unrelated products
+          is what makes a shop look amateur.
+
+          `similar` comes from `product_key`, the only real relationship
+          this catalogue has: same item, different source. Not from a
+          name similarity, which would put an unrelated «سگ» product next
+          to this one because the word appears in both. */}
+      {p.similar.length > 0 && (
+        <section className="mt-12" aria-labelledby="similar-heading">
+          <h2 id="similar-heading" className="text-lg font-extrabold">
+            محصولات مشابه
+          </h2>
+          <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {p.similar.map((s) => (
+              <li key={s.id}>
+                <Link
+                  to={`/shop/${s.id}`}
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-lifted"
+                >
+                  <span className="block aspect-square overflow-hidden bg-muted/40">
+                    {s.image ? (
+                      <img
+                        src={s.image}
+                        alt=""
+                        loading="lazy"
+                        className="size-full object-contain transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <span className="grid size-full place-items-center text-[11px] text-muted-foreground">
+                        بدون تصویر
+                      </span>
+                    )}
+                  </span>
+                  <span className="flex flex-1 flex-col p-3">
+                    <span className="line-clamp-2 text-xs font-bold leading-snug">
+                      {s.name}
+                    </span>
+                    <span className="mt-auto pt-2 text-sm font-extrabold text-primary">
+                      {faPrice(s.price_toman)}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   )
 }
