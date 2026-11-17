@@ -31,7 +31,6 @@ const KIND_BADGE = {
 export function DetailModal() {
   const selectedId = useUiStore((s) => s.selectedId)
   const closeDetail = useUiStore((s) => s.closeDetail)
-  const openDetail = useUiStore((s) => s.openDetail)
   const { data } = useNearbyListings()
   const { pathname } = useLocation()
 
@@ -186,26 +185,22 @@ export function DetailModal() {
                 </>
               ) : item.kind === 'product' ? (
                 <>
-                  {/* رفتن به صفحه‌ی فروشگاه عرضه‌کننده (لینک واقعی) */}
-                  {item.storeId && (
-                    <Button variant="outline" className="flex-1 gap-1.5 sm:flex-none" onClick={() => openDetail(item.storeId!)}>
-                      <Store className="size-4" />
-                      فروشگاه
-                    </Button>
-                  )}
-                  {/* The store's phone is not on a product listing, and the
-                      lookup that used to stand in for it (SHOP_ENRICHMENT by
-                      store name) is gone. It was only ever populated when a
-                      product's store name happened to match a row in that
-                      file, so this button was usually disabled anyway. The
-                      store's own page is the way to reach it now. */}
-                  <Button
-                    size="lg"
-                    disabled
-                    className="min-w-0 flex-1 sm:min-w-44 sm:flex-none"
-                    title="شماره‌ی تماس این فروشگاه در صفحه‌ی فروشگاه است"
-                  >
-                    {item.inStock ? 'خرید' : 'ناموجود'}
+                  {/* The «فروشگاه» button that used to sit here opened the
+                      SELLER's store page — a different business, from the
+                      Explore catalogue. On a shop that sells its own stock,
+                      that is advertising someone else, and it was the one
+                      place a customer could be handed off. Removed
+                      2026-11-17 at the owner's request.
+
+                      What replaces it is the action the page exists for:
+                      a link to the product's own page, where the cart
+                      lives. The old second button was `disabled` with a
+                      title explaining where the phone number was — a buy
+                      button that could not buy, which is worse than none. */}
+                  <Button asChild size="lg" className="min-w-0 flex-1 sm:min-w-44">
+                    <Link to={`/shop/${item.id}`}>
+                      {item.inStock ? 'مشاهده و خرید' : 'مشاهده'}
+                    </Link>
                   </Button>
                 </>
               ) : (
