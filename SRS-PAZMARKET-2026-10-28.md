@@ -2324,7 +2324,9 @@ endpoint:
 
 1. `@app.exception_handler(Exception)` در `app/main.py`
 2. `_error_key(exc, template, path)` — کلید گروه‌بندی
-3. `pawsmarket_unhandled_exceptions{error_key}` **Counter** روی `/metrics`
+3. `pawsmarket_unhandled_exceptions_total{error_key}` — **Counter**.
+   نام صادرشده `_total` دارد چون `prometheus_client` آن را به Counter
+   اضافه می‌کند؛ همان نامی است که آلارم و داشبورد باید بنامند.
 
 **گروه‌بندی، نکتهٔ اصلی است، نه یک جزئیات.** کلید = کلاس استثنا +
 **قالب** مسیر (`/api/pets/{pet_id}`). سه انتخاب که هر کدام یک شکست
@@ -2385,6 +2387,34 @@ Prometheus افت یک Counter به صفر را **reset** می‌خواند و �
 (نوع را می‌سنجد، چون برگرداندنش به Gauge هیچ تست کارکردی را نمی‌شکند
 ولی کوری را برمی‌گرداند) و
 `test_publishing_the_same_totals_twice_does_not_double_count`.
+
+**و دنبالهٔ همان تغییر — نامی که عوض شد و کسی ندید.** تغییر Gauge به
+Counter نام صادرشده را هم عوض کرد: `prometheus_client` به Counter
+`_total` اضافه می‌کند. پنج کوئری — یک آلارم و چهار پنل داشبورد — هنوز
+نام قدیمی را می‌گفتند.
+
+**هیچ چیز این را نگرفت، و دلیلش مهم است:** یک کوئری PromQL روی متریکی
+که وجود ندارد **خطا نیست** — بردار خالی برمی‌گرداند، که از «الان هیچ
+مشکلی نیست» قابل تفکیک نیست. آلارم هرگز شلیک نمی‌کرد و پنل‌ها برای همیشه
+۰ نشان می‌دادند، در حالی که همه‌چیز «سالم» به نظر می‌رسید.
+
+دو نگهبان اضافه شد:
+
+- `scripts/check_metric_names.py` — هر نام متریکی که سیستم اعلام می‌کند
+  (collectorهای `app/` **و** بلوک‌های `# TYPE` در اسکریپت‌های
+  textfile-collector در `monitoring/`) را با هر نام `pawsmarket_*` که در
+  `monitoring/` ارجاع شده مقایسه می‌کند. نام ناشناخته = خطا.
+- مورد ۳۷ در `check_backend_102` همین چک را inline اجرا می‌کند، پس
+  قاعده‌ای که متریک ناموجود را نام ببرد گیت را رد می‌کند.
+
+**اثبات زندهٔ زنجیرهٔ کامل پس از تصحیح:**
+
+```
+سه درخواست HTTP به یک route که خطا می‌دهد
+counter  → pawsmarket_unhandled_exceptions_total{error_key="..."} 12
+increase → 7.39  (پس از یک scrape)
+rule     → state=pending، error_key درست، value=7.07
+```
 
 **تله‌ای که یک ساعت گرفت:** `traceback.format_exc()` داخل handlerی که
 بیرون بلوک `except` اجرا می‌شود `"NoneType: None"` می‌دهد و به‌صورت
@@ -2551,7 +2581,7 @@ audit سه بار صفحهٔ ورود را زیر سه نام گزارش می‌
 
 ### ۱۰.۲ بک‌اند — pytest
 
-**۴۲۳ تابع تست در ۵۳ فایل** (شمارش ۲۰۲۶-۱۱-۱۶)، روی `TestClient` به
+**۴۲۳ تابع تست در ۵۳ فایل** (شمارش ۲۰۲۶-۱۱-۱۶؛ اجرا: ۴۸۹ passed, ۲ skipped)، روی `TestClient` به
 **دیتابیس واقعی** کانتینر.
 
 ```
