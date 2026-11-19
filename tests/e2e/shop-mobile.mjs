@@ -41,7 +41,30 @@ function check(name, ok, detail = '') {
 //     one, and there is no system Chrome to point at.
 // Choosing wrongly here costs a confusing launch error, so the caller says.
 const CHANNEL = process.env.PW_CHANNEL || undefined
-const browser = await chromium.launch(CHANNEL ? { channel: CHANNEL } : {})
+
+// Chrome reads the WINDOWS SYSTEM PROXY. On this laptop that is
+// 127.0.0.1:7890, which routes traffic OUTSIDE Iran — for a `.ir` site
+// that is the wrong path, and when it misbehaves the request dies before
+// the page exists.
+//
+// Measured 2026-11-20, and it corrects an earlier note of mine: the site
+// is NOT permanently unreachable to a browser from here.
+//   · `curl --noproxy '*'`          → 200, ~40ms, 3/3
+//   · `curl -x 127.0.0.1:7890`      → 200, ~28ms, 3/3 (one 5.0s failure earlier)
+//   · host Chrome, --proxy-server=7890  → 200, full 65kB DOM
+//   · host Chrome, --no-proxy-server    → 200, full 65kB DOM
+//   · container Playwright (no Windows proxy) → 30/30 on the live domain
+//
+// So what I once recorded as "ArvanCloud closes Blink's TLS fingerprint" is
+// not reproducible as a law; the proxy was at least part of it, and its
+// behaviour toward a `.ir` host is intermittent. `--no-proxy-server` is
+// what a visitor inside Iran effectively has, so that is the default here.
+// Set NO_PROXY_BROWSER=0 to run through the system proxy instead.
+const launchArgs =
+  process.env.NO_PROXY_BROWSER === '0' ? [] : ['--no-proxy-server']
+const browser = await chromium.launch(
+  CHANNEL ? { channel: CHANNEL, args: launchArgs } : { args: launchArgs },
+)
 
 /** Where the reader ends up after tapping a pager button: the y of the
  *  FIRST PRODUCT CARD relative to the viewport, and window.scrollY.
