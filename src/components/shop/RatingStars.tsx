@@ -40,7 +40,7 @@ export function RatingStars({
   const rounded = Math.round(rating * 2) / 2
 
   return (
-    <span className="inline-flex items-center gap-1" dir="ltr">
+    <span data-testid="rating-stars" className="inline-flex items-center gap-1" dir="ltr">
       <span className="inline-flex" aria-hidden="true">
         {[1, 2, 3, 4, 5].map((i) => (
           <Star

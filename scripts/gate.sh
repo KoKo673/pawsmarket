@@ -81,6 +81,17 @@ if [ "$want" = "all" ] || [ "$want" = "routes" ]; then
     run_node scripts/check-route-parity.mjs "Route parity (App.tsx ↔ nginx)" || rc=$?
 fi
 
+# «we are the only seller» is a business fact, and three lines that contradicted
+# it reached a user's phone: «۱۶۰ فروشگاه واقعی تهران», «لوازم و فروشگاه‌ها را
+# … پیدا کنید», «موجودی خود پازمارکت». All three came from the aggregation
+# prototype and all three survived human review, because nothing checked. A
+# sweep fixes today's three; only a check catches tomorrow's fourth.
+# Mutation-tested — restoring each original string makes it exit 1, so the gate
+# is known able to fail rather than merely passing.
+if [ "$want" = "all" ] || [ "$want" = "stores" ]; then
+    run_node scripts/check-store-claims.mjs "Sole-seller copy" || rc=$?
+fi
+
 # Every .mjs under scripts/ must at least PARSE.
 #
 # a11y_audit.mjs shipped with a dangling object literal in the commit that
@@ -196,7 +207,7 @@ fi
 # A named target that matched nothing is an error, not a pass.
 if [ -n "$want" ] && [ "$want" != "all" ]; then
     case "$want" in
-        routes|skills|lint|types|parse|a11y|audit|build) ;;
+        routes|stores|skills|lint|types|parse|a11y|audit|build) ;;
         *) echo "gate: unknown target '$want'" >&2; rc=2 ;;
     esac
 fi

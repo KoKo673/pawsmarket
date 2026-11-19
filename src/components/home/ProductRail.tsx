@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronLeft, ShoppingBasket } from 'lucide-react'
+import { ChevronDown, ChevronLeft } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
@@ -76,11 +76,14 @@ export function ProductRail() {
     <section data-motion-section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
       <div data-motion-item className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-tide-500/10 px-3 py-1 text-xs font-bold text-tide-800 dark:text-tide-400">
-            <ShoppingBasket className="size-3.5" />
-            موجودی خود پازمارکت
-          </span>
-          <h2 className="mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl">
+          {/* The badge is gone (owner, 2026-11-19: «موجودی خود پازمارکت» و
+              متن‌های این‌گونه اضافی‌اند).
+              It existed to distinguish our own stock from other sellers'
+              listings, when the prototype aggregated shops. There is only
+              one seller now — us — so "ours" needs no marking, and a label
+              that insists on it reads as an answer to a question nobody
+              asked. The heading below already says whose goods these are. */}
+          <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
             کالاهای موجود
           </h2>
           <p className="mt-1.5 text-sm text-muted-foreground">

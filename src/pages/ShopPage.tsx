@@ -1,5 +1,5 @@
 import { Loader2, Package, Search, ShoppingCart } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 
@@ -55,31 +55,43 @@ export function ShopPage() {
   const total = products.data?.total ?? 0
   const pageCount = Math.max(1, Math.ceil(total / PAGE))
 
-  // Changing page must land the reader at the TOP of the new list.
+  // Changing page must land the reader at the TOP of the page.
   //
-  // Measured 2026-11-17 by the owner: after tapping «صفحهٔ بعد» the next
-  // products loaded but the viewport stayed at the pager, so the page
-  // looked unchanged — the new content was above the fold and the only
-  // thing visible was the same two buttons. `placeholderData` above keeps
-  // the old grid mounted while the new one loads, which makes this worse
-  // (nothing reflows, so nothing moves), and the comment there used to
-  // claim the opposite.
+  // Two attempts failed before this one, and both failures were mine:
   //
-  // `scrollIntoView` on a ref, not `window.scrollTo(0,0)`: the grid is
-  // inside a page that may be offset, and scrolling the document to zero
-  // would also hide the header's context. The ref moves to the count line,
-  // so the reader sees «… محصول · صفحهٔ N از M» and then the cards.
-  const topRef = useRef<HTMLParagraphElement | null>(null)
-
+  //   1. No scroll at all — the viewport stayed at the pager, so the new
+  //      products appeared above the fold and the only thing visible was
+  //      the same two buttons.
+  //   2. `scrollIntoView` on the count line. Measured in a browser it
+  //      landed at scrollY 292 on a phone: the count line sits at y≈96 and
+  //      the title and search box are gone. That is "the middle of the
+  //      page", not "بالا" — and I reported it fixed because I asserted
+  //      "a card is on screen", which 292 satisfies.
+  //
+  // So: scroll the document to 0. The header (`محصولات حیوان خانگی`, the
+  // search field, the chips) is what tells the reader the list changed;
+  // the count line alone does not. `topRef` is gone with the approach.
   function goToPage(next: number) {
     const clamped = Math.max(0, Math.min(pageCount - 1, next))
     if (clamped === page) return
     setPage(clamped)
-    // Smooth, but respect prefers-reduced-motion — for some people a
-    // 600px animated jump is nausea, not polish.
+    scrollToTop()
+  }
+
+  // Smooth, but respect prefers-reduced-motion — for some people a 4 000px
+  // animated jump is nausea, not polish.
+  //
+  // Called on the NEXT frame, not inline with setState: React commits the
+  // new page asynchronously, and while the old grid is still mounted
+  // (placeholderData) the document is at its previous height. Scrolling
+  // inside the same tick as the click races that commit; deferring one
+  // frame puts the scroll after it. This is why the earlier version needed
+  // no such care and still lost the race on slower devices.
+  function scrollToTop() {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    topRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth',
-                                     block: 'start' })
+    requestAnimationFrame(() =>
+      window.scrollTo({ top: 0, left: 0, behavior: reduce ? 'auto' : 'smooth' }),
+    )
   }
 
   // A new search starts at page 1: staying on page 5 of a two-page result
@@ -87,7 +99,7 @@ export function ShopPage() {
   const submitSearch = () => {
     setSubmitted(q.trim())
     setPage(0)
-    topRef.current?.scrollIntoView({ block: 'start' })
+    scrollToTop()
   }
 
   /** Changing a filter is a new result set, so it also resets to page 1 —
@@ -96,7 +108,7 @@ export function ShopPage() {
   function pickCategory(next: string) {
     setCategory(next)
     setPage(0)
-    topRef.current?.scrollIntoView({ block: 'start' })
+    scrollToTop()
   }
 
   function pickSort(next: string) {
@@ -225,7 +237,7 @@ export function ShopPage() {
 
       {items.length > 0 && (
         <>
-          <p ref={topRef} className="mb-4 scroll-mt-24 text-xs text-muted-foreground">
+          <p className="mb-4 text-xs text-muted-foreground">
             {faDigits(total)} محصول
             {pageCount > 1 && <> · صفحهٔ {faDigits(page + 1)} از {faDigits(pageCount)}</>}
           </p>
@@ -321,19 +333,48 @@ function ProductCard({ product }: { product: ShopProduct }) {
         )}
       </Link>
 
+      {/* «دکمه‌ها تراز نیست» (owner, 2026-11-19) — stars were only half the
+          cause. Measured on a 375px phone, two cards in one row: heights
+          identical at 328px, yet buttons at y=502 and y=521, because one name
+          wraps to two lines and the other does not. A CSS grid stretches both
+          CELLS to the same height; nothing inside them was obliged to line up.
+
+          Two mechanisms, because each covers what the other misses:
+            · reserved boxes for the variable slots above — the name always
+              takes two lines, the rating always one, so the TOP of the card is
+              the same height in every card;
+            · `flex-1` on this column plus `mt-auto` on the block below, which
+              pins price/error/button to the bottom as ONE unit. That is what
+              makes the button position depend only on the cell height the grid
+              already equalised — so even content I did not think to reserve
+              (a price long enough to wrap, an error line) cannot move it.
+
+          Reserving alone would be fragile: it only holds for the cases I
+          enumerated. Bottom-anchoring holds for every case, including ones
+          nobody has seen yet. */}
       <div className="flex flex-1 flex-col p-3">
-        <Link to={href} className="line-clamp-2 text-sm font-bold leading-snug hover:text-primary">
+        <Link to={href} className="line-clamp-2 min-h-[2.5rem] text-sm font-bold leading-snug hover:text-primary">
           {product.name}
         </Link>
-        {/* Above the price on purpose: the rating is what makes the price
-            mean something. Absent when there is none — see RatingStars. */}
-        {product.rating !== null && (
-          <span className="mt-1.5">
-            <RatingStars rating={product.rating} count={product.rating_count} />
-          </span>
-        )}
+        {/* The slot is ALWAYS rendered; only its contents are conditional.
+            Reporting this as a bug by the owner (2026-11-19): on a phone two
+            cards share a row, the starred one grows by a line, CSS grid
+            stretches both cells to the taller, and because the button hangs
+            off `mt-auto` it lands at a different y in each — «با دیگر آیتم‌ها
+            تراز نیست». Reserving the height means a card's geometry cannot
+            depend on whether a rating happens to exist.
 
-        <p className="mt-2 text-base font-extrabold text-primary">
+            Above the price on purpose: the rating is what makes the price
+            mean something. Empty when there is none — see RatingStars. */}
+        <div className="flex min-h-[18px] items-center">
+          <RatingStars rating={product.rating} count={product.rating_count} />
+        </div>
+
+        {/* `mt-auto`, not `mt-1.5`: the price is the last thing before the
+            button, so anchoring IT to the bottom anchors the button too.
+            Without this, a short name leaves the price mid-card and the
+            button floats — the exact misalignment in the owner's screenshot. */}
+        <p className="mt-auto pt-1.5 text-base font-extrabold text-primary">
           {faPrice(product.price_toman)}
         </p>
 

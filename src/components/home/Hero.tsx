@@ -215,6 +215,14 @@ export function Hero() {
             As an absolute overlay it landed on the retriever's muzzle at
             1024px — the same class of bug as the collage it replaced, just
             smaller. In the flow it cannot cover anything at any width.
+
+            What it says, and why it changed (owner, 2026-11-19): this read
+            «۱۶۰ فروشگاه واقعی تهران». That belonged to the original
+            prototype, when pawsmarket aggregated other sellers' shops — it no
+            longer does, so a count of OTHER stores advertises competitors and
+            contradicts the shop page two taps away. `realStores` counts service
+            CENTRES (clinics, groomers), which really are many; the wrong word
+            was «فروشگاه», so the chip now names what the number actually is.
           */}
           <div className="mb-2.5 flex items-center gap-2.5 rounded-2xl border border-border/60 bg-card px-3 py-2 shadow-soft">
             <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-accent/15 text-accent">
@@ -223,8 +231,8 @@ export function Hero() {
             <div className="min-w-0 leading-tight">
               <p className="truncate text-xs font-extrabold">
                 {realStores > 0
-                  ? `${faDigits(realStores)} فروشگاه واقعی تهران`
-                  : 'فروشگاه‌های واقعی تهران'}
+                  ? `${faDigits(realStores)} مرکز خدمات در تهران`
+                  : 'مراکز خدمات دامپزشکی تهران'}
               </p>
               <p className="truncate text-[10px] font-medium text-muted-foreground">
                 داده‌ی زنده از نقشه‌ی شهر

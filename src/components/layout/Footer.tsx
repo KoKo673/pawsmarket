@@ -49,8 +49,12 @@ export function Footer() {
               پاز<span className="text-paw-700 dark:text-primary">مارکت</span>
             </span>
           </Link>
+          {/* «و فروشگاه‌ها … پیدا کنید» removed (owner, 2026-11-19): it invited
+              visitors to discover other stores. We are the only seller, so it
+              advertised competitors in our own footer. */}
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            بازار مکان‌محور حیوانات خانگی، حیوانات، لوازم و فروشگاه‌ها را در همان حوالی خانه‌تان پیدا کنید.
+            کالای حیوان خانگی، سرپرستی و خدمات دامپزشکی در همان حوالی خانه‌تان —
+            از یک فروشگاه، با قیمت روز.
           </p>
         </div>
 
