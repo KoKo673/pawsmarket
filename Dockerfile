@@ -65,17 +65,30 @@ ENV VITE_BUILD_TARGET=$BUILT_FOR
 RUN npm run build
 
 # ── Stage 2: serve ─────────────────────────────────────────────────
-# 1.30.7, not 1.27: patched for the 2026 advisory batch. Our old 1.27.5 was
-# in the vulnerable range for several of them — most relevantly
-# CVE-2026-125283 (buffer overflow with `alias` + `try_files`), whose exact
-# precondition this config meets at `location /media/` (alias) plus the
-# `try_files` blocks. The HTTP/2 CVEs (123007, 123633) never applied here:
-# this origin listens on port 80 with no TLS and no `http2`, so HTTP/2 is
-# terminated at ArvanCloud's edge, not by this server.
+# 1.30.7, not 1.27. The reason is the 2026 advisory batch, but NOT for the
+# reason an earlier commit of mine claimed — that commit said CVE-2026-125283
+# (`alias` + `try_files`) applied to us. It does not. F5's own wording is
+# "try_files and alias directives WITH A MAP VARIABLE … regular expression
+# captures in map and try_files". This config has `alias /var/www/media/`
+# (a literal) and `try_files $uri =404` (no map, no captures), so the
+# precondition is absent. Checked 2026-11-20: neither of our two `map` blocks
+# feeds any alias/try_files/root.
+#
+# The HTTP/2 CVEs (123007, 123633) also cannot reach this server: origin
+# listens on port 80 with no TLS and no `http2`, so HTTP/2 terminates at
+# ArvanCloud's edge. Verified with `nginx -T` and a direct HTTP/1.1 request.
+#
+# What DOES justify the move: 1.27 is an unsupported branch. nginx.org lists
+# 1.26.3 / 1.28.3 / 1.30.7 / 1.31.9 as current — 1.27.x has no release since,
+# and F5's advisories carry "versions which have reached End of Technical
+# Support (EoTS) are not evaluated". So 1.27.5 will not be evaluated against
+# the next CVE either — it is not known-safe, it is unexamined. That is a
+# better reason to leave it than any single CVE we can name.
+#
 # The FULL version, not `1.30-alpine`. Measured on the VPS 2026-11-20: the
-# floating tag on the reachable mirror resolves to nginx/1.30.6, one patch
-# short of the advisory's fix (1.30.7). A floating tag would have looked
-# patched and left the alias+try_files overflow in place.
+# floating tag on the only reachable mirror resolves to nginx/1.30.6, one
+# patch short of 1.30.7. A floating tag that looks patched is worse than one
+# that is visibly old, because it reports success.
 FROM nginx:1.30.7-alpine AS serve
 
 # The config replaces the stock one. It is copied before the site so a config
