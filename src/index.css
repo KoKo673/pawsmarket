@@ -261,6 +261,91 @@
     display: none;
   }
 
+  /* ── An intentional overflow still has to SAY so ──────────────────
+     Hiding the scrollbar removes the only cue that content continues past
+     the edge. The shop category row measured 21 chips with 1443px hidden
+     at 375px, no scrollbar, no fade: the reader saw a row that simply
+     ended, and nothing told them most of the categories existed.
+
+     `data-overflow` is set from the element's own scrollWidth by
+     useOverflowHints, so a fade appears only when there is something to
+     scroll, and only on the side that still has content. A permanent
+     gradient would lie at the end of the row.
+
+     Why overlays and not mask-image: a mask on a scroll container is the
+     obvious trick and it is the wrong one here — it clips focus rings
+     (trading a discoverability fix for an accessibility regression), and
+     masking an element with overflow is unreliable for momentum scrolling
+     on iOS. An overlay with `pointer-events-none` dims the edge chip
+     without eating the tap on it, which is the whole point: the partially
+     cut chip is the affordance and it must stay clickable.
+
+     The hook reports LOGICAL edges (`start` / `end`) because the dataset is
+     written from overflow arithmetic, which cannot tell — and does not need
+     to tell — which physical side a direction hides content on. The CSS
+     does know, so the mapping lives here, once:
+
+       ::before = the START edge (content already scrolled past)
+       ::after  = the END edge   (content still to come)
+
+     In LTR the start edge is physically left, so ::before is on the left and
+     fades inward to the right. In RTL it is the mirror. This is the one
+     place a direction branch belongs.
+
+     The fade colour is hsl(var(--background)), so it tracks the dark theme
+     without a second rule — a hardcoded white would paint a white wedge
+     over the row at night. */
+  .overflow-hints {
+    position: relative;
+  }
+  .overflow-hints::before,
+  .overflow-hints::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2.5rem;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.15s linear;
+  }
+  [dir='ltr'] .overflow-hints::before,
+  :not([dir='rtl']) .overflow-hints::before {
+    left: 0;
+    background: linear-gradient(to right, hsl(var(--background)), transparent);
+  }
+  [dir='ltr'] .overflow-hints::after,
+  :not([dir='rtl']) .overflow-hints::after {
+    right: 0;
+    background: linear-gradient(to left, hsl(var(--background)), transparent);
+  }
+  [dir='rtl'] .overflow-hints::before {
+    right: 0;
+    background: linear-gradient(to left, hsl(var(--background)), transparent);
+  }
+  [dir='rtl'] .overflow-hints::after {
+    left: 0;
+    background: linear-gradient(to right, hsl(var(--background)), transparent);
+  }
+  .overflow-hints[data-overflow~='start']::before,
+  .overflow-hints[data-overflow~='end']::after {
+    opacity: 1;
+  }
+  /* A fade over a focused chip hides its focus ring, which would trade a
+     discoverability fix for an accessibility regression. Lift it while
+     anything inside the row has keyboard focus. */
+  .overflow-hints:focus-within::before,
+  .overflow-hints:focus-within::after {
+    opacity: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .overflow-hints::before,
+    .overflow-hints::after {
+      transition: none;
+    }
+  }
+
   /* iOS home-indicator safe area for the mobile bottom CTA */
   .pb-safe {
     padding-bottom: max(env(safe-area-inset-bottom), 1rem);

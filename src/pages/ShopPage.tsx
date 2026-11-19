@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { RatingStars } from '@/components/shop/RatingStars'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useOverflowHints } from '@/hooks/use-overflow-hints'
 import { faDigits, faPrice } from '@/lib/fa'
 import { shopApi, type ShopProduct } from '@/lib/shop-api'
 import { useAuthStore } from '@/store/auth.store'
@@ -28,6 +29,12 @@ export function ShopPage() {
   const [page, setPage] = useState(0)
   const [sort, setSort] = useState('newest')
   const [category, setCategory] = useState('')
+
+  // The chip row overflows on a phone and its scrollbar is hidden, so the
+  // edge fades are the only cue that more categories exist. See
+  // use-overflow-hints for why the wrapper and the scroller are separate
+  // elements, and why the verdict is read from rects rather than scrollLeft.
+  const chipRow = useOverflowHints<HTMLDivElement>()
 
   // Chip row from the catalogue's own naming, not a hardcoded taxonomy.
   // A hand-written list rots the day a new product type arrives, and lies
@@ -156,7 +163,14 @@ export function ShopPage() {
           wrapping into four rows of chips above the products — the header
           is already three blocks tall and the products must stay visible. */}
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {/* The wrapper draws the edge fades and does NOT scroll; the inner
+            div scrolls. A gradient placed inside a scroll container would
+            slide away with the chips instead of staying at the edge.
+            `min-w-0` is load-bearing: a flex item defaults to
+            min-width:auto, so a row of 21 shrink-0 chips would refuse to
+            shrink and would push the sort control off the line on desktop. */}
+        <div ref={chipRow.wrapperRef} className="overflow-hints relative min-w-0">
+        <div ref={chipRow.scrollerRef} className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             type="button"
             onClick={() => pickCategory('')}
@@ -186,6 +200,7 @@ export function ShopPage() {
               {c.name}
             </button>
           ))}
+        </div>
         </div>
 
         <label className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
