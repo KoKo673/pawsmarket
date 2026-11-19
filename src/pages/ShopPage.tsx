@@ -318,7 +318,7 @@ function ProductCard({ product }: { product: ShopProduct }) {
   }
 
   return (
-    <li className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card">
+    <li className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-primary/40 motion-reduce:transform-none">
       {/*
         One link per card, not three.
 
@@ -334,12 +334,17 @@ function ProductCard({ product }: { product: ShopProduct }) {
         tabIndex={-1}
         aria-hidden="true"
       >
+        {/* Every card carries a DIFFERENT product, so scaling each photo on
+            hover made a grid of separate images breathe in and out, and the
+            product photo moved while it was the thing being looked at. The
+            card lifts instead (`hover:-translate-y-0.5` on the <li>).
+            Raised by sloplint's WARN 11. */}
         {product.image ? (
           <img
             src={product.image}
             alt=""
             loading="lazy"
-            className="size-full object-contain transition-transform duration-300 group-hover:scale-105"
+            className="size-full object-contain"
           />
         ) : (
           <span className="grid size-full place-items-center text-[11px] text-muted-foreground">
