@@ -65,7 +65,14 @@ ENV VITE_BUILD_TARGET=$BUILT_FOR
 RUN npm run build
 
 # ── Stage 2: serve ─────────────────────────────────────────────────
-FROM nginx:1.27-alpine AS serve
+# 1.30.7, not 1.27: patched for the 2026 advisory batch. Our old 1.27.5 was
+# in the vulnerable range for several of them — most relevantly
+# CVE-2026-125283 (buffer overflow with `alias` + `try_files`), whose exact
+# precondition this config meets at `location /media/` (alias) plus the
+# `try_files` blocks. The HTTP/2 CVEs (123007, 123633) never applied here:
+# this origin listens on port 80 with no TLS and no `http2`, so HTTP/2 is
+# terminated at ArvanCloud's edge, not by this server.
+FROM nginx:1.30-alpine AS serve
 
 # The config replaces the stock one. It is copied before the site so a config
 # change does not invalidate the cached copy of dist/.
