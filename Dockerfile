@@ -72,7 +72,11 @@ RUN npm run build
 # `try_files` blocks. The HTTP/2 CVEs (123007, 123633) never applied here:
 # this origin listens on port 80 with no TLS and no `http2`, so HTTP/2 is
 # terminated at ArvanCloud's edge, not by this server.
-FROM nginx:1.30-alpine AS serve
+# The FULL version, not `1.30-alpine`. Measured on the VPS 2026-11-20: the
+# floating tag on the reachable mirror resolves to nginx/1.30.6, one patch
+# short of the advisory's fix (1.30.7). A floating tag would have looked
+# patched and left the alias+try_files overflow in place.
+FROM nginx:1.30.7-alpine AS serve
 
 # The config replaces the stock one. It is copied before the site so a config
 # change does not invalidate the cached copy of dist/.
