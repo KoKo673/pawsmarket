@@ -114,6 +114,22 @@ if [ "$want" = "all" ] || [ "$want" = "parse" ]; then
     fi
 fi
 
+# Broken links, including the shapes a 200 cannot catch.
+#
+# The first run against production found `/terms → 404`: the page existed in
+# source and in the sitemap, but the deploy had not gone out yet. That is a
+# real category — "the code is right, the site is old" — and nothing else in
+# this gate can see it, because every other check reads the working tree.
+#
+# Deliberately NOT part of `all`: it makes ~360 HTTP requests against
+# whatever `--base` names, and a gate that needs the network on every commit
+# gets ignored. Run it around a deploy.
+# Mutation-tested: injecting `href="#"` and a 404 path into a served page
+# makes it exit 1, both reported with the page they were found on.
+if [ "$want" = "links" ]; then
+    run_node scripts/check-links.mjs "Internal links" || rc=$?
+fi
+
 if [ "$want" = "all" ] || [ "$want" = "skills" ]; then
     run_node scripts/skill-audit.mjs "Skill checklist audit" || rc=$?
 fi
@@ -224,7 +240,7 @@ fi
 # A named target that matched nothing is an error, not a pass.
 if [ -n "$want" ] && [ "$want" != "all" ]; then
     case "$want" in
-        routes|stores|skills|lint|types|parse|tests|a11y|audit|build) ;;
+        routes|stores|skills|lint|types|parse|tests|a11y|audit|build|links) ;;
         *) echo "gate: unknown target '$want'" >&2; rc=2 ;;
     esac
 fi
