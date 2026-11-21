@@ -14,7 +14,7 @@
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 import {
@@ -287,7 +287,7 @@ test('the manifest never names a variant that is missing on disk', () => {
   for (const [url, widths] of Object.entries(LOCAL_IMAGE_VARIANTS)) {
     const stem = url.replace(/\.jpg$/i, '')
     for (const w of widths) {
-      const file = new URL('.' + stem + `.w${w}.webp`, root)
+      const file = new URL(stem.replace(/^\//, '') + `.w${w}.webp`, root)
       assert.ok(
         existsSync(fileURLToPath(file)),
         `manifest names a missing variant: ${stem}.w${w}.webp`,
@@ -306,3 +306,34 @@ test('a base-prefixed path resolves through the manifest too', () => {
     '/pawsmarket/images/listings/cat-orange.w660.webp 660w',
   )
 })
+
+test('declared width/height match the real source pixels', () => {
+  // The hero and store-page <img> tags declare intrinsic dimensions so the
+  // box is reserved before bytes arrive. A wrong ratio there is invisible in
+  // a fixed-aspect `object-cover` box — which is exactly why it drifts and
+  // nobody notices. Read the pixels instead.
+  const files = [
+    ['images/listings/dog-shiba.jpg', 820, 547],
+    ['images/stores/generated/vet.jpg', 1024, 768],
+  ] as const
+  const root = new URL('../../public/', import.meta.url)
+  for (const [rel, w, h] of files) {
+    const head = readFileSync(fileURLToPath(new URL(rel, root)))
+    const dims = jpegSize(head)
+    assert.deepEqual(dims, [w, h], `${rel}: declared ${w}x${h}, actual ${dims}`)
+  }
+})
+
+/** Width/height from a JPEG's SOF marker. Enough for the two files above. */
+function jpegSize(buf: Buffer): [number, number] {
+  let i = 2
+  while (i < buf.length) {
+    if (buf[i] !== 0xff) { i++; continue }
+    const marker = buf[i + 1]
+    if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) {
+      return [buf.readUInt16BE(i + 7), buf.readUInt16BE(i + 5)]
+    }
+    i += 2 + buf.readUInt16BE(i + 2)
+  }
+  throw new Error('no SOF marker')
+}

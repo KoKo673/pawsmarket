@@ -165,8 +165,8 @@ export function StorePage() {
                     `localImageSrcSet` returns undefined for them. */
                  srcSet={localImageSrcSet(storeImage(s.image_url))}
                  sizes="(min-width: 1280px) 413px, (min-width: 768px) 90vw, 100vw"
-                 width={820}
-                 height={461}
+                 width={1024}
+                 height={768}
                  className="size-full object-cover" loading="eager" />
           </div>
         )}

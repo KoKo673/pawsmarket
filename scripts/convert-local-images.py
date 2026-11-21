@@ -44,10 +44,25 @@ def variant_path(src: pathlib.Path, width: int) -> pathlib.Path:
 
 def encode(src: pathlib.Path, width: int) -> bytes | None:
     im = Image.open(src)
-    if im.width <= width * 0.98:
-        # Never upscale: the source cannot fill this rung.
+    # Keyed on the LARGER dimension, not the width.
+    #
+    # These images are drawn with `object-cover` into a box, so what the
+    # browser needs is enough pixels along whichever axis it is cropping to —
+    # and half the set is portrait. A 615x820 photo rendered into a 335px box
+    # is 820px tall; measuring only its width says "615 < 660, skip" and
+    # leaves the largest file in the set (113 KB) unconverted. The width-only
+    # test also produced a confusing result in the other direction: a 615px
+    # source "scaled up" to 660 reported a file bigger than its source, which
+    # looked like a compression failure rather than a measurement bug.
+    longest = max(im.width, im.height)
+    if longest <= width * 0.98:
+        # Never upscale: the source cannot fill this rung on any axis.
         return None
-    im = im.resize((width, round(width * im.height / im.width)), Image.LANCZOS)
+    if im.width >= im.height:
+        new = (width, round(width * im.height / im.width))
+    else:
+        new = (round(width * im.width / im.height), width)
+    im = im.resize(new, Image.LANCZOS)
     buf = io.BytesIO()
     im.convert("RGB").save(buf, "WEBP", quality=QUALITY, method=6)
     return buf.getvalue()

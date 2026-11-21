@@ -263,7 +263,7 @@ export function Hero() {
                    exists at all. */
                 sizes="(min-width: 640px) 529px, 100vw"
                 width={820}
-                height={512}
+                height={547}
                 /* This is the LCP element on the home page. */
                 fetchPriority="high"
                 decoding="async"
