@@ -14,8 +14,14 @@
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
-import { imageSrcSet, canResize, CARD_SIZES } from './img.ts'
+import {
+  imageSrcSet, canResize, CARD_SIZES,
+  isLocalImage, localImageSrcSet,
+} from './img.ts'
+import { LOCAL_IMAGE_VARIANTS } from './local-image-variants.ts'
 
 const HOST = 'https://dkstatics-public.digikala.com/digikala-products/abc_123.jpg'
 const STORED_600 = `${HOST}?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90`
@@ -242,4 +248,61 @@ test('a real phone never needs more than the ladder tops out at', () => {
   const card = (Math.min(widest3x, 1152) - 32 - 16) / 2
   const need = card * 3
   assert.ok(need <= 600, `a ${widest3x}px 3x phone needs ${need.toFixed(0)}px`)
+})
+test('a bundled image with variants gets a srcset naming only real rungs', () => {
+  // 820px source: the converter writes w660 and refuses to upscale to 1024,
+  // so a 1024 entry here would point at a file that does not exist and the
+  // tile would render broken on a retina desktop.
+  const one = localImageSrcSet('/images/listings/cat-orange.jpg')
+  assert.equal(one, '/images/listings/cat-orange.w660.webp 660w')
+
+  // A 1024px-wide source carries both rungs.
+  const two = localImageSrcSet('/images/stores/generated/vet.jpg')
+  if (two !== undefined) {
+    assert.match(two, /\.w660\.webp 660w/)
+    assert.match(two, /\.w1024\.webp 1024w/)
+  }
+})
+
+test('a local image with no variants gets no srcset, not an empty one', () => {
+  // An empty srcset makes some browsers ignore src entirely; `undefined`
+  // makes the markup fall back to plain `src` with no attribute at all.
+  assert.equal(localImageSrcSet('/images/listings/nope-not-converted.jpg'), undefined)
+})
+
+test('non-local and malformed URLs are left alone', () => {
+  assert.equal(localImageSrcSet('https://dkstatics-public.digikala.com/x.jpg'), undefined)
+  assert.equal(localImageSrcSet(undefined), undefined)
+  assert.equal(localImageSrcSet(''), undefined)
+  assert.equal(isLocalImage('/images/a.svg'), false)   // svg has no raster variant
+  assert.equal(isLocalImage('/media/abc.jpg'), false)  // uploads, not bundled
+})
+
+test('the manifest never names a variant that is missing on disk', () => {
+  // The generated manifest is the contract between the converter and the
+  // frontend. A srcset naming a file that is not there is a broken tile on
+  // exactly the devices with the most pixels, so check the files exist.
+  const root = new URL('../../public/', import.meta.url)
+  let checked = 0
+  for (const [url, widths] of Object.entries(LOCAL_IMAGE_VARIANTS)) {
+    const stem = url.replace(/\.jpg$/i, '')
+    for (const w of widths) {
+      const file = new URL('.' + stem + `.w${w}.webp`, root)
+      assert.ok(
+        existsSync(fileURLToPath(file)),
+        `manifest names a missing variant: ${stem}.w${w}.webp`,
+      )
+      checked++
+    }
+  }
+  assert.ok(checked > 0, 'manifest was empty')
+})
+
+test('a base-prefixed path resolves through the manifest too', () => {
+  // The published build serves under /pawsmarket/, so callers pass an
+  // `asset()`-built src. The lookup must find the same entry.
+  assert.equal(
+    localImageSrcSet('/pawsmarket/images/listings/cat-orange.jpg'),
+    '/pawsmarket/images/listings/cat-orange.w660.webp 660w',
+  )
 })

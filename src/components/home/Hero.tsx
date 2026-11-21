@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useNearbyListings } from '@/hooks/use-listings'
 import { shopApi } from '@/lib/shop-api'
 import { faDigits } from '@/lib/fa'
+import { localImageSrcSet } from '@/lib/img'
 import { asset } from '@/lib/utils'
 
 /** پَنج (پا) شناور تزئینی — حرکت پیوسته‌ی تزئینی است (خارج از قرارداد ورود) */
@@ -256,6 +257,16 @@ export function Hero() {
             <div className="col-span-2 overflow-hidden rounded-[1.75rem] shadow-lifted">
               <img
                 src={asset('images/listings/dog-shiba.jpg')}
+                srcSet={localImageSrcSet(asset('images/listings/dog-shiba.jpg'))}
+                /* The widest local image on the site: measured 529 CSS px on
+                   a 1280px viewport, which is why the converter's 1024 rung
+                   exists at all. */
+                sizes="(min-width: 640px) 529px, 100vw"
+                width={820}
+                height={512}
+                /* This is the LCP element on the home page. */
+                fetchPriority="high"
+                decoding="async"
                 alt="سگ با زبان بیرون، در نور غروب"
                 className="aspect-[16/10] w-full object-cover object-center"
               />

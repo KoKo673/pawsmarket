@@ -571,7 +571,14 @@ async function getStoresRaw(origin: GeoPoint, filters: Filters): Promise<RawRow[
     if (cached) {
       // Mark the rows so the caller can say "this may be out of date"
       // rather than presenting yesterday's phone numbers as current.
-      return cached.map((r) => ({ ...r, _stale: true }))
+      //
+      // The shop filter is applied here too. A cache written before the API
+      // started excluding competitor pet shops is exactly what would keep
+      // showing them — and an outage is precisely when this cache is the
+      // only source, so "the server will filter it" is not true here.
+      return cached
+        .filter((r) => r.category !== 'shop')
+        .map((r) => ({ ...r, _stale: true }))
     }
     throw err
   }

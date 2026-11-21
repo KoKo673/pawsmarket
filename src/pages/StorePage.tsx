@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { BOOKING_ENABLED } from '@/lib/booking-rules'
 import { bindUtm, readUtm, withUtm } from '@/lib/campaign'
 import { faDigits } from '@/lib/fa'
+import { localImageSrcSet } from '@/lib/img'
 import { storeLabel } from '@/lib/store-labels'
 
 const API = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
@@ -159,6 +160,13 @@ export function StorePage() {
         {s.image_url && (
           <div className="aspect-[16/9] w-full overflow-hidden bg-muted">
             <img src={storeImage(s.image_url)} alt=""
+                 /* Bundled storefronts have generated webp rungs; photos a
+                    clinic uploaded through the dashboard do not, and
+                    `localImageSrcSet` returns undefined for them. */
+                 srcSet={localImageSrcSet(storeImage(s.image_url))}
+                 sizes="(min-width: 1280px) 413px, (min-width: 768px) 90vw, 100vw"
+                 width={820}
+                 height={461}
                  className="size-full object-cover" loading="eager" />
           </div>
         )}

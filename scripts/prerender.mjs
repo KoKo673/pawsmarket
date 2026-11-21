@@ -250,6 +250,17 @@ async function main() {
       if (rows.length < PAGE) break
       if (offset > 20000) break      // a runaway guard, not an expected path
     }
+    // The API excludes competitor pet shops, but this prerender writes a
+    // static file per row and those files outlive the build. A `shop` row
+    // reaching here would mint a permanent, indexed page for another store —
+    // exactly what the exclusion exists to prevent. Filtering again costs
+    // nothing and does not depend on the endpoint being redeployed in step
+    // with this one.
+    const before = stores.length
+    stores = stores.filter((s) => s.category !== 'shop')
+    if (stores.length !== before) {
+      console.log(`[prerender] dropped ${before - stores.length} shop row(s)`)
+    }
   } catch (err) {
     // A build must not fail because the API is briefly unreachable. The
     // shell stays as it was and the next build picks the pages up.

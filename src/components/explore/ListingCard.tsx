@@ -3,7 +3,7 @@ import { BedDouble, Bone, Heart, HeartHandshake, MapPin, PawPrint, Scissors, Sta
 import { Badge } from '@/components/ui/badge'
 import { faDecimal, faDigits, faPriceShort } from '@/lib/fa'
 import { formatAge, formatDistance } from '@/lib/geo'
-import { imageSrcSet } from '@/lib/img'
+import { imageSrcSet, localImageSrcSet } from '@/lib/img'
 import { storeLabel } from '@/lib/store-labels'
 import { cn } from '@/lib/utils'
 import type { ListingWithDistance } from '@/types'
@@ -142,10 +142,16 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
       >
         <img
           src={item.images[0]}
-          /* Products come from Digikala and get resized; pets and storefronts
-             come from other hosts, where `imageSrcSet` returns undefined and
-             the markup falls back to plain `src`. */
-          srcSet={imageSrcSet(item.images[0])}
+          /* Three sources, three answers:
+             - Digikala products get a query-based srcset from `imageSrcSet`
+             - bundled storefronts get generated webp rungs from
+               `localImageSrcSet`
+             - pets come from our own uploads, where neither applies and the
+               markup falls back to plain `src`.
+             Both functions return `undefined` rather than an empty string, so
+             exactly one of them can contribute and the other adds no
+             attribute at all. */
+          srcSet={imageSrcSet(item.images[0]) ?? localImageSrcSet(item.images[0])}
           sizes="(min-width: 1700px) 300px, 100vw"
           alt={item.name}
           loading="lazy"

@@ -1,3 +1,8 @@
+// `.ts` in the specifier on purpose: this module is also loaded by
+// `node --test`, whose ESM resolver does not guess extensions. tsconfig has
+// `allowImportingTsExtensions` on, so tsc accepts the same form.
+import { LOCAL_IMAGE_VARIANTS } from './local-image-variants.ts'
+
 /**
  * Product-image URLs at the size the page will actually draw.
  *
@@ -118,6 +123,68 @@ export function imageSrcSet(url: string | null | undefined): string | undefined 
   // stored original and stays as the top of the ladder so a very high DPR
   // phone never upscales a smaller source.
   return [200, 400, 600].map((w) => `${digikalaAt(src, w)} ${w}w`).join(', ')
+}
+
+/**
+ * Bundled images under `public/images` — the store photos, the hero
+ * collage, the listing fallbacks.
+ *
+ * These are OUR files, so unlike Digikala there is no query language to
+ * negotiate: the variants are generated at build-prep time by
+ * `scripts/convert-local-images.py` and named `<stem>.w660.webp` /
+ * `<stem>.w1024.webp` beside the original.
+ *
+ *   w660   ~2x a 335px explore/store card
+ *   w1024  ~2x the widest local-image box on the site, the 529px hero
+ *
+ * Most sources are 820px or narrower, so most files have only the 660 rung —
+ * the script refuses to upscale. A srcset entry is therefore only emitted for
+ * a variant the converter would actually have written. Emitting a 1024 entry
+ * for a 820px source would point the browser at a URL that does not exist and
+ * produce a broken tile on retina desktops.
+ *
+ * The original stays the fallback so a file added since the last conversion
+ * run still renders — just at full size.
+ */
+// Anchored on `/images/` rather than at the start of the string: on the
+// published build every caller passes a base-aware src (`/pawsmarket/images/…`),
+// and an `^` anchor silently rejected all of them — the srcset just never
+// appeared, which is the failure that looks like "the optimisation did
+// nothing" rather than like a bug. `/media/uploads/…` must still not match,
+// which is why the preceding character cannot be a letter.
+const LOCAL_IMAGE = /(?:^|\/)images\/.+\.(?:jpe?g|png)$/i
+
+/**
+ * True for a local path that MIGHT have variants. Existence of each rung is
+ * asserted by the converter's manifest, not by this function — see
+ * `localImageSrcSet`.
+ */
+export function isLocalImage(url: string | null | undefined): boolean {
+  return !!url && LOCAL_IMAGE.test(url)
+}
+
+/**
+ * A srcset for a bundled image, or `undefined` when it has no variants.
+ *
+ * The URL passed in is the same base-aware one the `<img src>` already uses
+ * (callers run it through `asset()`), so the variant is produced by suffixing
+ * that path — no `BASE_URL` lookup here. That is deliberate: this module is
+ * imported by `node --test` as plain TypeScript, where `import.meta.env` has
+ * no type and no value, and reaching for it here breaks the test loader.
+ */
+export function localImageSrcSet(url: string | null | undefined): string | undefined {
+  const src = (url as string) ?? ''
+  if (!isLocalImage(src)) return undefined
+  // Callers pass the base-aware src (`asset()`), so on a sub-path build this
+  // reads `/pawsmarket/images/...`. The manifest is keyed origin-relative;
+  // find the `/images/` segment and look the tail up from there.
+  const at = src.indexOf('/images/')
+  if (at === -1) return undefined
+  const key = src.slice(at)
+  const widths = LOCAL_IMAGE_VARIANTS[key]
+  if (!widths || widths.length === 0) return undefined
+  const stem = src.replace(/\.(?:jpe?g|png)$/i, '')
+  return widths.map((w) => `${stem}.w${w}.webp ${w}w`).join(', ')
 }
 
 /**
