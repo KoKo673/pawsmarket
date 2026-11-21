@@ -77,7 +77,32 @@ export function PrivacyPage() {
           <li>اثر انگشت دستگاه، اندازهٔ صفحه یا فهرست افزونه‌ها.</li>
           <li>شمارهٔ کارت بانکی. پرداخت در درگاه زرین‌پال انجام می‌شود و
             اطلاعات کارت هرگز به سرور ما نمی‌رسد.</li>
-          <li>اسکریپت تحلیلی شخص ثالث روی صفحات سایت.</li>
+        </ul>
+
+        <h2 className="pt-6 text-lg font-extrabold">تحلیل بازدید</h2>
+        <p>
+          برای فهمیدن اینکه کدام صفحه‌ها کار می‌کنند و کدام نه، از Google
+          Analytics 4 استفاده می‌کنیم. <strong>این ابزار را طوری تنظیم
+          کرده‌ایم که هیچ کوکی نگذارد</strong> (Consent Mode با
+          <code className="mx-1 rounded bg-muted px-1">analytics_storage: denied</code>).
+          یعنی رویدادها ارسال می‌شوند ولی شناسه‌ای روی دستگاه شما ذخیره
+          نمی‌شود و در بازدیدهای بعدی شناسایی نمی‌شوید. علاوه بر این:
+        </p>
+        <ul className="ms-5 list-disc space-y-2">
+          <li>
+            <strong>IP ناشناس می‌شود</strong> (IP anonymisation) و هیچ
+            سیگنال تبلیغاتی — نه <code>ad_storage</code> و نه
+            <code className="mx-1">ad_user_data</code> — فرستاده نمی‌شود.
+          </li>
+          <li>
+            در رویدادها فقط شناسهٔ محصول، مبلغ و تعداد می‌رود. نام، تلفن،
+            نشانی و ایمیل هرگز به Google نمی‌رسد.
+          </li>
+          <li>
+            این اسکریپت وقتی باز می‌شود که سایت analytics را تنظیم کرده
+            باشد؛ اگر <code>VITE_GA4_ID</code> خالی باشد هیچ درخواستی به
+            Google نمی‌رود.
+          </li>
         </ul>
 
         <h2 className="pt-6 text-lg font-extrabold">چرا جمع می‌کنیم</h2>

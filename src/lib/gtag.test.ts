@@ -116,3 +116,58 @@ test('no customer identity is ever in a payload', () => {
     assert.ok(!blob.includes(forbidden), `analytics payload leaked ${forbidden}`)
   }
 })
+
+// ── consent ──────────────────────────────────────────────────────────
+test('the consent default denies storage, and does so before config', async () => {
+  // This is the mechanism, not a cosmetic detail: gtag applies a `consent
+  // default` only to tags loaded AFTER it. Emitting it after `config` leaves
+  // cookies on, while /privacy says there are none.
+  //
+  // Read from the source rather than by running initAnalytics(), which
+  // needs a DOM and a configured property. The order is the claim.
+  const { readFileSync } = await import('node:fs')
+  const src = readFileSync(new URL('./gtag.ts', import.meta.url), 'utf8')
+
+  // Match the CALL, at the start of a line with only indentation before it.
+  // A plain indexOf found the word inside a comment that says
+  // "tag loaded after it" ... "config" and reported the wrong order.
+  const consentAt = src.search(/^\s*window\.gtag\('consent', 'default'/m)
+  const configAt = src.search(/^\s*window\.gtag\('config'/m)
+  const jsAt = src.search(/^\s*window\.gtag\('js'/m)
+
+  assert.ok(consentAt !== -1, 'no consent default is ever sent')
+  assert.ok(configAt !== -1, 'no config call found')
+  assert.ok(jsAt !== -1, 'no gtag js call found')
+
+  // Consent must come before BOTH. Measured 2026-11-21: with `js` first,
+  // gtag.js wrote a real client id (GA1.1.66179524.…) even though
+  // analytics_storage was denied and client_storage was 'none'. Both
+  // settings were present in the dataLayer; only the order was wrong.
+  assert.ok(consentAt < jsAt, 'consent must be set before gtag js')
+  assert.ok(consentAt < configAt, 'consent must be set before config')
+
+  // And GTM must not be loaded at all: it runs container tags from a web
+  // UI, which no cookie promise in the code can cover.
+  assert.ok(
+    !/injectScript\(`https:\/\/www\.googletagmanager\.com\/gtm\.js/.test(src),
+    'gtm.js is being injected, which makes /privacy unenforceable',
+  )
+
+  // The whole consent call, from its start to the closing `})`. Slicing a
+// fixed 400 characters cut off before analytics_storage, so the window is
+// taken from the call itself rather than guessed.
+  const callEnd = src.indexOf('})', consentAt)
+  const block = src.slice(consentAt, callEnd)
+
+  for (const key of ['ad_storage', 'ad_user_data', 'ad_personalization', 'analytics_storage']) {
+    assert.ok(block.includes(key), `consent default does not set ${key}`)
+    // Tabs and spaces both appear depending on the formatter, so this
+    // collapses whitespace before looking for the denied value rather than
+    // betting on one regex that survives one formatter.
+    const flat = block.replace(/\s+/g, ' ')
+    assert.ok(
+      flat.includes(`${key}: 'denied'`) || flat.includes(`${key}:'denied'`),
+      `${key} is not denied`,
+    )
+  }
+})
