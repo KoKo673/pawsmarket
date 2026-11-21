@@ -183,6 +183,24 @@ test('sizes does not under-declare the rendered card at any breakpoint', () => {
   }
 })
 
+test('naturalWidth on a `w`-descriptor image is the density-corrected size', () => {
+  // Not an assertion about our code — a trap that cost an hour of production
+  // debugging on 2026-11-21, recorded so it is not re-investigated.
+  //
+  // With `w` descriptors the spec says `naturalWidth` must report the
+  // image's intrinsic width DIVIDED BY the density the browser inferred
+  // (`srcset w` ÷ `sizes`). So a genuine 600x600 file selected for a 164px
+  // slot at DPR 3 reports `naturalWidth === 163`, and it looks exactly like
+  // the CDN ignored the resize and served a thumbnail. It did not: the
+  // response body was 27070 bytes of 600x600 webp, confirmed by decoding it.
+  //
+  // The check that actually answers "did the resize happen" is the decoded
+  // file or `currentSrc`, never `naturalWidth`.
+  const fileWidth = 600
+  const inferredDensity = 3.67
+  assert.equal(Math.round(fileWidth / inferredDensity), 163)
+})
+
 test('the ladder step the browser picks is never smaller than the box', () => {
   // What actually leaves the network is not the `sizes` number but the
   // srcset candidate chosen from it. 200/400/600 is the ladder in
