@@ -71,7 +71,7 @@ export function StepBasics({ draft, update }: StepProps) {
             type="button"
             onClick={() => update({ kind: id })}
             className={cn(
-              'flex items-center gap-3 rounded-2xl border-2 p-4 text-start transition-all active:scale-[0.98]',
+              'flex items-center gap-3 rounded-2xl border-2 p-4 text-start transition-[color,background-color,border-color,box-shadow,transform,opacity] active:scale-[0.98]',
               draft.kind === id
                 ? 'border-primary bg-primary/5 shadow-glow'
                 : 'border-border bg-card hover:border-primary/40',
@@ -127,7 +127,7 @@ export function StepBasics({ draft, update }: StepProps) {
                   type="button"
                   onClick={() => update({ species: s.id })}
                   className={cn(
-                    'rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all active:scale-95',
+                    'rounded-full border px-3.5 py-1.5 text-xs font-bold transition-[color,background-color,border-color,box-shadow,transform,opacity] active:scale-95',
                     draft.species === s.id
                       ? 'border-primary bg-primary text-primary-foreground shadow-glow'
                       : 'border-border bg-card text-muted-foreground hover:border-primary/40',
@@ -230,7 +230,7 @@ export function StepDetails({ draft, update }: StepProps) {
                     type="button"
                     onClick={() => update({ gender: g.id })}
                     className={cn(
-                      'h-11 rounded-xl border text-sm font-bold transition-all active:scale-[0.98]',
+                      'h-11 rounded-xl border text-sm font-bold transition-[color,background-color,border-color,box-shadow,transform,opacity] active:scale-[0.98]',
                       draft.gender === g.id
                         ? 'border-primary bg-primary/10 text-primary shadow-glow'
                         : 'border-border bg-card text-muted-foreground',
@@ -315,7 +315,7 @@ export function StepDetails({ draft, update }: StepProps) {
                       })
                     }
                     className={cn(
-                      'rounded-full border px-3 py-1.5 text-xs font-semibold transition-all active:scale-95',
+                      'rounded-full border px-3 py-1.5 text-xs font-semibold transition-[color,background-color,border-color,box-shadow,transform,opacity] active:scale-95',
                       active
                         ? 'border-accent bg-accent text-accent-foreground shadow-soft'
                         : 'border-border bg-card text-muted-foreground hover:border-accent/50',

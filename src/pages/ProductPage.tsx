@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { RatingStars } from '@/components/shop/RatingStars'
 import { Button } from '@/components/ui/button'
 import { faDigits, faPrice } from '@/lib/fa'
+import { CARD_IMG, DETAIL_SIZES, imageSrcSet } from '@/lib/img'
 import { shopApi } from '@/lib/shop-api'
 import { useAuthStore } from '@/store/auth.store'
 
@@ -122,7 +123,18 @@ export function ProductPage() {
             reader say the name twice. */}
         <div className="overflow-hidden rounded-3xl border border-border bg-muted/30">
           {p.image ? (
-            <img src={p.image} alt="" className="aspect-square size-full object-contain" />
+            <img
+              src={p.image}
+              srcSet={imageSrcSet(p.image)}
+              sizes={DETAIL_SIZES}
+              width={CARD_IMG.width}
+              height={CARD_IMG.height}
+              alt=""
+              /* This is the LCP element on a product page: never lazy. */
+              fetchPriority="high"
+              decoding="async"
+              className="aspect-square size-full object-contain"
+            />
           ) : (
             <div className="grid aspect-square place-items-center text-sm text-muted-foreground">
               بدون تصویر

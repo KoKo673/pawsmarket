@@ -65,7 +65,7 @@ export function MomentActions({
           aria-label={liked ? 'برداشتن لایک' : 'پسندیدن'}
           aria-pressed={liked}
           className={cn(
-            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold transition-all active:scale-90',
+            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold transition-[color,background-color,border-color,box-shadow,transform,opacity] active:scale-90',
             liked ? 'text-primary' : 'text-muted-foreground hover:text-primary',
           )}
         >

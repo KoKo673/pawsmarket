@@ -325,7 +325,7 @@ export function BookingPage() {
                 type="button"
                 onClick={() => setService(s)}
                 className={cn(
-                  'rounded-full border px-3.5 py-2 text-xs font-semibold transition-all active:scale-95',
+                  'rounded-full border px-3.5 py-2 text-xs font-semibold transition-[color,background-color,border-color,box-shadow,transform,opacity] active:scale-95',
                   service === s
                     ? 'border-primary bg-primary text-primary-foreground'
                     : 'border-border bg-card text-muted-foreground',
@@ -350,7 +350,7 @@ export function BookingPage() {
                 type="button"
                 onClick={() => setDay(d.value)}
                 className={cn(
-                  'shrink-0 rounded-xl border px-3 py-2 text-xs font-semibold transition-all',
+                  'shrink-0 rounded-xl border px-3 py-2 text-xs font-semibold transition-[color,background-color,border-color,box-shadow,transform,opacity]',
                   day === d.value
                     ? 'border-primary bg-primary/10 text-primary'
                     : 'border-border text-muted-foreground',
@@ -375,7 +375,7 @@ export function BookingPage() {
                 type="button"
                 onClick={() => setHour(h)}
                 className={cn(
-                  'rounded-xl border py-2 text-sm font-bold transition-all',
+                  'rounded-xl border py-2 text-sm font-bold transition-[color,background-color,border-color,box-shadow,transform,opacity]',
                   hour === h
                     ? 'border-primary bg-primary text-primary-foreground'
                     : 'border-border text-muted-foreground',

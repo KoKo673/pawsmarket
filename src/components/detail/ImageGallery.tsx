@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, Images } from 'lucide-react'
 import { useState } from 'react'
 
 import { faDigits } from '@/lib/fa'
+import { imageSrcSet } from '@/lib/img'
 import { cn } from '@/lib/utils'
 
 /**
@@ -43,7 +44,12 @@ export function ImageGallery({
         <img
           key={images[active]}
           src={images[active]}
+          srcSet={imageSrcSet(images[active])}
+          sizes="(min-width: 768px) 420px, calc(100vw - 32px)"
+          width={600}
+          height={600}
           alt={`${alt}، عکس ${faDigits(active + 1)} از ${faDigits(count)}`}
+          decoding="async"
           className={cn(
             'size-full transition-opacity',
             fit === 'contain' ? 'object-contain bg-muted/40 p-3' : 'object-cover',
@@ -104,13 +110,23 @@ export function ImageGallery({
               onClick={() => setActive(i)}
               aria-label={`نمایش عکس ${faDigits(i + 1)}`}
               className={cn(
-                'size-16 shrink-0 overflow-hidden rounded-xl border-2 transition-all',
+                'size-16 shrink-0 overflow-hidden rounded-xl border-2 transition-[color,background-color,border-color,box-shadow,transform,opacity]',
                 i === active
                   ? 'border-primary shadow-glow'
                   : 'border-transparent opacity-60 hover:opacity-100',
               )}
             >
-              <img src={src} alt="" loading="lazy" className="size-full object-cover" />
+              <img
+                src={src}
+                srcSet={imageSrcSet(src)}
+                /* The strip tile is 64px; asking for the 200w variant keeps
+                   a row of six thumbnails under 50 KB total. */
+                sizes="64px"
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="size-full object-cover"
+              />
             </button>
           ))}
         </div>

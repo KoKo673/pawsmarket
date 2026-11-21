@@ -206,7 +206,7 @@ export function AdoptionPage() {
             <article
               key={pet.id}
               data-motion-item
-              className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft transition-all hover:-translate-y-1 hover:shadow-lifted"
+              className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft transition-[color,background-color,border-color,box-shadow,transform,opacity] hover:-translate-y-1 hover:shadow-lifted"
             >
               {/* The photo carries the link, and a pet without one falls back
                   to an icon — a link whose only content is an icon has no

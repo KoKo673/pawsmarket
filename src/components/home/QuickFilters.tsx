@@ -57,7 +57,7 @@ export function QuickFilters() {
           }}
           className={cn(
             'chip shrink-0 border border-border bg-card/80 text-foreground backdrop-blur',
-            'shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary hover:shadow-glow',
+            'shadow-soft transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary hover:shadow-glow',
             'active:scale-95',
           )}
         >

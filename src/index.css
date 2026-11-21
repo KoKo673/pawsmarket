@@ -242,7 +242,12 @@
 
   /** Pill-shaped quick filter / category chip. */
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-all duration-200;
+    /* Named properties, not `transition-all`. This is the shared class the
+       quick-filter pills use, and they change border-colour, background,
+       text-colour, shadow and transform on hover — all paint or composite.
+       `all` would also animate any layout property a future variant adds,
+       which is the reflow this rule exists to prevent. */
+    @apply inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200;
   }
 }
 
@@ -282,15 +287,29 @@
 
      The hook reports LOGICAL edges (`start` / `end`) because the dataset is
      written from overflow arithmetic, which cannot tell — and does not need
-     to tell — which physical side a direction hides content on. The CSS
-     does know, so the mapping lives here, once:
+     to tell — which physical side a direction hides content on.
 
        ::before = the START edge (content already scrolled past)
        ::after  = the END edge   (content still to come)
 
-     In LTR the start edge is physically left, so ::before is on the left and
-     fades inward to the right. In RTL it is the mirror. This is the one
-     place a direction branch belongs.
+     Position is set with LOGICAL insets (`inset-inline-start/end`), which
+     the browser resolves to the correct physical side from the document's
+     direction. Only the gradient ANGLE needs a direction rule, since CSS
+     has no logical gradient direction.
+
+     ── The bug this replaced (measured 2026-11-21) ─────────────────
+     The first version positioned the overlays with `[dir='ltr'] …` plus a
+     fallback, `:not([dir='rtl']) …`, meaning "no dir set, so LTR". It does
+     not mean that. `:not([dir='rtl'])` matches any ancestor WITHOUT a dir
+     attribute — and `<body>` has none — so the LTR rule applied in the RTL
+     document TOO. The pseudo-element ended up with both `left: 0` and
+     `right: 0`, stretched across the whole 343px row instead of the 40px
+     edge, and its opaque end covered «همه» at the right. The owner reported
+     it as "the «همه» button stays half-dark until you tap it": it was not a
+     state bug, it was the fade sitting on top of the selected chip.
+
+     Logical insets cannot fail that way: there is no selector to get
+     backwards and no fallback to double-apply.
 
      The fade colour is hsl(var(--background)), so it tracks the dark theme
      without a second rule — a hardcoded white would paint a white wedge
@@ -304,33 +323,52 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 2.5rem;
+    /* Measured 2026-11-21 on production at 375px: 40px is wider than the
+       «همه» chip itself (46px), so at full opacity it washed out two thirds
+       of the selected chip. 20px still reads as "there is more" and cannot
+       swallow an active chip again. The `--hint-w` custom property lets a
+       call site widen it again when a row is genuinely long. */
+    width: var(--hint-w, 1.25rem);
     pointer-events: none;
     z-index: 1;
     opacity: 0;
     transition: opacity 0.15s linear;
   }
-  [dir='ltr'] .overflow-hints::before,
-  :not([dir='rtl']) .overflow-hints::before {
-    left: 0;
+  .overflow-hints::before {
+    inset-inline-start: 0;
     background: linear-gradient(to right, hsl(var(--background)), transparent);
   }
-  [dir='ltr'] .overflow-hints::after,
-  :not([dir='rtl']) .overflow-hints::after {
-    right: 0;
+  .overflow-hints::after {
+    inset-inline-end: 0;
     background: linear-gradient(to left, hsl(var(--background)), transparent);
   }
+  /* Right-to-left: the start edge is physically RIGHT and the end edge is
+     physically LEFT, so each gradient runs the other way. Position needs no
+     override — the logical insets above already moved with the direction. */
   [dir='rtl'] .overflow-hints::before {
-    right: 0;
     background: linear-gradient(to left, hsl(var(--background)), transparent);
   }
   [dir='rtl'] .overflow-hints::after {
-    left: 0;
     background: linear-gradient(to right, hsl(var(--background)), transparent);
   }
   .overflow-hints[data-overflow~='start']::before,
   .overflow-hints[data-overflow~='end']::after {
     opacity: 1;
+  }
+  /* ── Do not claim overflow before measuring it ─────────────────────
+     The hints used to start hidden only because `data-overflow` was still
+     empty, and stayed hidden until React's first layout pass wrote it.
+     On a phone that pass is a frame or two behind the first paint, so the
+     fade appeared late — over the chip — exactly as reported: "the «همه»
+     button stays half-dark at first, then goes orange once I tap it".
+
+     The rule is now explicit: no attribute, no hint. The attribute is only
+     ever written after a real measurement (scrollWidth vs clientWidth) and
+     removed when the row stops overflowing, so a short row that fits can
+     never wear an edge fade. */
+  .overflow-hints:not([data-overflow])::before,
+  .overflow-hints:not([data-overflow])::after {
+    opacity: 0;
   }
   /* A fade over a focused chip hides its focus ring, which would trade a
      discoverability fix for an accessibility regression. Lift it while

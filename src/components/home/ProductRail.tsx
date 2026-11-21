@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { faDigits } from '@/lib/fa'
+import { CARD_IMG, CARD_SIZES, imageSrcSet } from '@/lib/img'
 import { shopApi, type ShopProduct } from '@/lib/shop-api'
 
 /**
@@ -159,7 +160,7 @@ function ProductCard({ product }: { product: ShopProduct }) {
     <Link
       to={`/shop/${product.id}`}
       className="group flex h-full flex-col overflow-hidden rounded-2xl
-        border border-border/60 bg-card shadow-soft transition-all duration-300
+        border border-border/60 bg-card shadow-soft transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300
         hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lifted
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
@@ -167,8 +168,13 @@ function ProductCard({ product }: { product: ShopProduct }) {
         {product.image ? (
           <img
             src={product.image}
+            srcSet={imageSrcSet(product.image)}
+            sizes={CARD_SIZES}
+            width={CARD_IMG.width}
+            height={CARD_IMG.height}
             alt=""
             loading="lazy"
+            decoding="async"
             className="size-full object-contain p-2 transition-transform duration-500
               group-hover:scale-105"
           />

@@ -58,7 +58,7 @@ export function CategoryGrid() {
    label longer than one line was either clipped or squeezed. Full-width rows
    on a phone give the Persian names room to breathe; the icon moves above the
    text so it stays a clear anchor rather than eating horizontal space. */
-className="group flex flex-col items-start gap-2.5 rounded-2xl border border-border/60 bg-card p-4 text-start shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lifted active:scale-[0.98] sm:flex-row sm:items-center sm:gap-3"
+className="group flex flex-col items-start gap-2.5 rounded-2xl border border-border/60 bg-card p-4 text-start shadow-soft transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lifted active:scale-[0.98] sm:flex-row sm:items-center sm:gap-3"
                   >
                     <span
                       className={cn(

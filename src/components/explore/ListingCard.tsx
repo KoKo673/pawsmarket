@@ -3,6 +3,7 @@ import { BedDouble, Bone, Heart, HeartHandshake, MapPin, PawPrint, Scissors, Sta
 import { Badge } from '@/components/ui/badge'
 import { faDecimal, faDigits, faPriceShort } from '@/lib/fa'
 import { formatAge, formatDistance } from '@/lib/geo'
+import { imageSrcSet } from '@/lib/img'
 import { storeLabel } from '@/lib/store-labels'
 import { cn } from '@/lib/utils'
 import type { ListingWithDistance } from '@/types'
@@ -111,7 +112,7 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
       /* ورود پله‌ای از سیستم مشترک motion (fail-open: بدون JS هم نمایان) */
       data-motion-item
       style={{ '--motion-delay': `${Math.min(index, 12) * 33}ms` } as React.CSSProperties}
-      className="group relative overflow-hidden rounded-2xl bg-card shadow-soft ring-1 ring-border/60 transition-all duration-300 focus-within:-translate-y-1 focus-within:shadow-lifted hover:-translate-y-1 hover:shadow-lifted"
+      className="group relative overflow-hidden rounded-2xl bg-card shadow-soft ring-1 ring-border/60 transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 focus-within:-translate-y-1 focus-within:shadow-lifted hover:-translate-y-1 hover:shadow-lifted"
     >
       {/* One control covers the card, instead of making the whole <article> a
           clickable region with role="button". That shape nested the heart
@@ -141,8 +142,14 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
       >
         <img
           src={item.images[0]}
+          /* Products come from Digikala and get resized; pets and storefronts
+             come from other hosts, where `imageSrcSet` returns undefined and
+             the markup falls back to plain `src`. */
+          srcSet={imageSrcSet(item.images[0])}
+          sizes="(min-width: 1700px) 300px, 100vw"
           alt={item.name}
           loading="lazy"
+          decoding="async"
           /* Pack shots ( Digikala/Torob are square) are shown whole on a soft
              ground; object-cover would crop a bag of food down to its middle
              band and lose the label the shopper is matching against.
@@ -180,7 +187,7 @@ export function ListingCard({ item, index = 0 }: { item: ListingWithDistance; in
           className={cn(
             // z-20 to sit above the card's own overlay button, or the heart
             // would be unreachable — the overlay covers the whole card.
-            'absolute left-2 top-2 z-20 grid size-11 place-items-center rounded-full backdrop-blur transition-all active:scale-90',
+            'absolute left-2 top-2 z-20 grid size-11 place-items-center rounded-full backdrop-blur transition-[color,background-color,border-color,box-shadow,transform,opacity] active:scale-90',
             liked ? 'bg-primary text-primary-foreground' : 'bg-black/30 text-white hover:bg-black/50',
           )}
         >

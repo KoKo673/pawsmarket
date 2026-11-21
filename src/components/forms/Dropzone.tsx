@@ -60,7 +60,7 @@ export function Dropzone({
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
         className={cn(
-          'flex w-full flex-col items-center justify-center gap-2.5 rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-all duration-200',
+          'flex w-full flex-col items-center justify-center gap-2.5 rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200',
           dragging
             ? 'border-primary bg-primary/5 scale-[1.01]'
             : 'border-border bg-muted/30 hover:border-primary/50 hover:bg-primary/[0.03]',

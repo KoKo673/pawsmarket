@@ -45,7 +45,7 @@ export const TabsTrigger = forwardRef<
     ref={ref}
     aria-controls={undefined}
     className={cn(
-      'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-semibold transition-all',
+      'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-semibold transition-[color,background-color,border-color,box-shadow,transform,opacity]',
       'data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-soft',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
       'disabled:pointer-events-none disabled:opacity-50',

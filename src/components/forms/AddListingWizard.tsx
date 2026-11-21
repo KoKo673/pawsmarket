@@ -192,7 +192,7 @@ export function AddListingWizard() {
                 <div className="flex flex-col items-center gap-1.5">
                   <span
                     className={cn(
-                      'relative grid size-9 place-items-center rounded-full text-xs font-extrabold transition-all duration-300',
+                      'relative grid size-9 place-items-center rounded-full text-xs font-extrabold transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300',
                       done && 'bg-primary text-primary-foreground',
                       active && 'bg-primary text-primary-foreground shadow-glow',
                       !done && !active && 'bg-muted text-muted-foreground',

@@ -86,7 +86,7 @@ export function PetsDiscoverPage() {
               key={pet.id}
               to={`/pet/${pet.id}`}
               data-motion-item
-              className="group overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lifted"
+              className="group overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 hover:-translate-y-1 hover:shadow-lifted"
             >
               <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                 {pet.avatar_url ? (

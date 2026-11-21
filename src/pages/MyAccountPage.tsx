@@ -326,7 +326,7 @@ export function MyAccountPage() {
                 key={p.pet.id}
                 to={`/pet/${p.pet.id}`}
                 data-motion-item
-                className="flex items-center gap-4 rounded-2xl border border-border/60 bg-card p-4 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-lifted"
+                className="flex items-center gap-4 rounded-2xl border border-border/60 bg-card p-4 shadow-soft transition-[color,background-color,border-color,box-shadow,transform,opacity] hover:-translate-y-0.5 hover:shadow-lifted"
               >
                 {p.profile.avatar_url ? (
                   <img

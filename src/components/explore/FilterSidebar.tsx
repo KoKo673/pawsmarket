@@ -83,7 +83,7 @@ function Chip({
       className={cn(
         // Inline-flex with no max-width: a `truncate` here clipped chips to
         // «خرگوش و ...», which names a category nobody can pick.
-        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-150 active:scale-95',
+        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-150 active:scale-95',
         active
           ? 'border-primary bg-primary text-primary-foreground shadow-glow'
           : 'border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground',
@@ -145,7 +145,7 @@ function FilterPanel() {
         onClick={() => setFavoritesOnly(!favoritesOnly)}
         aria-pressed={favoritesOnly}
         className={cn(
-          'flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-bold transition-all active:scale-[0.98]',
+          'flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-bold transition-[color,background-color,border-color,box-shadow,transform,opacity] active:scale-[0.98]',
           favoritesOnly
             ? 'border-primary bg-primary/10 text-primary shadow-glow'
             : 'border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground',

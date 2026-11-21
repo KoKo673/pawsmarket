@@ -100,7 +100,7 @@ export function AdoptionRail() {
                 <button
                   type="button"
                   onClick={() => openDetail(item.id)}
-                  className="group block w-full overflow-hidden rounded-2xl bg-card text-start shadow-soft ring-1 ring-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-lifted"
+                  className="group block w-full overflow-hidden rounded-2xl bg-card text-start shadow-soft ring-1 ring-border/60 transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 hover:-translate-y-1 hover:shadow-lifted"
                   aria-label={`مشاهده‌ی ${item.name}`}
                 >
                   <div className="relative aspect-[4/3] overflow-hidden">

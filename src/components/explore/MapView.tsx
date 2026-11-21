@@ -254,7 +254,7 @@ function MyLocationButton() {
       aria-label="مکان من"
       className={cn(
         'absolute top-4 start-4 z-[800] inline-flex h-11 items-center gap-2 rounded-full px-4',
-        'glass text-sm font-bold shadow-lifted transition-all duration-200',
+        'glass text-sm font-bold shadow-lifted transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200',
         'hover:shadow-glow active:scale-95 disabled:opacity-80',
         status === 'denied' && 'ring-1 ring-destructive/40',
       )}

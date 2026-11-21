@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useOverflowHints } from '@/hooks/use-overflow-hints'
 import { faDigits, faPrice } from '@/lib/fa'
+import { CARD_IMG, CARD_SIZES, imageSrcSet } from '@/lib/img'
 import { shopApi, type ShopProduct } from '@/lib/shop-api'
 import { useAuthStore } from '@/store/auth.store'
 
@@ -342,8 +343,13 @@ function ProductCard({ product }: { product: ShopProduct }) {
         {product.image ? (
           <img
             src={product.image}
+            srcSet={imageSrcSet(product.image)}
+            sizes={CARD_SIZES}
+            width={CARD_IMG.width}
+            height={CARD_IMG.height}
             alt=""
             loading="lazy"
+            decoding="async"
             className="size-full object-contain"
           />
         ) : (

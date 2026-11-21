@@ -140,6 +140,23 @@ if [ "$want" = "all" ] || [ "$want" = "lint" ]; then
     fi
 fi
 
+# ── unit tests ───────────────────────────────────────────────────────
+#
+# Added 2026-11-21. `npm test` pointed at `node --test src/lib/*.test.ts`
+# and had been failing on EVERY file — including one written before this
+# work — because Node refuses a `.ts` extension without
+# `--experimental-strip-types`. Nothing caught it because no gate ran the
+# suite. That is the third script in this file found written, committed
+# and then never executed, which is why it is now a target of its own.
+if [ "$want" = "all" ] || [ "$want" = "tests" ]; then
+    if [ -n "$NODE" ] && [ -d "$REPO/node_modules" ]; then
+        echo "── unit tests"
+        ( cd "$REPO" && PATH="$(dirname "$NODE"):$PATH" npm test ) || rc=1
+    else
+        echo "── unit tests SKIPPED (no local node_modules)" >&2
+    fi
+fi
+
 if [ "$want" = "a11y" ]; then
     if [ -z "$NODE" ]; then
         echo "gate: a11y needs a real Node and a Chrome install" >&2
@@ -207,7 +224,7 @@ fi
 # A named target that matched nothing is an error, not a pass.
 if [ -n "$want" ] && [ "$want" != "all" ]; then
     case "$want" in
-        routes|stores|skills|lint|types|parse|a11y|audit|build) ;;
+        routes|stores|skills|lint|types|parse|tests|a11y|audit|build) ;;
         *) echo "gate: unknown target '$want'" >&2; rc=2 ;;
     esac
 fi
