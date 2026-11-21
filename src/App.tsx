@@ -44,6 +44,8 @@ const PetsDiscoverPage = lazy(() =>
   import('@/pages/PetsDiscoverPage').then((m) => ({ default: m.PetsDiscoverPage })))
 const PrivacyPage = lazy(() =>
   import('@/pages/PrivacyPage').then((m) => ({ default: m.PrivacyPage })))
+const TermsPage = lazy(() =>
+  import('@/pages/TermsPage').then((m) => ({ default: m.TermsPage })))
 const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })))
 const AuthCard = lazy(() =>
@@ -575,6 +577,14 @@ function AppRoutes() {
               element={
                 <AnimatedPage>
                   <PrivacyPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/terms"
+              element={
+                <AnimatedPage>
+                  <TermsPage />
                 </AnimatedPage>
               }
             />

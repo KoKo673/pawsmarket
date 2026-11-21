@@ -23,6 +23,26 @@
     />
     <title>پازمارکت — حیوانات و لوازم نزدیک شما</title>
 
+    <!-- ── Social preview (og: / twitter:) ─────────────────────────────
+         Without these a link pasted into Telegram, WhatsApp or X showed a
+         bare URL with no title and no picture — measured 2026-11-21: zero
+         `og:` tags existed anywhere, in index.html or in the 343
+         prerendered pages.
+
+         Sizes come from the vendors' own docs, not from memory:
+           - Meta: "use images that are at least 1200 x 630", minimum
+             600 x 315, max 8 MB
+             (developers.facebook.com/docs/sharing/webmasters/images)
+           - X: its own docs ship og:image 1200x630 with both og: and
+             twitter: tags (docs.x.com/x-for-websites/cards/overview/markup)
+         1200x630 satisfies both, so there is one image to maintain.
+
+         `og:image` is absolute on purpose: ogp.me requires a full URL and
+         every scraper resolves it against nothing. The path is filled by
+         the prerender step, which knows the deploy origin — that is also
+         why this block is a marker comment rather than literal tags. -->
+    <!--open-graph-placeholder-->
+
     <!-- Google Search Console ownership. Verification happens in two ways,
          and only one is used:
          - Meta tag (this line, filled once by the operator from Search

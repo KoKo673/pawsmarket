@@ -4,8 +4,8 @@
     {
       "name": "pawsmarket-dev",
       "runtimeExecutable": "C:\\Users\\HP\\Downloads\\office\\.tools\\node\\node.exe",
-      "runtimeArgs": ["node_modules/vite/bin/vite.js", "--port", "5173", "--strictPort"],
-      "port": 5173
+      "runtimeArgs": ["node_modules/vite/bin/vite.js", "--port", "9000", "--strictPort"],
+      "port": 9000
     }
   ]
 }

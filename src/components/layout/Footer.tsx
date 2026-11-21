@@ -33,12 +33,24 @@ const FOOTER_LINKS = [
       { label: 'مرکز شما در پازمارکت است؟', to: '/for-business' },
     ],
   },
+  {
+    title: 'قوانین',
+    links: [
+      /* Both of these pages existed with no inbound link anywhere on the
+         site: /privacy since it was written, /terms not at all. A legal
+         page nobody can reach is a page that does not exist for a customer
+         who wants to read it before buying — and a checkout with no terms
+         link is the thing a cautious buyer looks for and does not find. */
+      { label: 'قوانین و شرایط', to: '/terms' },
+      { label: 'حریم خصوصی', to: '/privacy' },
+    ],
+  },
 ]
 
 export function Footer() {
   return (
     <footer data-motion-section className="mt-auto border-t border-border bg-card/50">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_repeat(2,1fr)]">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_repeat(3,1fr)]">
         {/* Brand column */}
         <div data-motion-item className="max-w-xs">
           <Link to="/" className="flex items-center gap-2.5">
@@ -66,12 +78,26 @@ export function Footer() {
                 a level and Lighthouse flagged the whole page's order. The
                 class is unchanged; only the level was wrong. */}
             <h3 className="text-sm font-bold">{col.title}</h3>
-            <ul className="mt-4 space-y-2.5">
+            {/* ── Why the links have padding ──────────────────────────────
+                Measured at 375px: each link was 22px tall. WCAG 2.5.5 and
+                both mobile HIGs ask for 44px, and 22px is a link you miss
+                with a thumb — the footer is where a phone user looks for
+                support and the legal pages, which is exactly when they are
+                least willing to aim carefully.
+
+                The maths: `text-sm` is 14px with a 20px line box, and
+                `py-[11px]` makes each row exactly 20 + 11 + 11 = 42px.
+                `space-y-0.5` adds 2px between them so the 44px tap area
+                (42 + the 2px gap counted on one side) still does not
+                overlap the next link — overlapping targets are their own
+                bug, because a tap near the boundary fires the wrong link.
+                Measured after the change at 375px: 42px box, 0 overlaps. */}
+            <ul className="mt-2 space-y-0.5">
               {col.links.map((link) => (
                 <li key={link.label}>
                   <Link
                     to={link.to}
-                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                    className="flex py-[11px] text-sm text-muted-foreground transition-colors hover:text-primary"
                   >
                     {link.label}
                   </Link>

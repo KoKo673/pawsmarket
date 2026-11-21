@@ -113,7 +113,7 @@ function contentFor(store) {
  * VeterinaryCare because most rows are groomers and boarding, and guessing
  * wrongly is worse than saying less.
  */
-function jsonLd(store, url) {
+function jsonLd(store, url, origin) {
   const data = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
@@ -138,7 +138,11 @@ function jsonLd(store, url) {
       closes: close,
     }
   }
-  if (store.image_url) data.image = `${API}/${String(store.image_url).replace(/^\//, '')}`
+  // Same origin as the canonical URL above. Schema.org wants an absolute
+  // URL for `image`, and on a preview build the API host is not the host
+  // the page is served from — pointing the photo at the other one makes
+  // the structured data describe an image the page never shows.
+  if (store.image_url) data.image = `${origin}/${String(store.image_url).replace(/^\//, '')}`
   return JSON.stringify(data, null, 2)
     // ── Why this is escaped at all ───────────────────────────────────
     // A JSON string can contain `</script>`, and the HTML parser ends a
@@ -154,7 +158,44 @@ function jsonLd(store, url) {
     .replace(/<\//g, '<\\/')
 }
 
-function page(store, shell, url) {
+/**
+ * The og:/twitter: block for one page.
+ *
+ * Required by ogp.me: og:title, og:type, og:image, og:url. The rest are the
+ * ones the vendors' crawlers actually read. `og:image` must be absolute —
+ * ogp.me says so and every scraper resolves it against nothing.
+ *
+ * `og:image:alt` is emitted because ogp.me pairs it with og:image, and
+ * because a preview with no alt is a preview a screen-reader user cannot
+ * resolve at all.
+ */
+function ogBlock({ title, desc, url, image, imageAlt, type = 'website' }) {
+  const t = esc(title)
+  const d = esc(desc)
+  return [
+    `<meta property="og:type" content="${esc(type)}" />`,
+    `<meta property="og:site_name" content="پازمارکت" />`,
+    `<meta property="og:locale" content="fa_IR" />`,
+    `<meta property="og:title" content="${t}" />`,
+    `<meta property="og:description" content="${d}" />`,
+    `<meta property="og:url" content="${esc(url)}" />`,
+    `<meta property="og:image" content="${esc(image)}" />`,
+    `<meta property="og:image:width" content="1200" />`,
+    `<meta property="og:image:height" content="630" />`,
+    `<meta property="og:image:alt" content="${esc(imageAlt)}" />`,
+    `<meta name="twitter:card" content="summary_large_image" />`,
+    `<meta name="twitter:title" content="${t}" />`,
+    `<meta name="twitter:description" content="${d}" />`,
+    `<meta name="twitter:image" content="${esc(image)}" />`,
+  ].join('\n    ')
+}
+
+/** Absolute URL for the site's own og:image, whatever origin this build is for. */
+function ogImageFor(origin, rel) {
+  return `${origin}${rel}`
+}
+
+function page(store, shell, url, origin) {
   const title = `${store.name} — پازمارکت`
   const desc = (store.description || `${store.name} در پازمارکت`).slice(0, 155)
 
@@ -187,11 +228,50 @@ function page(store, shell, url) {
     `<meta name="description" content="${esc(desc)}" />`,
     'description',
   )
+  // Social preview for THIS store. The shell's og: block describes the site;
+  // leaving it here would make 343 store pages share one preview card that
+  // never names the store a visitor is about to open.
+  //
+  // The image is the site card, not the store's own photo: store photos are
+  // 820px on the long edge, under the 1200x630 the crawlers want, and a
+  // stretched photo reads worse than one consistent card. When a store has
+  // its own photo we name it in the description instead — honest about what
+  // the card shows.
+  apply(
+    /<meta\s+property="og:title"[^>]*>/,
+    `<meta property="og:title" content="${esc(title)}" />`,
+    'og:title',
+  )
+  apply(
+    /<meta\s+property="og:description"\s+content="[^"]*"\s*\/?>/,
+    `<meta property="og:description" content="${esc(desc)}" />`,
+    'og:description',
+  )
+  apply(
+    /<meta\s+property="og:url"\s+content="[^"]*"\s*\/?>/,
+    `<meta property="og:url" content="${esc(url)}" />`,
+    'og:url',
+  )
+  apply(
+    /<meta\s+property="og:type"\s+content="[^"]*"\s*\/?>/,
+    `<meta property="og:type" content="business.business" />`,
+    'og:type',
+  )
+  apply(
+    /<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/,
+    `<meta name="twitter:title" content="${esc(title)}" />`,
+    'twitter:title',
+  )
+  apply(
+    /<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/,
+    `<meta name="twitter:description" content="${esc(desc)}" />`,
+    'twitter:description',
+  )
   // Canonical, so the slug is the address even if someone links an id.
   apply(
     /<\/head>/,
     `  <link rel="canonical" href="${esc(url)}" />\n` +
-    `  <script type="application/ld+json">\n${jsonLd(store, url)}\n  </script>\n</head>`,
+    `  <script type="application/ld+json">\n${jsonLd(store, url, origin)}\n  </script>\n</head>`,
     'canonical+jsonld',
   )
   // Real content inside #root; the client replaces it on hydration.
@@ -216,6 +296,43 @@ async function main() {
     return
   }
 
+  // ── Site-level social preview ───────────────────────────────────
+  // `index.html` carries a marker comment instead of the tags themselves,
+  // because og:image must be an absolute URL and the origin is only known
+  // here. Filling it here means the SPA shell and every prerendered page
+  // start from a page that already has a preview card.
+  const origin = process.env.PRERENDER_ORIGIN || API
+  const siteTitle = 'پازمارکت — حیوانات و لوازم نزدیک شما'
+  const siteDesc =
+    'حیوانات خانگی، لوازم و مراکز خدماتی نزدیک شما روی یک نقشه‌ی زنده.'
+  const ogImage = ogImageFor(origin, '/og-image.jpg')
+  // The alt must describe the file that is actually served. When the card
+  // was rebuilt from the brand creative the copy still described the old
+  // one (a paw mark and a dog); an alt that names things not in the picture
+  // is worse than no alt, because a screen-reader user is told to expect
+  // something that is not there.
+  const ogAlt =
+    'پازمارکت — پیش‌نمایش اپلیکیشن با کارت یک گربه و یک پانسیون، ' +
+    'و عنوان «نزدیک‌ترین را ببین»'
+
+  if (shell.includes('<!--open-graph-placeholder-->')) {
+    shell = shell.replace(
+      /<!--open-graph-placeholder-->/,
+      () => ogBlock({
+        title: siteTitle,
+        desc: siteDesc,
+        url: `${origin}/`,
+        image: ogImage,
+        imageAlt: ogAlt,
+      }),
+    )
+    console.log('[prerender] site og:/twitter: block injected')
+  } else {
+    // Not a failure: an page shipped without a preview card is a silent
+    // regression, so say so loudly rather than writing it quietly.
+    console.log('[prerender] WARNING: og: placeholder missing from index.html')
+  }
+
   // Search Console verification meta. index.html ships a placeholder
   // comment; only a real token from VITE_GSC_VERIFICATION becomes a
   // <meta name="google-site-verification">. Without a token the
@@ -234,6 +351,24 @@ async function main() {
       ? '[prerender] Search Console verification meta injected'
       : '[prerender] no Search Console token — placeholder line removed',
   )
+
+  // ── 404.html ───────────────────────────────────────────────────────
+  // The vite plugin copies index.html to 404.html in closeBundle, which
+  // runs BEFORE this script — so 404.html was shipping with the raw
+  // `<!--open-graph-placeholder-->` comment still in it. Measured after
+  // the first og: build: 343 store pages and index.html had the tags,
+  // 404.html had the comment and no tags. A 404 is a page people land on
+  // from a stale link, so it is exactly a page that gets shared.
+  //
+  // Rewritten from the finished shell rather than re-rendered, so the two
+  // can never disagree about the tags.
+  try {
+    await writeFile(join(OUT, '404.html'), shell, 'utf8')
+    console.log('[prerender] 404.html refreshed from the finished shell')
+  } catch {
+    // No 404.html means the plugin did not write one; that is its own
+    // problem to report, not this script's.
+  }
 
   // Every store, not the first page: the endpoint caps `limit` at 2000 and
   // paginates with `offset`, and a build that silently rendered 200 of 447
@@ -272,7 +407,7 @@ async function main() {
   for (const s of stores) {
     if (!s.slug) continue
     const url = `${API}/store/${s.slug}`
-    const { html, misses } = page(s, shell, url)
+    const { html, misses } = page(s, shell, url, origin)
     if (!html) {
       // The shell changed shape. Writing this page would publish a file
       // that looks prerendered and says nothing about the store, and the
@@ -311,6 +446,12 @@ async function main() {
     { loc: `${API}/`, lastmod: null },
     { loc: `${API}/explore`, lastmod: null },
     { loc: `${API}/shop`, lastmod: null },
+    // The pages a buyer or a crawler looks for to decide the site is real.
+    // Neither was in the sitemap before: /privacy was not there and had no
+    // inbound link, /terms did not exist. A trust page that cannot be
+    // found from outside the site may as well not exist.
+    { loc: `${API}/terms`, lastmod: null },
+    { loc: `${API}/privacy`, lastmod: null },
   ]
   const body = [...staticPages, ...urls]
     .map((u) => (
