@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useOverflowHints } from '@/hooks/use-overflow-hints'
 import { faDigits, faPrice } from '@/lib/fa'
+import { trackAddToCart } from '@/lib/gtag'
 import { CARD_IMG, CARD_SIZES, imageSrcSet } from '@/lib/img'
 import { shopApi, type ShopProduct } from '@/lib/shop-api'
 import { useAuthStore } from '@/store/auth.store'
@@ -309,6 +310,11 @@ function ProductCard({ product }: { product: ShopProduct }) {
     setBusy(true); setError(null)
     try {
       await shopApi.addToCart(product.id, 1)
+      trackAddToCart({
+        id: product.id,
+        name: product.name,
+        price_toman: product.price_toman,
+      }, 1)
       setAdded(true)
       setTimeout(() => setAdded(false), 2000)
     } catch (err) {

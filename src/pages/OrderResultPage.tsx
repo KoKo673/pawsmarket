@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
+import { trackPurchase } from '@/lib/gtag'
+import { shopApi } from '@/lib/shop-api'
 
 /**
  * بازگشت از درگاه پرداخت.
@@ -48,6 +50,31 @@ export function OrderResultPage() {
         if (body?.ok) {
           setState('ok')
           setOrderId(body.order_id ?? null)
+
+          // `purchase` is reported ONLY from this branch, because this is
+          // the only place the server has confirmed the payment. The query
+          // string the gateway returned with is a claim by the browser; a
+          // page that trusted it would let anyone register a sale by typing
+          // a URL, and would count every cancelled payment that looked OK.
+          //
+          // The order is re-read for its total and lines rather than
+          // guessed from the cart: the cart is emptied by the server on a
+          // verified payment (see the callback handler), so by this moment
+          // it no longer describes what was bought.
+          if (body.order_id != null) {
+            try {
+              const order = await shopApi.order(body.order_id)
+              trackPurchase(String(body.order_id), {
+                total_toman: order.total_toman,
+                items: order.items,
+              })
+            } catch {
+              // The payment is verified either way; a failed analytics
+              // read must never turn a successful purchase into an error
+              // screen. Missing one `purchase` event is a reporting gap,
+              // showing the buyer a failure would be a lie.
+            }
+          }
         } else {
           setState('failed')
           setMessage(body?.detail ?? (

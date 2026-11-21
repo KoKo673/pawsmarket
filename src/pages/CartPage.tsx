@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { faPrice } from '@/lib/fa'
+import { trackBeginCheckout } from '@/lib/gtag'
 import { shopApi } from '@/lib/shop-api'
 import { useAuthStore } from '@/store/auth.store'
 
@@ -76,6 +77,12 @@ export function CartPage() {
       delivery_eta_days: deliveryDays,
     }),
     onSuccess: (res) => {
+      // `begin_checkout` fires here and not on the button press: the cart
+      // the customer is paying for is the one the server just priced and
+      // accepted, not the one this component held a moment earlier. If the
+      // order was refused (409 on a moved price) there is no checkout to
+      // begin, and the funnel would be counting one that never started.
+      if (cart.data) trackBeginCheckout(cart.data)
       // The gateway owns the next screen. Nothing here is "paid" until it
       // sends the customer back and the server verifies.
       window.location.href = res.redirect_url

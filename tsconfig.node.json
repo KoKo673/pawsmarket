@@ -2,7 +2,12 @@
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "es2023",
-    "lib": ["ES2023"],
+    // DOM is here for the tests only, and it is a type declaration: it adds no
+// runtime code and cannot reach the bundle (this project has `noEmit`).
+// A test that imports a module touching `window` needs the types of that
+// module's own file graph, and the browser modules are exactly the ones
+// worth testing.
+    "lib": ["ES2023", "DOM"],
     "types": ["node"],
     "skipLibCheck": true,
 

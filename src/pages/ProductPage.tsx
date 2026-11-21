@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { RatingStars } from '@/components/shop/RatingStars'
 import { Button } from '@/components/ui/button'
 import { faDigits, faPrice } from '@/lib/fa'
+import { trackAddToCart } from '@/lib/gtag'
 import { CARD_IMG, DETAIL_SIZES, imageSrcSet } from '@/lib/img'
 import { shopApi } from '@/lib/shop-api'
 import { useAuthStore } from '@/store/auth.store'
@@ -39,6 +40,14 @@ export function ProductPage() {
     setBusy(true); setError(null)
     try {
       await shopApi.addToCart(product.data.id, 1)
+      // Reported only after the call succeeded. A click that failed (out
+      // of stock, 409, network) is not a conversion, and counting it would
+      // make the funnel say people add to cart more often than they do.
+      trackAddToCart({
+        id: product.data.id,
+        name: product.data.name,
+        price_toman: product.data.price_toman,
+      }, 1)
       setAdded(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'افزودن انجام نشد')
