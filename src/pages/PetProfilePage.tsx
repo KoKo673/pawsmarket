@@ -1,5 +1,5 @@
 import { Cake, Heart, Loader2, MapPin, PawPrint, Plus, Share2 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -48,6 +48,15 @@ export function PetProfilePage() {
 
   const profile = profileQuery.data ?? null
   const posts = postsQuery.data ?? []
+
+  // The pet's own name, once it loads. App.tsx has already set
+  // «حیوان — پازمارکت» for the route, so a slow request leaves a generic
+  // title rather than the home page's.
+  const petName = profile?.pet?.name
+  useEffect(() => {
+    if (petName) document.title = `${petName} — پازمارکت`
+  }, [petName])
+
   const error = actionError ?? (profileQuery.isError
     ? (profileQuery.error instanceof Error ? profileQuery.error.message : 'بارگذاری انجام نشد')
     : null)

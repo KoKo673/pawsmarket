@@ -1,5 +1,5 @@
 import { Loader2, Package, ShoppingCart, Store, Truck } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
@@ -33,6 +33,15 @@ export function ProductPage() {
     enabled: !!id,
     retry: false,
   })
+
+  // The product's own name, once it loads. App.tsx has already set
+  // «محصول — پازمارکت» for this route, so a slow request never leaves the
+  // home page's title on a product page — it just stays generic until the
+  // real name arrives.
+  const productName = product.data?.name
+  useEffect(() => {
+    if (productName) document.title = `${productName} — پازمارکت`
+  }, [productName])
 
   async function add() {
     if (!product.data) return

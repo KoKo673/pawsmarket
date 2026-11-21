@@ -118,6 +118,17 @@ export function StorePage() {
     if (boundUtm) bindUtm({ utm_source: boundUtm })
   }, [boundUtm])
 
+  // The store's own name, once it is known. Until then App.tsx's table has
+  // already set «مرکز خدماتی — پازمارکت», so a slow request leaves a
+  // correct-but-generic title rather than the home page's.
+  //
+  // A link to one specific clinic is exactly what gets pasted into a chat,
+  // and the title is what the recipient reads before deciding to click.
+  const storeName = query.data?.name
+  useEffect(() => {
+    if (storeName) document.title = `${storeName} — پازمارکت`
+  }, [storeName])
+
   if (query.isLoading) {
     return (
       <Shell>

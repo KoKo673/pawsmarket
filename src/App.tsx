@@ -11,6 +11,7 @@ import { useGeolocation } from '@/hooks/use-geolocation'
 import { trackView } from '@/lib/analytics'
 import { initAnalytics, trackPageView } from '@/lib/gtag'
 import { initEntranceMotion, MOTION } from '@/lib/motion'
+import { titleForPath } from '@/lib/page-title'
 import { HomePage } from '@/pages/HomePage'
 import { AppProviders } from '@/providers/AppProviders'
 import { useAuthStore } from '@/store/auth.store'
@@ -247,7 +248,21 @@ function AppRoutes() {
      pages unreadable. */
   useEffect(() => {
     trackView(location.pathname)
-    trackPageView(location.pathname)
+
+    // The tab title. Set here, from one table, rather than in 31 page
+    // components that each had to remember to do it — measured 2026-11-21,
+    // only 2 of 33 pages had a title of their own.
+    //
+    // A page that knows its subject (a product name, a store name) can
+    // still overwrite it once its data arrives; this only guarantees that
+    // every route starts with a title that names it, instead of every tab
+    // in the browser claiming to be the home page.
+    const title = titleForPath(location.pathname)
+    if (title) document.title = title
+
+    // `page_title` is read after the line above on purpose: GA4 should
+    // record the title the visitor's tab shows, not the shell's.
+    trackPageView(location.pathname, title ?? undefined)
   }, [location.pathname])
 
   // The Explore view is a full-height app surface — no footer there
