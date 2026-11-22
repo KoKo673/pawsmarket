@@ -4,6 +4,7 @@ import { CtaBanner } from '@/components/home/CtaBanner'
 import { FeaturedNearby } from '@/components/home/FeaturedNearby'
 import { Hero } from '@/components/home/Hero'
 import { ProductRail } from '@/components/home/ProductRail'
+import { Testimonials } from '@/components/home/Testimonials'
 
 /**
  * ترتیب بخش‌ها — خدمات و سرپرستی اول.
@@ -29,6 +30,10 @@ export function HomePage() {
       <CategoryGrid />
       <AdoptionRail />
       <ProductRail />
+      {/* Renders nothing until a real customer has paid for a real order.
+          See the comment at the top of the component for why that is the
+          only honest state today. */}
+      <Testimonials />
       <FeaturedNearby />
       <CtaBanner />
     </>
