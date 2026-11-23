@@ -265,6 +265,7 @@ function Thread({ id }: { id: number }) {
 function NewTicket({ signedIn, onCreated }: { signedIn: boolean; onCreated: () => void }) {
   const [form, setForm] = useState({
     subject: '', body: '', topic: 'other', contact_name: '', contact_phone: '',
+    ref_code: '',   // honeypot — see the comment at the input below
   })
   const [done, setDone] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -355,6 +356,32 @@ function NewTicket({ signedIn, onCreated }: { signedIn: boolean; onCreated: () =
           </div>
         </div>
       )}
+
+      {/* Honeypot — see pawsmarket-serverdash/app/spamguard.py.
+
+          A person must not see this, must not reach it with the keyboard,
+          and must not be told about it by a screen reader. All three are
+          explicit rather than `display:none` alone, because display:none
+          also hides it from the simpler bots that skip hidden elements:
+
+            · positioned off-screen, so it stays in the layout a filler walks
+            · aria-hidden so assistive tech ignores it
+            · tabIndex={-1} so Tab never lands on it
+            · autoComplete="off" so a password manager does not fill it
+
+          The server answers a filled honeypot with the same 201 a real
+          ticket gets, and writes nothing. */}
+      <div aria-hidden="true" className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden">
+        <label htmlFor="t-ref">کد رهگیری (خالی بگذارید)</label>
+        <input
+          id="t-ref"
+          name="ref_code"
+          tabIndex={-1}
+          autoComplete="off"
+          value={form.ref_code}
+          onChange={(e) => setForm({ ...form, ref_code: e.target.value })}
+        />
+      </div>
 
       {error && <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive-text">{error}</p>}
 
