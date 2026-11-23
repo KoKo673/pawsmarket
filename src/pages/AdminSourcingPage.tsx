@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AlertCircle, Bell, Loader2, Package, Truck } from 'lucide-react'
+import { AlertCircle, Bell, Check, Loader2, Package, Truck } from 'lucide-react'
 import { useState } from 'react'
 
 import { AdminNav } from '@/components/AdminNav'
@@ -61,6 +61,12 @@ const LATE_HOURS = 24
 function Row({ row }: { row: SourcingRow }) {
   const qc = useQueryClient()
   const [opened, setOpened] = useState(false)
+  // The ship form. Kept closed until «ارسال شد» is pressed, because a
+  // carrier field sitting on every row invites someone to fill it for an
+  // order that has not shipped yet.
+  const [shipping, setShipping] = useState(false)
+  const [code, setCode] = useState('')
+  const [carrier, setCarrier] = useState('')
 
   const detail = useQuery({
     queryKey: ['admin-order', row.id],
@@ -69,10 +75,16 @@ function Row({ row }: { row: SourcingRow }) {
   })
 
   const advance = useMutation({
-    mutationFn: (to: string) => adminApi.setOrderStatus(row.id, to),
+    mutationFn: (vars: { to: string; code?: string; carrier?: string }) =>
+      adminApi.setOrderStatus(
+        row.id, vars.to,
+        vars.code ? { code: vars.code, carrier: vars.carrier } : undefined),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-sourcing'] })
       qc.invalidateQueries({ queryKey: ['admin-order', row.id] })
+      setShipping(false)
+      setCode('')
+      setCarrier('')
     },
   })
 
@@ -120,7 +132,14 @@ function Row({ row }: { row: SourcingRow }) {
             <Button
               size="sm"
               disabled={advance.isPending}
-              onClick={() => advance.mutate(step.to)}
+              /* «ارسال شد» opens the form instead of firing: the tracking
+                 code is the whole point of the shipped state, and a
+                 one-click ship without it leaves the customer with a word.
+                 Every other step has nothing extra to ask. */
+              onClick={() =>
+                step.to === 'shipped'
+                  ? setShipping((v) => !v)
+                  : advance.mutate({ to: step.to })}
             >
               {advance.isPending
                 ? <Loader2 className="size-3.5 animate-spin" aria-hidden />
@@ -143,6 +162,61 @@ function Row({ row }: { row: SourcingRow }) {
           </Button>
         </div>
       </div>
+
+      {/* The ship form. Its own row so it reads as a decision, not as more
+          buttons. Enter submits; the code field is focused on open because
+          that is the only thing anyone types here. */}
+      {shipping && (
+        <form
+          className="mt-3 flex flex-wrap items-end gap-2 border-t border-border pt-3"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (!code.trim()) return
+            advance.mutate({ to: 'shipped', code: code.trim(), carrier: carrier.trim() })
+          }}
+        >
+          <label className="flex-1 text-[11px] font-semibold text-muted-foreground">
+            کد رهگیری
+            <input
+              autoFocus
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              dir="ltr"
+              inputMode="numeric"
+              placeholder="مثلاً 24301999888777665544"
+              className="mt-1 block w-full rounded-lg border border-border bg-background px-2 py-1.5 font-mono text-sm text-foreground"
+            />
+          </label>
+          <label className="text-[11px] font-semibold text-muted-foreground">
+            حامل
+            <input
+              value={carrier}
+              onChange={(e) => setCarrier(e.target.value)}
+              placeholder="پست، تیپاکس، …"
+              className="mt-1 block w-28 rounded-lg border border-border bg-background px-2 py-1.5 text-sm text-foreground"
+            />
+          </label>
+          <Button type="submit" size="sm" disabled={!code.trim() || advance.isPending}>
+            {advance.isPending
+              ? <Loader2 className="size-3.5 animate-spin" aria-hidden />
+              : <Check className="size-3.5" aria-hidden />}
+            ثبت ارسال
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => { setShipping(false); setCode(''); setCarrier('') }}
+          >
+            انصراف
+          </Button>
+          {!code.trim() && (
+            <p className="w-full text-[11px] text-muted-foreground">
+              بدون کد رهگیری، مشتری فقط کلمهٔ «ارسال‌شده» را می‌بیند.
+            </p>
+          )}
+        </form>
+      )}
 
       {advance.isError && (
         <p className="mt-2 text-xs text-destructive">

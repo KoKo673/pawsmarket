@@ -293,10 +293,26 @@ export const adminApi = {
   sourcing: (limit = 100) =>
     call<{ items: SourcingRow[] }>(`/api/admin/sourcing?limit=${limit}`),
 
-  setOrderStatus: (id: number, status: string) =>
-    call<{ ok: boolean; from?: string; to?: string }>(
+  /* `tracking` is only read by the server on the move to `shipped`, and
+     only when a code is present. Sending it on any other transition is
+     harmless and ignored — the alternative (a separate endpoint) would
+     let the status change land without the code that makes it useful. */
+  setOrderStatus: (
+    id: number,
+    status: string,
+    tracking?: { code: string; carrier?: string },
+  ) =>
+    call<{ ok: boolean; from?: string; to?: string; tracking_saved?: boolean }>(
       `/api/admin/orders/${id}/status`,
-      { method: 'POST', body: JSON.stringify({ status }) }),
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          status,
+          ...(tracking?.code
+            ? { tracking_code: tracking.code, tracking_carrier: tracking.carrier ?? '' }
+            : {}),
+        }),
+      }),
 
   /* A retry, not a duplicate: the automatic notice runs once at the
      payment callback, and an order that was already paid when Bale was
