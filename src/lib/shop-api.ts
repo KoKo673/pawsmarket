@@ -78,6 +78,11 @@ export interface OrderSummary {
   created_at: string
   paid_at: string | null
   delivery_eta_days: number | null
+  shipped_at?: string | null
+  tracking_code?: string | null
+  tracking_carrier?: string | null
+  /** از سرور، نه از مرورگر — فهرست و صفحهٔ جزئیات باید یک جواب بدهند. */
+  can_repay?: boolean
   // No `delivery_slot`. It used to be here, matching a backend field that
   // was documented as a slot id from a `booking_slots` table no migration
   // ever created. The backend dropped it (app/routers/shop.py), so this
@@ -91,6 +96,16 @@ export interface OrderDetail extends OrderSummary {
   address: string
   note: string | null
   items: { qty: number; unit_price: number; name: string }[]
+  /** از سرور می‌آید، نه از مرورگر: قاعده یک‌جا تعریف می‌شود. */
+  can_repay?: boolean
+}
+
+/** ستون‌های رهگیری (مهاجرت 0036). `null` یعنی ثبت نشده — و صفحه همان را
+ *  می‌گوید، نه یک خط خالی که شبیه باگ است. */
+export interface OrderTracking {
+  shipped_at?: string | null
+  tracking_code?: string | null
+  tracking_carrier?: string | null
 }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -195,4 +210,14 @@ export const shopApi = {
 
   order: (id: number | string) =>
     request<OrderDetail>(`/api/shop/orders/${id}`),
+
+  /* The retry the checkout page has always told the customer to make.
+     Until this existed, a `pending` order could never be paid at all: shop.py's
+     own comment said "no repay route exists", and the customer had to rebuild
+     the cart from scratch and hope the gateway worked the second time. */
+  repay: (id: number, gateway: string) =>
+    request<{ order_id: number; total_toman: number; gateway: string; redirect_url: string }>(
+      `/api/shop/orders/${id}/pay`,
+      { method: 'POST', body: JSON.stringify({ gateway }) },
+    ),
 }

@@ -1,15 +1,13 @@
-import { ArrowRight, Loader2, Package } from 'lucide-react'
+import { ArrowRight, Loader2, Package, RefreshCw } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
-import { faPrice } from '@/lib/fa'
+import { faDate, faPrice } from '@/lib/fa'
 import { shopApi } from '@/lib/shop-api'
+import { OrderTimeline } from '@/components/OrderTimeline'
 import { statusLabel } from '@/pages/MyOrdersPage'
-
-const faDate = (iso: string) =>
-  new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium', timeStyle: 'short' })
-    .format(new Date(iso))
 
 /**
  * یک سفارش، با اقلام و پنجرهٔ تحویل.
@@ -59,9 +57,17 @@ export function OrderDetailPage() {
         </span>
       </div>
 
+      <div className="mt-5">
+        <OrderTimeline order={o} />
+      </div>
+
+      {o.can_repay && (
+        <RepayButton orderId={o.id} />
+      )}
+
       <dl className="mt-5 space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
-        <Row label="تاریخ ثبت" value={faDate(o.created_at)} />
-        {o.paid_at && <Row label="تاریخ پرداخت" value={faDate(o.paid_at)} />}
+        <Row label="تاریخ ثبت" value={faDate(o.created_at, true)} />
+        {o.paid_at && <Row label="تاریخ پرداخت" value={faDate(o.paid_at, true)} />}
         {o.delivery_eta_days != null && (
           <Row label="زمان تحویل"
                value={`حدود ${o.delivery_eta_days.toLocaleString('fa-IR')} روز کاری`} />
@@ -92,6 +98,74 @@ export function OrderDetailPage() {
         <span className="text-lg font-extrabold text-primary">{faPrice(o.total_toman)}</span>
       </div>
     </Shell>
+  )
+}
+
+/**
+ * «ادامهٔ پرداخت» — راه خروج از وضعیت `pending`.
+ *
+ * ── چرا این دکمه باید باشد ─────────────────────────────────────────
+ * صفحهٔ سفارش وضعیت را نشان می‌داد ولی برای `pending` هیچ کاری نداشت.
+ * `shop.py` خودش نوشته بود «no repay route exists» — یعنی مشتری باید
+ * سبد را از نو می‌ساخت و امیدوار بود درگاه این بار جواب بدهد. یک صفحهٔ
+ * وضعیت که حالتی را نام می‌برد که مشتری نمی‌تواند از آن بیرون بیاید،
+ * بن‌بست است با یک برچسب روی آن.
+ *
+ * انتخاب درگاه همان دو گزینهٔ سبد خرید است، با همان پیش‌فرض، تا مشتری
+ * دو واژگان مختلف برای یک چیز نبیند.
+ */
+function RepayButton({ orderId }: { orderId: number }) {
+  const [gateway, setGateway] = useState<'zibal' | 'zarinpal'>('zibal')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  async function go() {
+    setBusy(true)
+    setError('')
+    try {
+      const r = await shopApi.repay(orderId, gateway)
+      // The gateway owns the next screen, exactly as at checkout. Nothing
+      // is "paid" until it comes back through /order/result.
+      window.location.assign(r.redirect_url)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'شروع پرداخت انجام نشد')
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="mt-4 rounded-2xl border border-primary/30 bg-primary/5 p-4">
+      <p className="text-sm font-bold">این سفارش هنوز پرداخت نشده</p>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+        پرداخت را کامل کنید تا سفارش شما آماده‌سازی شود. اگر پول از حسابتان
+        کم شده و سفارش هنوز اینجاست، تا ۳۰ دقیقه دیگر دوباره بررسی کنید.
+      </p>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <select
+          aria-label="درگاه پرداخت"
+          value={gateway}
+          onChange={(e) => setGateway(e.target.value as 'zibal' | 'zarinpal')}
+          className="rounded-xl border border-border bg-card px-3 py-2 text-sm"
+        >
+          <option value="zibal">زیبال</option>
+          <option value="zarinpal">زرین‌پال</option>
+        </select>
+
+        <Button disabled={busy} onClick={go}>
+          {busy
+            ? <Loader2 className="size-4 animate-spin" aria-hidden />
+            : <RefreshCw className="size-4" aria-hidden />}
+          ادامهٔ پرداخت
+        </Button>
+      </div>
+
+      {error && (
+        <p role="alert" className="mt-2 text-xs font-semibold text-destructive-text">
+          {error}
+        </p>
+      )}
+    </div>
   )
 }
 

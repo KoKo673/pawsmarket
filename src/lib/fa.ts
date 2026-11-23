@@ -63,3 +63,26 @@ export function faPriceShort(value: number): string {
   if (value >= 1_000) return `${faDigits(Math.round(value / 1_000))}ه`
   return faDigits(value)
 }
+
+/**
+ * تاریخ شمسی — یک تعریف، نه دوازده.
+ *
+ * Measured 2026-11-23: `new Intl.DateTimeFormat('fa-IR', ...)` appeared in
+ * twelve files, each with its own style. Two of them already disagreed
+ * about whether to include the time, so the same order showed a different
+ * date on the list and on its own page.
+ *
+ * `fa-IR` on a Persian locale gives the Jalali calendar for free — this
+ * wrapper exists for the consistency, not for the digits.
+ */
+const DATE_ONLY = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium' })
+const DATE_TIME = new Intl.DateTimeFormat('fa-IR', {
+  dateStyle: 'medium', timeStyle: 'short',
+})
+
+export function faDate(iso: string, withTime = false): string {
+  const d = new Date(iso)
+  // An unparseable timestamp must not render "Invalid Date" in Persian.
+  if (Number.isNaN(d.getTime())) return '—'
+  return (withTime ? DATE_TIME : DATE_ONLY).format(d)
+}

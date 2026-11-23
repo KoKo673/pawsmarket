@@ -1,16 +1,11 @@
-import { Loader2, Package, ShoppingBag } from 'lucide-react'
+import { ArrowLeft, Loader2, Package, ShoppingBag } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
-import { faPrice } from '@/lib/fa'
+import { faDate, faPrice } from '@/lib/fa'
 import { shopApi } from '@/lib/shop-api'
 import { useAuthStore } from '@/store/auth.store'
-
-// Same formatter the admin and booking pages use, so a date reads the same
-// everywhere in the product.
-const faDate = (iso: string) =>
-  new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium' }).format(new Date(iso))
 
 /**
  * سفارشهای من.
@@ -100,9 +95,35 @@ export function MyOrdersPage() {
               </p>
             )}
 
-            <Button asChild variant="outline" size="sm" className="mt-3">
-              <Link to={`/orders/${o.id}`}>جزئیات</Link>
-            </Button>
+            {/* A tracking number is the one thing a customer opens this
+                page for once the parcel is out. It is on the list, not only
+                behind «جزئیات», so it costs no second tap. */}
+            {o.tracking_code && (
+              <p className="mt-2 text-xs">
+                <span className="text-muted-foreground">
+                  {o.tracking_carrier ? `${o.tracking_carrier} — ` : ''}کد رهگیری:{' '}
+                </span>
+                <span className="select-all font-mono font-bold" dir="ltr">
+                  {o.tracking_code}
+                </span>
+              </p>
+            )}
+
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <Button asChild variant="outline" size="sm">
+                <Link to={`/orders/${o.id}`}>جزئیات</Link>
+              </Button>
+              {/* The dead end, made visible as a dead end: a pending order
+                  has a next step, and it is the same button as at checkout. */}
+              {o.can_repay && (
+                <Button asChild size="sm">
+                  <Link to={`/orders/${o.id}`}>
+                    <ArrowLeft className="size-3.5" aria-hidden />
+                    ادامهٔ پرداخت
+                  </Link>
+                </Button>
+              )}
+            </div>
           </li>
         ))}
       </ul>
