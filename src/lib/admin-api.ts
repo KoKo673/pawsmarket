@@ -98,6 +98,10 @@ export interface OrderLine {
   unit_price: string
   line_total: string
   offer_id: number | null
+  /** لینک محصول روی سایت فروشنده — ستون `offers.url`. `null` یعنی ثبت
+   *  نشده، و همان قلمی است که بی‌صدا گم می‌شود، پس در UI قرمز می‌شود. */
+  supplier_url?: string | null
+  supplier?: string | null
 }
 
 export interface AdminOrderDetail {
@@ -115,6 +119,19 @@ export interface AdminOrderDetail {
   username: string | null
   /** نامش `lines` است نه `items` — در فهرست، `items` یعنی «تعداد اقلام». */
   lines: OrderLine[]
+}
+
+/** یک سفارش در صف تأمین. `hours_since_paid` از سرور می‌آید، نه از مرورگر:
+ *  ساعت مرورگر کاربر می‌تواند غلط باشد و «۳۰ ساعت منتظر» را «۰» نشان دهد. */
+export interface SourcingRow {
+  id: number
+  status: string
+  total_toman: string
+  contact_name: string
+  contact_phone: string
+  address: string
+  paid_at: string | null
+  hours_since_paid: number | null
 }
 
 export interface SyncRun {
@@ -266,6 +283,27 @@ export const adminApi = {
       `/api/admin/orders?status=${encodeURIComponent(status)}&limit=${limit}&offset=${offset}`),
 
   order: (id: number) => call<AdminOrderDetail>(`/api/admin/orders/${id}`),
+
+  /* ── The sourcing queue ──────────────────────────────────────
+     Until 2026-11-23 a paid order had no next step anywhere in the
+     product: the STATUS_FA map already knew the word «در حال تأمین», and
+     nothing ever wrote that status. This is the screen that closes the
+     loop — oldest first, because the order that has waited longest is
+     the one most likely to be forgotten. */
+  sourcing: (limit = 100) =>
+    call<{ items: SourcingRow[] }>(`/api/admin/sourcing?limit=${limit}`),
+
+  setOrderStatus: (id: number, status: string) =>
+    call<{ ok: boolean; from?: string; to?: string }>(
+      `/api/admin/orders/${id}/status`,
+      { method: 'POST', body: JSON.stringify({ status }) }),
+
+  /* A retry, not a duplicate: the automatic notice runs once at the
+     payment callback, and an order that was already paid when Bale was
+     down has nothing else to resend it. */
+  notifyOrder: (id: number) =>
+    call<{ sent: boolean; order_id: number }>(
+      `/api/admin/orders/${id}/notify`, { method: 'POST', body: '{}' }),
 
   syncRuns: (limit = 20) =>
     call<{ items: SyncRun[] }>(`/api/admin/sync-runs?limit=${limit}`),

@@ -1,4 +1,4 @@
-import { BadgeCheck, ClipboardCheck, LifeBuoy, Store } from 'lucide-react'
+import { BadgeCheck, ClipboardCheck, LifeBuoy, Package, Store } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 /**
@@ -23,6 +23,7 @@ import { NavLink } from 'react-router-dom'
 
 const LINKS = [
   { to: '/admin', label: 'نمای کلی', icon: BadgeCheck, end: true },
+  { to: '/admin/sourcing', label: 'صف تأمین', icon: Package, end: false },
   { to: '/admin/claims', label: 'درخواست‌ها', icon: ClipboardCheck, end: false },
   { to: '/admin/stores', label: 'داشبورد مراکز', icon: Store, end: false },
   { to: '/admin/support', label: 'پشتیبانی', icon: LifeBuoy, end: false },

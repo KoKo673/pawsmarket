@@ -79,6 +79,8 @@ const AdminLoginPage = lazy(() =>
   import('@/pages/AdminLoginPage').then((m) => ({ default: m.AdminLoginPage })))
 const AdminStoresPage = lazy(() =>
   import('@/pages/AdminStoresPage').then((m) => ({ default: m.AdminStoresPage })))
+const AdminSourcingPage = lazy(() =>
+  import('@/pages/AdminSourcingPage').then((m) => ({ default: m.AdminSourcingPage })))
 const SecretAdminPage = lazy(() =>
   import('@/pages/SecretAdminPage').then((m) => ({ default: m.SecretAdminPage })))
 const ForBusinessPage = lazy(() =>
@@ -420,6 +422,16 @@ function AppRoutes() {
                 <AnimatedPage>
                   <RequireAdmin>
                     <AdminStoresPage />
+                  </RequireAdmin>
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/admin/sourcing"
+              element={
+                <AnimatedPage>
+                  <RequireAdmin>
+                    <AdminSourcingPage />
                   </RequireAdmin>
                 </AnimatedPage>
               }
