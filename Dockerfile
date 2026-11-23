@@ -102,6 +102,26 @@ COPY nginx-main.conf /etc/nginx/nginx.conf
 # a site that is down.
 COPY arvan-edge-ips.conf /etc/nginx/arvan-edge-ips.conf
 
+# ── The assets directory is emptied first, on purpose ────────────────
+#
+# ── Measured 2026-11-23 ──────────────────────────────────────────────
+# `COPY --from=build /app/dist /usr/share/nginx/html` MERGES into the
+# base image's directory; it does not replace it. The nginx base already
+# has that path (a 50x.html and index.html), so every build added its
+# hashed chunks beside the previous ones instead of over them.
+#
+# The live container held 222 files for 72 distinct names — eight copies
+# of SupportPage, eight of AdminSupportPage — all still served with
+# `Cache-Control: immutable`, so a CDN keeps each dead version for a year.
+#
+# That is not only waste. A stale chunk that a cached index.html still
+# names used to fall through to the SPA and get index.html with 200 — a
+# module import that receives HTML, which reads as a blank screen.
+#
+# The removal is scoped to the site's own paths (`assets/` and the
+# top-level bundles); nginx's stock error pages live elsewhere.
+RUN rm -rf /usr/share/nginx/html/assets /usr/share/nginx/html/*.js \
+           /usr/share/nginx/html/*.css
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # nginx:alpine's entrypoint scripts already run as root and drop privileges for
